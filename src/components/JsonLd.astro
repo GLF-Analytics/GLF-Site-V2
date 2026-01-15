@@ -1,0 +1,55 @@
+---
+import { orgInfo, siteName, siteUrl, defaultDescription, socialLinks } from "../config/site";
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: orgInfo.name,
+    legalName: orgInfo.legalName,
+    url: siteUrl,
+    logo: `${siteUrl}${orgInfo.logo}`,
+    sameAs: Object.values(socialLinks).filter(Boolean),
+    email: orgInfo.email,
+    telephone: orgInfo.phone,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: orgInfo.address.street,
+      addressLocality: orgInfo.address.city,
+      addressRegion: orgInfo.address.region,
+      postalCode: orgInfo.address.postalCode,
+      addressCountry: orgInfo.address.country
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteName,
+    url: siteUrl,
+    description: defaultDescription,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${siteUrl}/work?query={search_term_string}`,
+      "query-input": "required name=search_term_string"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    name: siteName,
+    url: siteUrl,
+    description: defaultDescription,
+    areaServed: "US",
+    serviceType: [
+      "eCommerce management",
+      "data strategy",
+      "business intelligence",
+      "growth marketing",
+      "tech stack audits"
+    ]
+  }
+];
+---
+<script type="application/ld+json">
+  {JSON.stringify(jsonLd)}
+</script>

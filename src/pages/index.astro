@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/Hero.astro";
+import SocialProofStarters from "../components/SocialProofStarters.astro";
+import Capabilities from "../components/Capabilities.astro";
+import ToolsCloud from "../components/ToolsCloud.astro";
+import SelectedWork from "../components/SelectedWork.astro";
+import Team from "../components/Team.astro";
+import SubstackCTA from "../components/SubstackCTA.astro";
+
+const title = "GLF Analytics | eCommerce Data & Strategy";
+const description =
+  "GLF Analytics drives strategy, execution, and data infrastructure for ambitious brands.";
+---
+<BaseLayout title={title} description={description}>
+  <Hero />
+  <SocialProofStarters />
+  <Capabilities />
+  <ToolsCloud />
+  <SelectedWork />
+  <Team />
+  <SubstackCTA />
+</BaseLayout>

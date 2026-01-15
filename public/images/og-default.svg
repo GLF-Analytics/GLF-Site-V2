@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="GLF Analytics">
+  <rect width="1200" height="630" fill="#09090b" />
+  <circle cx="980" cy="-20" r="220" fill="#6366f1" fill-opacity="0.15" />
+  <circle cx="600" cy="-60" r="260" fill="#a855f7" fill-opacity="0.08" />
+  <text x="80" y="340" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="64" font-weight="600">
+    GLF Analytics
+  </text>
+  <text x="80" y="410" fill="#a1a1aa" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="400">
+    eCommerce Data & Strategy
+  </text>
+</svg>

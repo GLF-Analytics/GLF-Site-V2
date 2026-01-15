@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 140" role="img" aria-label="d2c-scaling logo">
+  <rect width="240" height="140" rx="16" fill="#0f0f13" />
+  <rect x="1" y="1" width="238" height="138" rx="15" fill="none" stroke="#27272a" />
+  <text x="20" y="78" fill="#e4e4e7" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="1">
+    d2c-scaling
+  </text>
+</svg>

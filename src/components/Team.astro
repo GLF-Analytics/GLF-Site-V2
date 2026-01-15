@@ -1,0 +1,39 @@
+---
+const team = [
+  { initials: "GF", name: "Gabriel Freeman", role: "Founder / Data Strategy", highlight: true },
+  { initials: "S", name: "Steven", role: "GLF Team" },
+  { initials: "S", name: "Sabrina", role: "GLF Team" },
+  { initials: "V", name: "Varun", role: "GLF Team" },
+  { initials: "I", name: "Isaac", role: "GLF Team" }
+];
+---
+<section id="team" class="py-24 px-6 border-b border-white/5 bg-zinc-900/10">
+  <div class="max-w-7xl mx-auto">
+    <h2 class="text-2xl font-semibold text-white tracking-tight mb-12">The Team</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+      {team.map((member) => (
+        <div
+          class={`flex flex-col items-center text-center p-6 rounded-xl border border-white/5 ${
+            member.highlight ? "bg-white/[0.02]" : "bg-transparent"
+          }`}
+        >
+          <div
+            class={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
+              member.highlight
+                ? "bg-zinc-800 border border-zinc-700 text-zinc-400"
+                : "bg-zinc-900 border border-zinc-800 text-zinc-600"
+            }`}
+          >
+            <span class="text-xl font-medium">{member.initials}</span>
+          </div>
+          <h3 class={`${member.highlight ? "text-white" : "text-zinc-300"} font-medium text-sm`}>
+            {member.name}
+          </h3>
+          <p class={`${member.highlight ? "text-zinc-500" : "text-zinc-600"} text-xs mt-1`}>
+            {member.role}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

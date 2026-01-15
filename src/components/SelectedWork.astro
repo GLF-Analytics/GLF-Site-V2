@@ -1,0 +1,9 @@
+---
+import { getCollection } from "astro:content";
+import Timeline from "./Timeline.astro";
+
+const workItems = (await getCollection("work"))
+  .filter((item) => item.data.featured)
+  .sort((a, b) => a.data.order - b.data.order);
+---
+<Timeline items={workItems} title="Selected Work" />
