@@ -1,0 +1,103 @@
+---
+// Reusable per-letter reveal heading.
+// Use on any page by importing this component and swapping the text prop.
+const { text = "We can help manage the tech that runs your business.", class: className = "" } =
+  Astro.props;
+---
+<h1 class={`reveal-text ${className}`} data-split aria-label={text}>
+  {text}
+</h1>
+
+<style is:global>
+  /* Base class: attach to any heading or block of text you want to animate. */
+  .reveal-text {
+    display: inline-block;
+    white-space: normal;
+  }
+
+  /* Prevent flash of un-split text only when JS is active. */
+  .js-split .reveal-text[data-split] {
+    visibility: hidden;
+  }
+
+  .js-split .reveal-text.is-split {
+    visibility: visible;
+  }
+
+  /* Each letter becomes its own inline-block so transforms don't affect layout. */
+  .reveal-text .letter {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(0.35em);
+    animation: letter-reveal 700ms ease forwards;
+    animation-delay: calc(var(--i) * 40ms);
+    will-change: transform, opacity;
+  }
+
+  @keyframes letter-reveal {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-text .letter {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Keep words together while allowing normal line wrapping between words. */
+  .reveal-text .word {
+    display: inline-block;
+    white-space: nowrap;
+  }
+</style>
+
+<script is:inline>
+  // Reuse: add `data-split` to any element and this script will split its text into spans.
+  // You can copy this script into a global layout if you want it to run across multiple pages.
+  const splitTargets = document.querySelectorAll("[data-split]");
+
+  const runSplit = () => {
+    splitTargets.forEach((el) => {
+      const text = el.textContent ?? "";
+      el.textContent = "";
+
+      let index = 0;
+      const words = text.split(" ");
+
+      words.forEach((word, wordIndex) => {
+        const wordSpan = document.createElement("span");
+        wordSpan.className = "word";
+
+        [...word].forEach((char) => {
+          const span = document.createElement("span");
+          span.className = "letter";
+          span.style.setProperty("--i", index);
+          span.setAttribute("aria-hidden", "true");
+          span.textContent = char;
+          wordSpan.appendChild(span);
+          index += 1;
+        });
+
+        el.appendChild(wordSpan);
+
+        if (wordIndex < words.length - 1) {
+          el.appendChild(document.createTextNode(" "));
+          index += 1;
+        }
+      });
+
+      el.classList.add("is-split");
+    });
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runSplit);
+  } else {
+    runSplit();
+  }
+</script>

@@ -12,6 +12,9 @@ const { title, description, canonical, ogImage, noindex } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      document.documentElement.classList.add("js-split");
+    </script>
     <link
       rel="preload"
       href="/fonts/Inter-VariableFont_opsz,wght.woff2"

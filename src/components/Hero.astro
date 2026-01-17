@@ -1,13 +1,17 @@
+---
+import AnimatedHeading from "./AnimatedHeading.astro";
+---
 <section class="md:pt-48 md:pb-32 mesh-gradient border-white/5 border-b pt-32 pr-6 pb-20 pl-6 relative">
   <div class="text-center max-w-5xl mx-auto">
     <div class="inline-flex gap-2 text-[10px] md:text-xs font-medium text-zinc-300 bg-white/5 border-white/10 border rounded-full mb-8 pt-1 pr-3 pb-1 pl-3 backdrop-blur-sm items-center">
       Available for Q1 Consulting
       <span class="w-1.5 h-1.5 animate-pulse bg-emerald-500 rounded-full"></span>
     </div>
-    <h1 class="md:text-6xl lg:text-7xl leading-[1.1] text-4xl font-semibold text-white tracking-tight mb-6">
-      We can help manage the tech that runs your business.
-    </h1>
-    <p class="text-base md:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed font-light mb-10">
+    <AnimatedHeading
+      class="md:text-6xl lg:text-7xl leading-[1] md:leading-[0.95] lg:leading-[0.85] text-4xl font-semibold text-white tracking-tight mb-0 max-w-4xl mx-auto"
+      text="We can help manage the tech that runs your business."
+    />
+    <p class="text-base md:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed font-light mb-10 mt-4 md:mt-6 lg:mt-0 lg:-mt-4">
       GLF Analytics drives strategy, execution, and data infrastructure for ambitious brands. From custom Shopify builds to enterprise-grade data warehousing.
     </p>
     <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
