@@ -10,7 +10,7 @@ outcomes:
   - "Faster data-driven decision-making"
 tags: ["Data Infrastructure", "Reporting", "Enablement"]
 featured: true
-order: 5
+order: 3
 duration: "4 months"
 url: "https://example.com"
 logo: "/images/work/super-teeth.svg"

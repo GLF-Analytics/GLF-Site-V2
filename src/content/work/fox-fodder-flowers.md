@@ -10,7 +10,7 @@ outcomes:
   - "More traffic and conversions from paid search"
 tags: ["SEO", "Google Ads", "Reporting"]
 featured: true
-order: 6
+order: 2
 duration: "10 months"
 url: "https://example.com"
 logo: "/images/work/fox-fodder-flowers.svg"

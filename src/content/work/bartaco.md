@@ -10,7 +10,7 @@ outcomes:
   - "Unified digital growth engine across channels"
 tags: ["Digital Growth", "Paid Media", "Loyalty"]
 featured: true
-order: 7
+order: 1
 duration: "18 months"
 url: "https://example.com"
 logo: "/images/work/bartaco.svg"

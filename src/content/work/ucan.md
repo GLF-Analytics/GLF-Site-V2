@@ -10,7 +10,7 @@ outcomes:
   - "1.5-year strategic partnership"
 tags: ["Data Infrastructure", "Digital Strategy", "Analytics"]
 featured: true
-order: 2
+order: 6
 duration: "18 months"
 url: "https://example.com"
 logo: "/images/work/ucan.svg"

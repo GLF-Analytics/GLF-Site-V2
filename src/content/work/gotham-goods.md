@@ -10,7 +10,7 @@ outcomes:
   - "Email marketing program built from scratch"
 tags: ["Ecommerce", "Analytics", "Lifecycle Marketing"]
 featured: true
-order: 3
+order: 5
 duration: "12 months"
 url: "https://example.com"
 logo: "/images/work/gotham-goods.svg"

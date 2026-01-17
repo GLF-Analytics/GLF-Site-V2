@@ -10,7 +10,7 @@ outcomes:
   - "Weekly optimization cadence with reporting"
 tags: ["Ecommerce", "Web Development", "Reporting"]
 featured: true
-order: 1
+order: 7
 duration: "12 months"
 url: "https://example.com"
 logo: "/images/work/havens-kitchen.svg"
