@@ -1,24 +1,24 @@
 ---
 title: "UCAN"
 clientType: "Performance Nutrition"
-summary: "Expanded retention analytics and lifecycle marketing to support repeat purchase growth."
-challenge: "Retention insights were fragmented across tools, limiting visibility into repeat revenue."
-solution: "Centralized retention reporting and launched lifecycle automation to target high-value cohorts."
+summary: "Built data infrastructure and led digital strategy to drive growth across channels."
+challenge: "Data lived across platforms with no unified system to support reporting or strategy."
+solution: "Implemented a BigQuery-based data stack with Looker Studio and Sheets, then partnered on digital strategy."
 outcomes:
-  - "Improved repeat purchase tracking"
-  - "Automated retention lifecycle flows"
-  - "Clear cohort visibility for growth planning"
-tags: ["Retention", "Klaviyo", "Analytics"]
-featured: false
-order: 5
-duration: "4 months"
+  - "Unified data infrastructure for reporting"
+  - "Growth across paid social, influencer, and sampling"
+  - "1.5-year strategic partnership"
+tags: ["Data Infrastructure", "Digital Strategy", "Analytics"]
+featured: true
+order: 2
+duration: "18 months"
 url: "https://example.com"
 logo: "/images/work/ucan.svg"
 ---
 ## Overview
-Focused on retention analytics and lifecycle strategy to drive repeat purchases and improve LTV visibility.
+Built the data system and served as a long-term digital strategist for UCAN’s growth initiatives.
 
 ## What we delivered
-- Cohort analysis dashboards.
-- Segmented retention flows.
-- Monthly KPI review cadence.
+- BigQuery data warehouse and reporting stack.
+- Looker Studio and Google Sheets dashboards.
+- Strategic growth guidance across channels.

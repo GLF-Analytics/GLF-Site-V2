@@ -1,24 +1,24 @@
 ---
 title: "Gotham Goods"
 clientType: "D2C Startup"
-summary: "Custom website development and full analytics implementation."
-challenge: "A new brand needed a Shopify presence and a performance measurement foundation to support growth."
-solution: "Delivered a custom ecommerce build, implemented GA4 + GTM, and launched lifecycle marketing to align with the brand strategy."
+summary: "Launched a custom ecommerce site with tracking and lifecycle marketing from day one."
+challenge: "A new brand needed a custom build, analytics, and a go-to-market plan to drive early growth."
+solution: "Managed the agency build, implemented tagging and analytics, and built Klaviyo email programs."
 outcomes:
-  - "Launched a custom Shopify experience"
-  - "Implemented analytics instrumentation from day one"
-  - "Built email automation and segmentation"
-tags: ["Shopify", "Analytics", "Lifecycle Marketing"]
+  - "Custom-coded site launch"
+  - "Full tagging and tracking implementation"
+  - "Email marketing program built from scratch"
+tags: ["Ecommerce", "Analytics", "Lifecycle Marketing"]
 featured: true
-order: 2
-duration: "3 months"
+order: 3
+duration: "12 months"
 url: "https://example.com"
 logo: "/images/work/gotham-goods.svg"
 ---
 ## Overview
-Led custom development of the ecommerce site, established analytics and reporting, and built the email marketing program from the ground up.
+Owned ecommerce launch execution across development, analytics, and lifecycle marketing.
 
 ## What we delivered
-- Shopify theme development with performance-first structure.
-- GA4, GTM, and event tracking specification.
-- Klaviyo flows, segmentation, and reporting.
+- Custom-coded ecommerce site build.
+- GA4 + GTM tagging and tracking setup.
+- Klaviyo email marketing and automation.

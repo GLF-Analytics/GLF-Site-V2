@@ -1,24 +1,24 @@
 ---
 title: "Haven’s Kitchen"
 clientType: "Food & Beverage"
-summary: "Optimized ecommerce operations and reporting for a growing CPG brand."
-challenge: "Order data and inventory reporting were not aligned across systems, creating delays."
-solution: "Unified reporting and optimized ecommerce operations to improve fulfillment and planning."
+summary: "Managed a custom ecommerce build and launch for the Aioli product line."
+challenge: "A custom-coded site needed new product pages, a clearer customer journey, and a new checkout channel."
+solution: "Oversaw development with the design lead and agency, integrated Prime Checkout, and built reporting for post-launch optimization."
 outcomes:
-  - "Cleaner inventory reporting"
-  - "Reduced ops friction across channels"
-  - "Improved visibility into product performance"
-tags: ["Operations", "Reporting", "Food & Beverage"]
-featured: false
-order: 6
-duration: "3 months"
+  - "Prime Checkout integration"
+  - "~50 orders/month in the first six months post-launch"
+  - "Weekly optimization cadence with reporting"
+tags: ["Ecommerce", "Web Development", "Reporting"]
+featured: true
+order: 1
+duration: "12 months"
 url: "https://example.com"
 logo: "/images/work/havens-kitchen.svg"
 ---
 ## Overview
-Improved ecommerce operations and analytics so the team could scale without manual reporting bottlenecks.
+Led the web development process and post-launch optimization for Haven’s Kitchen’s custom-coded site.
 
 ## What we delivered
-- Inventory reconciliation workflows.
-- Order reporting dashboards.
-- Operational KPI tracking.
+- Product page development for the Aioli launch.
+- Amazon Prime Checkout integration.
+- Reporting setup and weekly strategy calls.

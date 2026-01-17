@@ -1,24 +1,24 @@
 ---
 title: "Unilever"
 clientType: "Enterprise"
-summary: "Developed comprehensive SQL database for Beauty & Wellbeing division."
-challenge: "Fragmented data sources across a major division hindered decision making."
-solution: "Streamlined data integration via a custom SQL database, enhancing real-time decision-making capabilities for the management team."
+summary: "Built a BigQuery source of truth for Beauty & Wellbeing DTC brands."
+challenge: "Data was fragmented across multiple sources with no unified reporting layer."
+solution: "Created a scalable SQL database in BigQuery and integrated sources for reliable, real-time insights."
 outcomes:
-  - "Unified reporting across fragmented sources"
-  - "Improved decision-making speed for leadership"
-  - "Scalable SQL foundation for ongoing analytics"
+  - "Integrated data sources into a single system"
+  - "Clear, actionable insights for leadership"
+  - "Scalable analytics foundation for DTC brands"
 tags: ["Data Strategy", "SQL", "Enterprise BI"]
 featured: true
-order: 1
-duration: "6 months"
+order: 4
+duration: "4 months"
 url: "https://example.com"
 logo: "/images/work/unilever.svg"
 ---
 ## Overview
-Built a centralized SQL warehouse for the Beauty & Wellbeing division that connected ecommerce, finance, and marketing reporting into a single source of truth.
+Built a SQL database in BigQuery to serve as the reporting backbone for Unilever’s Beauty & Wellbeing division.
 
 ## What we delivered
-- SQL data model aligned to executive reporting.
-- Automated pipelines to reduce manual reconciliation.
-- Executive dashboards for weekly performance reviews.
+- BigQuery data model and data integration.
+- Cross-source reporting infrastructure.
+- Executive-ready insights for decision-making.

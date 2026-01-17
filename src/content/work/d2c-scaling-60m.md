@@ -9,7 +9,7 @@ outcomes:
   - "Faster reporting for merchandising and paid media"
   - "Scalable data model for continued growth"
 tags: ["Business Intelligence", "Data Warehousing", "Growth"]
-featured: true
+featured: false
 order: 3
 duration: "12 months"
 url: "https://example.com"

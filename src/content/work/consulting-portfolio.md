@@ -9,7 +9,7 @@ outcomes:
   - "Streamlined ecommerce operations"
   - "Actionable reporting for founders"
 tags: ["Consulting", "Digital Strategy", "Operations"]
-featured: true
+featured: false
 order: 4
 duration: "Ongoing"
 url: "https://example.com"
