@@ -69,12 +69,36 @@ const navLinks = [
   <script>
     const toggle = document.querySelector("[data-mobile-toggle]");
     const menu = document.getElementById("mobile-nav");
+    const nav = toggle?.closest("nav");
 
     if (toggle && menu) {
+      const closeMenu = () => {
+        if (!menu.classList.contains("hidden")) {
+          menu.classList.add("hidden");
+          toggle.setAttribute("aria-expanded", "false");
+        }
+      };
+
       toggle.addEventListener("click", () => {
         const isHidden = menu.classList.contains("hidden");
         menu.classList.toggle("hidden");
         toggle.setAttribute("aria-expanded", String(isHidden));
+      });
+
+      menu.addEventListener("click", (event) => {
+        const target = event.target;
+        if (target instanceof Element && target.closest("a")) {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!menu.classList.contains("hidden") && nav && target instanceof Node) {
+          if (!nav.contains(target)) {
+            closeMenu();
+          }
+        }
       });
     }
   </script>

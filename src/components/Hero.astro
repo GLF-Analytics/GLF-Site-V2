@@ -3,9 +3,11 @@ import AnimatedHeading from "./AnimatedHeading.astro";
 ---
 <section class="md:pt-48 md:pb-32 mesh-gradient border-white/5 border-b pt-32 pr-6 pb-20 pl-6 relative">
   <div class="text-center max-w-5xl mx-auto">
-    <div class="inline-flex gap-2 text-[10px] md:text-xs font-medium text-zinc-300 bg-white/5 border-white/10 border rounded-full mb-8 pt-1 pr-3 pb-1 pl-3 backdrop-blur-sm items-center">
-      Available for Q1 Consulting
-      <span class="w-1.5 h-1.5 animate-pulse bg-emerald-500 rounded-full"></span>
+    <div class="availability-wrap mb-8">
+      <div class="availability-pill" role="status" aria-live="polite">
+        <span class="availability-dot" aria-hidden="true"></span>
+        <span class="availability-text">Available for Q1 Consulting</span>
+      </div>
     </div>
     <AnimatedHeading
       class="md:text-6xl lg:text-7xl leading-[1] md:leading-[0.95] lg:leading-[0.85] text-4xl font-semibold text-white tracking-tight mb-0 max-w-4xl mx-auto"
@@ -47,3 +49,117 @@ import AnimatedHeading from "./AnimatedHeading.astro";
     </div>
   </div>
 </section>
+
+<style is:global>
+  .availability-wrap {
+    --pill-pad: 14px;
+    --dot-size: 10px;
+    --dot-gap: 14px;
+    --content-shift: 2px;
+    --text-nudge: -6px;
+    --dot-shift: 0px;
+    height: 36px;
+    display: inline-block;
+  }
+
+  .availability-pill {
+    height: 36px;
+    width: max-content;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--pill-pad);
+    padding-left: calc(var(--pill-pad) + var(--dot-size) + var(--dot-gap));
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #e5e7eb;
+    overflow: hidden;
+    clip-path: inset(0 calc(50% - 18px) 0 calc(50% - 18px) round 9999px);
+    transition: clip-path 900ms cubic-bezier(0.22, 1, 0.36, 1) 800ms;
+    backdrop-filter: blur(6px);
+    position: relative;
+  }
+
+  .availability-dot {
+    width: var(--dot-size);
+    height: var(--dot-size);
+    border-radius: 9999px;
+    background: #22c55e;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.35);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1) 800ms;
+  }
+
+  .availability-text {
+    white-space: nowrap;
+    font-size: 12px;
+    letter-spacing: 0.01em;
+    opacity: 0;
+    transform: translateY(1px) translateX(var(--text-nudge));
+    transition: opacity 360ms ease-out 1000ms, transform 360ms ease-out 1000ms;
+  }
+
+  .availability-wrap.is-animate .availability-pill {
+    clip-path: inset(0 0 0 0 round 9999px);
+  }
+
+  .availability-wrap.is-animate .availability-dot {
+    transform: translate(
+      calc(-50% - var(--dot-shift) + var(--content-shift)),
+      -50%
+    );
+  }
+
+  .availability-wrap.is-animate .availability-text {
+    opacity: 1;
+    transform: translateY(0)
+      translateX(calc(var(--text-nudge) + var(--content-shift)));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .availability-pill {
+      transition: none;
+      clip-path: inset(0 0 0 0 round 9999px);
+    }
+
+    .availability-dot {
+      transition: none;
+      transform: translate(
+        calc(-50% - var(--dot-shift) + var(--content-shift)),
+        -50%
+      );
+    }
+
+    .availability-text {
+      transition: none;
+      opacity: 1;
+      transform: translateX(calc(var(--text-nudge) + var(--content-shift)));
+    }
+  }
+</style>
+
+<script is:inline>
+  const availabilityWraps = document.querySelectorAll(".availability-wrap");
+  const animateAvailability = () => {
+    availabilityWraps.forEach((wrap) => {
+      const pill = wrap.querySelector(".availability-pill");
+      if (pill) {
+        const styles = getComputedStyle(wrap);
+        const pillPad = parseFloat(styles.getPropertyValue("--pill-pad")) || 0;
+        const dotSize = parseFloat(styles.getPropertyValue("--dot-size")) || 0;
+        const dotShift = (pill.offsetWidth / 2) - pillPad - (dotSize / 2);
+        wrap.style.setProperty("--dot-shift", `${dotShift}px`);
+      }
+      wrap.classList.add("is-animate");
+    });
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", animateAvailability);
+  } else {
+    animateAvailability();
+  }
+</script>
