@@ -14,7 +14,7 @@ export const orgInfo = {
   legalName: "GLF Analytics",
   logo: "/images/glf-logo.svg",
   phone: "+1-000-000-0000",
-  email: "hello@glfanalytics.com",
+  email: "gabrielf@glfanalytics.com",
   address: {
     street: "",
     city: "",
