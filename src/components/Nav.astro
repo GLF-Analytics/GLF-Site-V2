@@ -6,7 +6,7 @@ const navLinks = [
   { href: "/#team", label: "Team" }
 ];
 ---
-<nav class="fixed top-0 w-full z-50 glass-nav">
+<nav class="fixed top-0 w-full z-50 glass-nav nav-shell">
   <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
     <a href="/" class="text-sm font-semibold tracking-widest text-white uppercase">
       GLF Analytics
@@ -59,6 +59,44 @@ const navLinks = [
     const menu = document.getElementById("mobile-nav");
     const nav = toggle?.closest("nav");
 
+    if (nav) {
+      let lastScrollY = window.scrollY;
+      let navOffset = 0;
+      let navHeight = nav.offsetHeight;
+      let ticking = false;
+
+      const updateNav = () => {
+        const current = window.scrollY;
+        const delta = current - lastScrollY;
+
+        if (current <= 0) {
+          navOffset = 0;
+        } else {
+          navOffset = Math.min(navHeight, Math.max(0, navOffset + delta));
+        }
+
+        nav.style.transform = `translateY(${-navOffset}px)`;
+        lastScrollY = current;
+        ticking = false;
+      };
+
+      window.addEventListener(
+        "scroll",
+        () => {
+          if (!ticking) {
+            window.requestAnimationFrame(updateNav);
+            ticking = true;
+          }
+        },
+        { passive: true }
+      );
+
+      window.addEventListener("resize", () => {
+        navHeight = nav.offsetHeight;
+        navOffset = Math.min(navOffset, navHeight);
+      });
+    }
+
     if (toggle && menu) {
       const closeMenu = () => {
         if (!menu.classList.contains("hidden")) {
@@ -71,6 +109,9 @@ const navLinks = [
         const isHidden = menu.classList.contains("hidden");
         menu.classList.toggle("hidden");
         toggle.setAttribute("aria-expanded", String(isHidden));
+        if (nav && isHidden) {
+          nav.style.transform = "translateY(0)";
+        }
       });
 
       menu.addEventListener("click", (event) => {
