@@ -1,9 +1,104 @@
 ---
 import { getCollection } from "astro:content";
-import Timeline from "./Timeline.astro";
 
 const workItems = (await getCollection("work"))
   .filter((item) => item.data.featured)
   .sort((a, b) => a.data.order - b.data.order);
+
+const backgroundPalette = [
+  "#0b1020",
+  "#0f1a14",
+  "#1a1110",
+  "#101321",
+  "#12110f",
+];
 ---
-<Timeline items={workItems} title="Selected Work" />
+<section id="selected-work" class="work-stack-container border-white/5 border-b">
+  <div class="work-stack-bg" aria-hidden="true"></div>
+  <div class="work-stack">
+    {workItems.map((item, index) => (
+      <section
+        class="work-stack-section"
+        style={`--stack-bg: ${backgroundPalette[index % backgroundPalette.length]};`}
+      >
+        <div class="work-stack-content max-w-5xl mx-auto w-full">
+          <article class="stacked-card work-stack-card w-full rounded-3xl border border-white/10 bg-zinc-950/70 backdrop-blur shadow-2xl shadow-black/40">
+            <div class="px-8 py-10 border-b border-white/10">
+              <p class="text-[0.7rem] uppercase tracking-[0.35em] text-zinc-500">
+                Company
+              </p>
+              <h3 class="mt-3 text-3xl md:text-4xl font-semibold text-white">
+                {item.data.title}
+              </h3>
+              <p class="mt-2 text-sm text-zinc-400">
+                Logo cover placeholder for now.
+              </p>
+            </div>
+
+            <div class="p-8 grid gap-6 md:grid-cols-[1.2fr_0.8fr]">
+              <div class="space-y-4 text-sm text-zinc-300 leading-relaxed">
+                <p>{item.data.summary}</p>
+                <p>
+                  <span class="text-white font-medium">Challenge:</span>
+                  {" "}{item.data.challenge}
+                </p>
+                <p>
+                  <span class="text-white font-medium">Solution:</span>
+                  {" "}{item.data.solution}
+                </p>
+              </div>
+
+              <div class="flex flex-col gap-4">
+                <div class="text-xs font-mono text-zinc-500 border border-zinc-800 rounded px-2 py-1 w-fit">
+                  {item.data.clientType}
+                </div>
+                <a
+                  class="text-sm text-white font-medium hover:text-indigo-400 transition-colors"
+                  href={`/work/${item.slug}`}
+                >
+                  View case study
+                </a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    ))}
+  </div>
+</section>
+
+<script>
+  const container = document.querySelector("#selected-work");
+  const sections = Array.from(document.querySelectorAll(".work-stack-section"));
+  if (sections.length) {
+    let currentActive = sections[0];
+    container?.style.setProperty(
+      "--stack-bg",
+      currentActive.style.getPropertyValue("--stack-bg")
+    );
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((entry) => entry.isIntersecting);
+        if (!visible.length) {
+          return;
+        }
+
+        const next = visible.sort(
+          (a, b) => b.intersectionRatio - a.intersectionRatio
+        )[0]?.target;
+
+        if (next && next !== currentActive) {
+          container?.style.setProperty(
+            "--stack-bg",
+            next.style.getPropertyValue("--stack-bg")
+          );
+          currentActive = next;
+        }
+      },
+      { threshold: 0, rootMargin: "-45% 0px -45% 0px" }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+  }
+</script>
