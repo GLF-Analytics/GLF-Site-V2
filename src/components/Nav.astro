@@ -1,63 +1,11 @@
----
-const navLinks = [
-  { href: "/#services", label: "Services" },
-  { href: "/#expertise", label: "Expertise" },
-  { href: "/#timeline", label: "Work" },
-  { href: "/#team", label: "Team" }
-];
----
 <nav class="fixed top-0 w-full z-50 glass-nav nav-shell">
-  <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+  <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-center">
     <a href="/" class="text-sm font-semibold tracking-widest text-white uppercase">
       GLF Analytics
     </a>
-    <div class="hidden md:flex items-center gap-8 text-xs font-medium text-zinc-400">
-      {navLinks.map((link) => (
-        <a href={link.href} class="hover:text-white transition-colors">
-          {link.label}
-        </a>
-      ))}
-    </div>
-    <button
-      class="md:hidden text-white"
-      type="button"
-      aria-expanded="false"
-      aria-controls="mobile-nav"
-      data-mobile-toggle
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-        role="img"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-      >
-        <path
-          fill="none"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M4 5h16M4 12h16M4 19h16"
-        ></path>
-      </svg>
-      <span class="sr-only">Toggle navigation</span>
-    </button>
-  </div>
-  <div id="mobile-nav" class="md:hidden hidden border-t border-white/5 bg-zinc-950/95">
-    <div class="px-6 py-5 flex flex-col gap-4 text-sm font-medium text-zinc-300">
-      {navLinks.map((link) => (
-        <a href={link.href} class="hover:text-white transition-colors">
-          {link.label}
-        </a>
-      ))}
-    </div>
   </div>
   <script>
-    const toggle = document.querySelector("[data-mobile-toggle]");
-    const menu = document.getElementById("mobile-nav");
-    const nav = toggle?.closest("nav");
+    const nav = document.querySelector("nav");
 
     if (nav) {
       let lastScrollY = window.scrollY;
@@ -94,40 +42,6 @@ const navLinks = [
       window.addEventListener("resize", () => {
         navHeight = nav.offsetHeight;
         navOffset = Math.min(navOffset, navHeight);
-      });
-    }
-
-    if (toggle && menu) {
-      const closeMenu = () => {
-        if (!menu.classList.contains("hidden")) {
-          menu.classList.add("hidden");
-          toggle.setAttribute("aria-expanded", "false");
-        }
-      };
-
-      toggle.addEventListener("click", () => {
-        const isHidden = menu.classList.contains("hidden");
-        menu.classList.toggle("hidden");
-        toggle.setAttribute("aria-expanded", String(isHidden));
-        if (nav && isHidden) {
-          nav.style.transform = "translateY(0)";
-        }
-      });
-
-      menu.addEventListener("click", (event) => {
-        const target = event.target;
-        if (target instanceof Element && target.closest("a")) {
-          closeMenu();
-        }
-      });
-
-      document.addEventListener("click", (event) => {
-        const target = event.target;
-        if (!menu.classList.contains("hidden") && nav && target instanceof Node) {
-          if (!nav.contains(target)) {
-            closeMenu();
-          }
-        }
       });
     }
   </script>
