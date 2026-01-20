@@ -12,6 +12,20 @@ const backgroundPalette = [
   "#101321",
   "#12110f",
 ];
+
+const backgroundForItem = (item, index) => {
+  if (item.slug === "bartaco") {
+    return "url('/images/work/bartaco.jpg') center / cover no-repeat";
+  }
+  if (item.slug === "fox-fodder-flowers") {
+    return "url('/images/work/foxfodderflowers.jpg') center / cover no-repeat";
+  }
+  if (item.slug === "gotham-goods") {
+    return "url('/images/work/gothamgoods.jpg') center / cover no-repeat";
+  }
+
+  return backgroundPalette[index % backgroundPalette.length];
+};
 ---
 <section id="selected-work" class="work-stack-container border-white/5 border-b">
   <div class="work-stack-bg" aria-hidden="true"></div>
@@ -19,7 +33,7 @@ const backgroundPalette = [
     {workItems.map((item, index) => (
       <section
         class="work-stack-section"
-        style={`--stack-bg: ${backgroundPalette[index % backgroundPalette.length]};`}
+        style={`--stack-bg: ${backgroundForItem(item, index)};`}
       >
         <div class="work-stack-content max-w-5xl mx-auto w-full">
           <article class="stacked-card work-stack-card w-full rounded-3xl border border-white/10 bg-zinc-950/70 backdrop-blur shadow-2xl shadow-black/40">

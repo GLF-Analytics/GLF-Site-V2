@@ -90,20 +90,13 @@ summary {
   margin-bottom: 0.35rem;
 }
 
-.stacked-card {
-  position: sticky;
-  top: 6rem;
-}
-
-@media (min-width: 768px) {
-  .stacked-card {
-    top: 7rem;
-  }
-}
+/* Card styling - no longer sticky for smooth continuous scroll */
 
 .work-stack-container {
   position: relative;
   --stack-bg: transparent;
+  isolation: isolate;
+  clip-path: inset(0);
 }
 
 .work-stack {
@@ -113,28 +106,40 @@ summary {
 
 .work-stack-section {
   position: relative;
-  min-height: 125vh;
+  height: 110vh;
   display: flex;
   align-items: center;
-}
-
-.work-stack-bg {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  width: 100%;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  background: var(--stack-bg);
-  opacity: 0.9;
-  transition: background-color 600ms ease;
-  z-index: 0;
-  pointer-events: none;
+  overflow: hidden;
 }
 
 .work-stack-card {
   position: relative;
   z-index: 1;
+  max-height: calc(110vh - 10rem);
+  overflow: hidden;
+}
+
+.work-stack-card .space-y-4 {
+  overflow: hidden;
+}
+
+.work-stack-card .space-y-4 p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.work-stack-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background: var(--stack-bg);
+  opacity: 0.9;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .nav-hidden {
