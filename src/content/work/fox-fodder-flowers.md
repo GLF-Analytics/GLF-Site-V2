@@ -12,13 +12,20 @@ tags: ["SEO", "Google Ads", "Reporting"]
 featured: true
 order: 2
 duration: "10 months"
-url: "https://example.com"
+url: "https://www.foxfodderflowers.com/"
 logo: "/images/work/fox-fodder-flowers.svg"
+backgroundImage: "/images/work/foxfodderflowers.jpg"
 ---
-## Overview
-Built a reporting foundation and growth plan across SEO and paid search.
+<section class="work-section">
+  <h2>Overview</h2>
+  <p>Built a reporting foundation and growth plan across SEO and paid search.</p>
+</section>
 
-## What we delivered
-- SEO audit and technical fixes (canonical, duplicate content, sitemap).
-- Internal linking improvements.
-- Google Ads setup and optimization.
+<section class="work-section">
+  <h2>What we delivered</h2>
+  <ul>
+    <li>SEO audit and technical fixes (canonical, duplicate content, sitemap).</li>
+    <li>Internal linking improvements.</li>
+    <li>Google Ads setup and optimization.</li>
+  </ul>
+</section>

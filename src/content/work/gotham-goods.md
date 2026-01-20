@@ -12,13 +12,21 @@ tags: ["Ecommerce", "Analytics", "Lifecycle Marketing"]
 featured: true
 order: 5
 duration: "12 months"
-url: "https://example.com"
+url: "https://www.gothamgoods.nyc/"
 logo: "/images/work/gotham-goods.svg"
+backgroundImage: "/images/work/gothamgoods.jpg"
+testimonial: “Being remote was irrelevant. GLF was part of our team. The work they did was an integral part of getting us to where we are today.” - Joanne Wilson, Founder @ Gotham NYC
 ---
-## Overview
-Owned ecommerce launch execution across development, analytics, and lifecycle marketing.
+<section class="work-section">
+  <h2>Overview</h2>
+  <p>Owned ecommerce launch execution across development, analytics, and lifecycle marketing.</p>
+</section>
 
-## What we delivered
-- Custom-coded ecommerce site build.
-- GA4 + GTM tagging and tracking setup.
-- Klaviyo email marketing and automation.
+<section class="work-section">
+  <h2>What we delivered</h2>
+  <ul>
+    <li>Custom-coded ecommerce site build.</li>
+    <li>GA4 + GTM tagging and tracking setup.</li>
+    <li>Klaviyo email marketing and automation.</li>
+  </ul>
+</section>

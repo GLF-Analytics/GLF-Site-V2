@@ -14,7 +14,9 @@ const work = defineCollection({
     order: z.number(),
     duration: z.string(),
     url: z.string().optional(),
-    logo: z.string().optional()
+    logo: z.string().optional(),
+    testimonial: z.string().optional(),
+    backgroundImage: z.string().optional()
   })
 });
 

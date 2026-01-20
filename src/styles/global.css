@@ -74,6 +74,20 @@ summary {
   line-height: 1.7;
 }
 
+.work-sections {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.work-section {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(9, 9, 11, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
 .work-content h2 {
   color: #ffffff;
   font-size: 1.1rem;
@@ -81,9 +95,17 @@ summary {
   margin: 1.5rem 0 0.75rem;
 }
 
+.work-section h2 {
+  margin-top: 0;
+}
+
 .work-content ul {
   margin: 0.75rem 0 1rem 1rem;
   list-style: disc;
+}
+
+.work-section ul {
+  margin-bottom: 0;
 }
 
 .work-content li {

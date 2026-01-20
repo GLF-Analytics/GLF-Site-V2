@@ -12,13 +12,20 @@ tags: ["Digital Growth", "Paid Media", "Loyalty"]
 featured: true
 order: 1
 duration: "18 months"
-url: "https://example.com"
+url: "https://bartaco.com/"
 logo: "/images/work/bartaco.svg"
+backgroundImage: "/images/work/bartaco.jpg"
 ---
-## Overview
-Owned digital growth strategy spanning QR ordering, loyalty, paid media, and third-party delivery.
+<section class="work-section">
+  <h2>Overview</h2>
+  <p>Owned digital growth strategy spanning QR ordering, loyalty, paid media, and third-party delivery.</p>
+</section>
 
-## What we delivered
-- QR-code ordering platform launch.
-- Email, loyalty, and paid performance strategy.
-- Website, app, and takeout experience improvements.
+<section class="work-section">
+  <h2>What we delivered</h2>
+  <ul>
+    <li>QR-code ordering platform launch.</li>
+    <li>Email, loyalty, and paid performance strategy.</li>
+    <li>Website, app, and takeout experience improvements.</li>
+  </ul>
+</section>
