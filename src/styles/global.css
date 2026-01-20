@@ -173,6 +173,55 @@ summary {
   transform: scale(1);
 }
 
+.capabilities-heading-mask {
+  overflow: hidden;
+  display: inline-block;
+}
+
+.capabilities-heading {
+  transform: translateY(120%);
+  opacity: 0;
+  transition: transform 700ms ease, opacity 500ms ease;
+}
+
+.capabilities-heading.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.capabilities-subtext {
+  transform: translateY(12px);
+  opacity: 0;
+  transition: transform 600ms ease 150ms, opacity 600ms ease 150ms;
+}
+
+.capabilities-subtext.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.capability-card {
+  transform: translateY(18px);
+  opacity: 0;
+  transition: transform 600ms ease, opacity 600ms ease;
+}
+
+.capability-card.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.capability-content {
+  transform: translateY(8px);
+  opacity: 0;
+  transition: transform 500ms ease 120ms, opacity 500ms ease 120ms;
+}
+
+.capability-card.is-visible .capability-content {
+  transform: translateY(0);
+  opacity: 1;
+}
+
 .nav-hidden {
   transform: translateY(-100%);
 }
