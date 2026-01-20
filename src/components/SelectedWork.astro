@@ -84,12 +84,12 @@ const backgroundForItem = (item, index) => {
 <script>
   const container = document.querySelector("#selected-work");
   const sections = Array.from(document.querySelectorAll(".work-stack-section"));
+  let transitionTimeout;
   if (sections.length) {
     let currentActive = sections[0];
-    container?.style.setProperty(
-      "--stack-bg",
-      currentActive.style.getPropertyValue("--stack-bg")
-    );
+    const initialBg = currentActive.style.getPropertyValue("--stack-bg");
+    container?.style.setProperty("--stack-bg-current", initialBg);
+    container?.style.setProperty("--stack-bg-next", initialBg);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -103,10 +103,16 @@ const backgroundForItem = (item, index) => {
         )[0]?.target;
 
         if (next && next !== currentActive) {
-          container?.style.setProperty(
-            "--stack-bg",
-            next.style.getPropertyValue("--stack-bg")
-          );
+          const nextBg = next.style.getPropertyValue("--stack-bg");
+          container?.style.setProperty("--stack-bg-next", nextBg);
+          container?.classList.add("is-transitioning");
+          if (transitionTimeout) {
+            clearTimeout(transitionTimeout);
+          }
+          transitionTimeout = window.setTimeout(() => {
+            container?.style.setProperty("--stack-bg-current", nextBg);
+            container?.classList.remove("is-transitioning");
+          }, 700);
           currentActive = next;
         }
       },
