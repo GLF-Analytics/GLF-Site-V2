@@ -1,6 +1,6 @@
 ---
 const team = [
-  { initials: "GF", name: "Gabriel Freeman", role: "Founder / Data Strategy", highlight: true },
+  { initials: "G", name: "Gabriel", role: "Founder / Data Strategy" },
   { initials: "S", name: "Steven", role: "GLF Team" },
   { initials: "S", name: "Sabrina", role: "GLF Team" },
   { initials: "V", name: "Varun", role: "GLF Team" },
@@ -9,31 +9,55 @@ const team = [
 ---
 <section id="team" class="py-24 px-6 border-b border-white/5 bg-zinc-900/10">
   <div class="max-w-7xl mx-auto">
-    <h2 class="text-2xl font-semibold text-white tracking-tight mb-12 text-center">The Team</h2>
+    <div class="capabilities-heading-mask text-center mb-12 w-full" data-reveal>
+      <h2
+        class="capabilities-heading text-2xl font-semibold text-white tracking-tight"
+      >
+        The Team
+      </h2>
+    </div>
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
       {team.map((member) => (
         <div
-          class={`flex flex-col items-center text-center p-6 rounded-xl border border-white/5 ${
-            member.highlight ? "bg-white/[0.02]" : "bg-transparent"
-          }`}
+          class="capability-card flex flex-col items-center text-center p-6 rounded-xl border border-white/5 bg-white/[0.02]"
+          data-reveal
         >
-          <div
-            class={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-              member.highlight
-                ? "bg-zinc-800 border border-zinc-700 text-zinc-400"
-                : "bg-zinc-900 border border-zinc-800 text-zinc-600"
-            }`}
-          >
-            <span class="text-xl font-medium">{member.initials}</span>
+          <div class="capability-content flex flex-col items-center text-center">
+            <div
+              class="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-zinc-800 border border-zinc-700 text-zinc-400"
+            >
+              <span class="text-xl font-medium">{member.initials}</span>
+            </div>
+            <h3 class="text-white font-medium text-sm">
+              {member.name}
+            </h3>
+            <p class="text-zinc-500 text-xs mt-1">
+              {member.role}
+            </p>
           </div>
-          <h3 class={`${member.highlight ? "text-white" : "text-zinc-300"} font-medium text-sm`}>
-            {member.name}
-          </h3>
-          <p class={`${member.highlight ? "text-zinc-500" : "text-zinc-600"} text-xs mt-1`}>
-            {member.role}
-          </p>
         </div>
       ))}
     </div>
   </div>
 </section>
+
+<script>
+  const revealItems = document.querySelectorAll("[data-reveal]");
+  if (revealItems.length) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.2, rootMargin: "0px 0px -10% 0px" }
+    );
+
+    revealItems.forEach((item) => observer.observe(item));
+  }
+</script>

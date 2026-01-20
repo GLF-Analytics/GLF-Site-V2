@@ -184,7 +184,7 @@ summary {
   transition: transform 700ms ease, opacity 500ms ease;
 }
 
-.capabilities-heading.is-visible {
+.capabilities-heading-mask.is-visible .capabilities-heading {
   transform: translateY(0);
   opacity: 1;
 }
