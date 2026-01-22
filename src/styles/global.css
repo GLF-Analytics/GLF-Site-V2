@@ -244,6 +244,17 @@ summary {
   opacity: 1;
 }
 
+.reveal-card {
+  transform: translateY(18px);
+  opacity: 0;
+  transition: transform 600ms ease, opacity 600ms ease;
+}
+
+.reveal-card.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
 .nav-hidden {
   transform: translateY(-100%);
 }
