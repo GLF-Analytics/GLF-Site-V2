@@ -2,6 +2,7 @@
 title: "UCAN"
 clientType: "Performance Nutrition"
 summary: "Built data infrastructure and led digital strategy to drive growth across channels."
+companyDescription: "A sports nutrition brand known for its unique, slow-release energy products."
 challenge: "Data lived across platforms with no unified system to support reporting or strategy."
 solution: "Implemented a BigQuery-based data stack with Looker Studio and Sheets, then partnered on digital strategy."
 outcomes:

@@ -2,6 +2,7 @@
 title: "Gotham Goods"
 clientType: "D2C Startup"
 summary: "Launched a custom ecommerce site with tracking and lifecycle marketing from day one."
+companyDescription: "Luxury home and body brand from New York-based retailer Gotham."
 challenge: "A new brand needed a custom build, analytics, and a go-to-market plan to drive early growth."
 solution: "Managed the agency build, implemented tagging and analytics, and built Klaviyo email programs."
 outcomes:

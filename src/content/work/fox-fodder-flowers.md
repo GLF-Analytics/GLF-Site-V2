@@ -2,6 +2,7 @@
 title: "Fox Fodder Flowers"
 clientType: "Floral Retail"
 summary: "Delivered reporting, SEO fixes, and Google Ads growth with positive ROI."
+companyDescription: "New York City-based floral design studio and shop."
 challenge: "Search visibility and paid acquisition needed a reset alongside stronger reporting."
 solution: "Ran a full SEO audit, resolved technical issues, and launched Google Ads from scratch."
 outcomes:

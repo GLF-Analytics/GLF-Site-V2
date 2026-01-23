@@ -2,6 +2,7 @@
 title: "Bartaco"
 clientType: "Hospitality"
 summary: "Led digital growth across ordering, loyalty, and paid channels across 34 markets."
+companyDescription: "Coastal-themed restaurant chain serving food inspired by Latin America, Asia and the Mediterranean."
 challenge: "The business needed unified digital systems to scale ordering and marketing performance."
 solution: "Launched QR ordering, scaled loyalty and email strategy, and optimized paid media and delivery channels."
 outcomes:

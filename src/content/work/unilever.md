@@ -2,6 +2,7 @@
 title: "Unilever"
 clientType: "Enterprise"
 summary: "Built a BigQuery source of truth for Beauty & Wellbeing DTC brands."
+companyDescription: "A global consumer goods giant that acquired health and wellness brand Liquid I.V."
 challenge: "Data was fragmented across multiple sources with no unified reporting layer."
 solution: "Created a scalable SQL database in BigQuery and integrated sources for reliable, real-time insights."
 outcomes:
