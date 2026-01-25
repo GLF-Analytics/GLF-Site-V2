@@ -16,17 +16,16 @@ const tools = [
   "Olo"
 ];
 ---
-<section id="expertise" class="py-20 px-6 border-b border-white/5 bg-black">
-  <div class="max-w-7xl mx-auto">
-    <div class="flex flex-wrap justify-center gap-3">
+<section id="expertise" class="py-20 px-6 border-b border-white/5 bg-black overflow-hidden">
+  <div class="tools-carousel">
+    <div class="tools-carousel-track">
       {tools.map((tool) => (
-        <span
-          class={`px-3 py-1.5 rounded-md border text-xs font-medium ${
-            tool === "Shopify"
-              ? "border-zinc-700 bg-zinc-800 text-zinc-200"
-              : "border-zinc-800 bg-zinc-900/50 text-zinc-400"
-          }`}
-        >
+        <span class="tools-carousel-item px-3 py-1.5 rounded-md border border-zinc-800 bg-zinc-900/50 text-zinc-400 text-xs font-medium whitespace-nowrap">
+          {tool}
+        </span>
+      ))}
+      {tools.map((tool) => (
+        <span class="tools-carousel-item px-3 py-1.5 rounded-md border border-zinc-800 bg-zinc-900/50 text-zinc-400 text-xs font-medium whitespace-nowrap" aria-hidden="true">
           {tool}
         </span>
       ))}

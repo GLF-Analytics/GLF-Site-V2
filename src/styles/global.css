@@ -258,3 +258,43 @@ summary {
 .nav-hidden {
   transform: translateY(-100%);
 }
+
+/* Tools Carousel */
+.tools-carousel {
+  width: 100%;
+  overflow: hidden;
+}
+
+.tools-carousel-track {
+  display: flex;
+  gap: 0.75rem;
+  animation: scroll-left 20s linear infinite;
+  width: max-content;
+}
+
+.tools-carousel-item {
+  transition: border-color 200ms ease, background-color 200ms ease, color 200ms ease;
+}
+
+.tools-carousel-item:hover {
+  border-color: #52525b;
+  background-color: #27272a;
+  color: #e4e4e7;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tools-carousel-track {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
