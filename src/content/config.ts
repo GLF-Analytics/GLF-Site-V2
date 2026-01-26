@@ -17,6 +17,8 @@ const work = defineCollection({
     logo: z.string().optional(),
     testimonial: z.string().optional(),
     backgroundImage: z.string().optional(),
+    backgroundImageTablet: z.string().optional(),
+    backgroundImageMobile: z.string().optional(),
     companyDescription: z.string().optional()
   })
 });

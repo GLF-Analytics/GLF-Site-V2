@@ -112,12 +112,33 @@ summary {
   margin-bottom: 0.35rem;
 }
 
+/* Work detail page responsive background */
+.work-detail-bg {
+  background: var(--work-bg-desktop);
+}
+
+@media (max-width: 1024px) {
+  .work-detail-bg {
+    background: var(--work-bg-tablet);
+  }
+}
+
+@media (max-width: 767px) {
+  .work-detail-bg {
+    background: var(--work-bg-mobile);
+  }
+}
+
 /* Card styling - no longer sticky for smooth continuous scroll */
 
 .work-stack-container {
   position: relative;
   --stack-bg-current: transparent;
   --stack-bg-next: transparent;
+  --stack-bg-tablet-current: transparent;
+  --stack-bg-tablet-next: transparent;
+  --stack-bg-mobile-current: transparent;
+  --stack-bg-mobile-next: transparent;
   isolation: isolate;
   clip-path: inset(0);
 }
@@ -193,6 +214,30 @@ summary {
 .work-stack-container.is-transitioning .work-stack-bg::after {
   opacity: 0.9;
   transform: scale(1);
+}
+
+/* Tablet responsive backgrounds (768px - 1024px) */
+@media (max-width: 1024px) {
+  .work-stack-bg::before,
+  .work-stack-bg::after {
+    background: var(--stack-bg-tablet-current);
+  }
+
+  .work-stack-bg::after {
+    background: var(--stack-bg-tablet-next);
+  }
+}
+
+/* Mobile responsive backgrounds (below 768px) */
+@media (max-width: 767px) {
+  .work-stack-bg::before,
+  .work-stack-bg::after {
+    background: var(--stack-bg-mobile-current);
+  }
+
+  .work-stack-bg::after {
+    background: var(--stack-bg-mobile-next);
+  }
 }
 
 .capabilities-heading-mask {

@@ -20,14 +20,27 @@ const backgroundForItem = (item, index) => {
 
   return backgroundPalette[index % backgroundPalette.length];
 };
+
+const getResponsiveBackgrounds = (item, index) => {
+  const desktop = backgroundForItem(item, index);
+  const tablet = item.data.backgroundImageTablet
+    ? `url('${item.data.backgroundImageTablet}') top center / cover no-repeat`
+    : desktop;
+  const mobile = item.data.backgroundImageMobile
+    ? `url('${item.data.backgroundImageMobile}') top center / cover no-repeat`
+    : tablet;
+  return { desktop, tablet, mobile };
+};
 ---
 <section id="selected-work" class="work-stack-container border-white/5 border-b">
   <div class="work-stack-bg" aria-hidden="true"></div>
   <div class="work-stack">
-    {workItems.map((item, index) => (
+    {workItems.map((item, index) => {
+      const bgs = getResponsiveBackgrounds(item, index);
+      return (
       <section
         class="work-stack-section"
-        style={`--stack-bg: ${backgroundForItem(item, index)};`}
+        style={`--stack-bg: ${bgs.desktop}; --stack-bg-tablet: ${bgs.tablet}; --stack-bg-mobile: ${bgs.mobile};`}
       >
         <div class="work-stack-content max-w-5xl mx-auto w-full px-6 md:px-0 md:w-[80%] lg:w-full">
           <article class="stacked-card work-stack-card w-full rounded-3xl border border-white/10 bg-zinc-950/70 backdrop-blur shadow-2xl shadow-black/40">
@@ -81,7 +94,7 @@ const backgroundForItem = (item, index) => {
           </article>
         </div>
       </section>
-    ))}
+    )})}
   </div>
 </section>
 
@@ -92,8 +105,14 @@ const backgroundForItem = (item, index) => {
   if (sections.length) {
     let currentActive = sections[0];
     const initialBg = currentActive.style.getPropertyValue("--stack-bg");
+    const initialBgTablet = currentActive.style.getPropertyValue("--stack-bg-tablet");
+    const initialBgMobile = currentActive.style.getPropertyValue("--stack-bg-mobile");
     container?.style.setProperty("--stack-bg-current", initialBg);
     container?.style.setProperty("--stack-bg-next", initialBg);
+    container?.style.setProperty("--stack-bg-tablet-current", initialBgTablet);
+    container?.style.setProperty("--stack-bg-tablet-next", initialBgTablet);
+    container?.style.setProperty("--stack-bg-mobile-current", initialBgMobile);
+    container?.style.setProperty("--stack-bg-mobile-next", initialBgMobile);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -108,13 +127,19 @@ const backgroundForItem = (item, index) => {
 
         if (next && next !== currentActive) {
           const nextBg = next.style.getPropertyValue("--stack-bg");
+          const nextBgTablet = next.style.getPropertyValue("--stack-bg-tablet");
+          const nextBgMobile = next.style.getPropertyValue("--stack-bg-mobile");
           container?.style.setProperty("--stack-bg-next", nextBg);
+          container?.style.setProperty("--stack-bg-tablet-next", nextBgTablet);
+          container?.style.setProperty("--stack-bg-mobile-next", nextBgMobile);
           container?.classList.add("is-transitioning");
           if (transitionTimeout) {
             clearTimeout(transitionTimeout);
           }
           transitionTimeout = window.setTimeout(() => {
             container?.style.setProperty("--stack-bg-current", nextBg);
+            container?.style.setProperty("--stack-bg-tablet-current", nextBgTablet);
+            container?.style.setProperty("--stack-bg-mobile-current", nextBgMobile);
             container?.classList.remove("is-transitioning");
           }, 700);
           currentActive = next;

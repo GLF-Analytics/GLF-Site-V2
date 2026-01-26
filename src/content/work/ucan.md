@@ -15,6 +15,8 @@ order: 7
 duration: "18 months"
 url: "https://example.com"
 backgroundImage: "/images/work/ucan.jpg"
+backgroundImageTablet: "/images/work/ucan-tablet.jpg"
+backgroundImageMobile: "/images/work/ucan-mobile.jpg"
 ---
 <section class="work-section">
   <h2>Overview</h2>
