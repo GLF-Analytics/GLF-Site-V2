@@ -68,6 +68,9 @@ const backgroundStyle = desktopBg
         <div class="mt-8 p-6 rounded-2xl border border-white/10 bg-zinc-950/70 backdrop-blur">
           <h2 class="text-sm font-semibold text-white mb-3">Testimonial</h2>
           <p class="text-sm text-zinc-400 italic">{entry.data.testimonial}</p>
+          {entry.data.testimonialAuthor ? (
+            <p class="mt-3 text-sm text-zinc-400">— {entry.data.testimonialAuthor}</p>
+          ) : null}
         </div>
       ) : null}
 

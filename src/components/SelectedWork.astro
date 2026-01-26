@@ -89,6 +89,9 @@ const getResponsiveBackgrounds = (item, index) => {
                 <blockquote class="text-sm text-zinc-300 italic">
                   {item.data.testimonial}
                 </blockquote>
+                {item.data.testimonialAuthor ? (
+                  <p class="mt-3 text-sm text-zinc-300">— {item.data.testimonialAuthor}</p>
+                ) : null}
               </div>
             ) : null}
           </article>
