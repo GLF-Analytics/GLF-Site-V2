@@ -17,6 +17,7 @@ url: "https://example.com"
 backgroundImage: "/images/work/ucan.jpg"
 backgroundImageTablet: "/images/work/ucan-tablet.jpg"
 backgroundImageMobile: "/images/work/ucan-mobile.jpg"
+testimonial: "GLF built us automated reports that were used across the business to track performance. These helped us make daily decisions on which paid partnerships to invest in. The influencer and podcast reports in particular helped us gain a clear understanding of new customers acquired by channel and allowed us to successfully launch a new sample pack program with clear performance metrics. GLF's reporting allowed us to make smart decisions and grow both channels in ways we were not previously able to. — Varun Sriram, Director of Partnerships @ UCAN"
 ---
 <section class="work-section">
   <h2>Overview</h2>
