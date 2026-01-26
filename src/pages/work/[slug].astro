@@ -13,7 +13,7 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await entry.render();
 const backgroundStyle = entry.data.backgroundImage
-  ? `background: url('${entry.data.backgroundImage}') center / cover no-repeat`
+  ? `background: url('${entry.data.backgroundImage}') top center / cover no-repeat`
   : undefined;
 ---
 <BaseLayout title={entry.data.title} description={entry.data.summary}>

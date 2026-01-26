@@ -15,7 +15,7 @@ const backgroundPalette = [
 
 const backgroundForItem = (item, index) => {
   if (item.data.backgroundImage) {
-    return `url('${item.data.backgroundImage}') center / cover no-repeat`;
+    return `url('${item.data.backgroundImage}') top center / cover no-repeat`;
   }
 
   return backgroundPalette[index % backgroundPalette.length];

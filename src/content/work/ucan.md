@@ -14,7 +14,7 @@ featured: true
 order: 7
 duration: "18 months"
 url: "https://example.com"
-logo: "/images/work/ucan.svg"
+backgroundImage: "/images/work/ucan.jpg"
 ---
 <section class="work-section">
   <h2>Overview</h2>
