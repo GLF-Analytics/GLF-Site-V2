@@ -18,11 +18,6 @@ logo: "/images/work/fox-fodder-flowers.svg"
 backgroundImage: "/images/work/foxfodderflowers.jpg"
 ---
 <section class="work-section">
-  <h2>Overview</h2>
-  <p>Built a reporting foundation and growth plan across SEO and paid search.</p>
-</section>
-
-<section class="work-section">
   <h2>What we delivered</h2>
   <ul>
     <li>SEO audit and technical fixes (canonical, duplicate content, sitemap).</li>

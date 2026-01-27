@@ -32,72 +32,112 @@ const getResponsiveBackgrounds = (item, index) => {
   return { desktop, tablet, mobile };
 };
 ---
-<section id="selected-work" class="work-stack-container border-white/5 border-b">
+<section id="selected-work" class="work-stack-container bg-surface-950">
+  <!-- Section header -->
+  <div class="relative z-10 py-16 md:py-24 px-6 md:px-12 lg:px-16 border-b border-white/[0.06]">
+    <div class="max-w-7xl mx-auto">
+      <span class="label block mb-4">Portfolio</span>
+      <h2 class="heading-display text-4xl md:text-5xl lg:text-6xl text-white">
+        Selected Work
+      </h2>
+    </div>
+  </div>
+
   <div class="work-stack-bg" aria-hidden="true"></div>
   <div class="work-stack">
     {workItems.map((item, index) => {
       const bgs = getResponsiveBackgrounds(item, index);
       return (
-      <section
-        class="work-stack-section"
-        style={`--stack-bg: ${bgs.desktop}; --stack-bg-tablet: ${bgs.tablet}; --stack-bg-mobile: ${bgs.mobile};`}
-      >
-        <div class="work-stack-content max-w-5xl mx-auto w-full px-6 md:px-0 md:w-[80%] lg:w-full">
-          <article class="stacked-card work-stack-card w-full rounded-3xl border border-white/10 bg-zinc-950/70 backdrop-blur shadow-2xl shadow-black/40">
-            <div class="px-8 py-10 border-b border-white/10">
-              <p class="text-[0.7rem] uppercase tracking-[0.35em] text-zinc-500">
-                Company
-              </p>
-              <h3 class="mt-3 text-3xl md:text-4xl font-semibold text-white">
-                {item.data.title}
-              </h3>
-              {item.data.companyDescription ? (
-                <p class="mt-2 text-sm text-zinc-400">
-                  {item.data.companyDescription}
-                </p>
-              ) : null}
-            </div>
-
-            <div class="p-8 grid gap-6 md:grid-cols-[1.2fr_0.8fr]">
-              <div class="space-y-4 text-sm text-zinc-300 leading-relaxed">
-                <p>{item.data.summary}</p>
-                <p>
-                  <span class="text-white font-medium">Challenge:</span>
-                  {" "}{item.data.challenge}
-                </p>
-                <p>
-                  <span class="text-white font-medium">Solution:</span>
-                  {" "}{item.data.solution}
-                </p>
-              </div>
-
-              <div class="flex flex-col gap-4">
-                <div class="text-xs font-mono text-zinc-500 border border-zinc-800 rounded px-2 py-1 w-fit">
-                  {item.data.clientType}
+        <section
+          class="work-stack-section"
+          style={`--stack-bg: ${bgs.desktop}; --stack-bg-tablet: ${bgs.tablet}; --stack-bg-mobile: ${bgs.mobile};`}
+        >
+          <div class="work-stack-content max-w-5xl mx-auto w-full px-6 md:px-12 lg:px-0">
+            <article class="stacked-card work-stack-card w-full border border-white/[0.08] bg-surface-950/80 backdrop-blur-xl shadow-2xl shadow-black/60">
+              <!-- Card Header -->
+              <div class="px-8 md:px-10 py-8 md:py-10 border-b border-white/[0.06]">
+                <div class="flex flex-wrap items-center gap-4 mb-4">
+                  <span class="font-mono text-[10px] tracking-[0.2em] uppercase text-gold-500">
+                    Case Study
+                  </span>
+                  <span class="w-px h-3 bg-white/20"></span>
+                  <span class="font-mono text-[10px] tracking-[0.15em] uppercase text-surface-500">
+                    {item.data.clientType}
+                  </span>
                 </div>
-                <a
-                  class="text-sm text-white font-medium hover:text-indigo-400 transition-colors"
-                  href={`/work/${item.slug}`}
-                >
-                  View case study
-                </a>
+                <h3 class="heading-display text-3xl md:text-4xl lg:text-5xl text-white">
+                  {item.data.title}
+                </h3>
+                {item.data.companyDescription && (
+                  <p class="mt-3 text-sm text-surface-400 max-w-xl">
+                    {item.data.companyDescription}
+                  </p>
+                )}
               </div>
-            </div>
 
-            {item.data.testimonial ? (
-              <div class="px-8 py-6 border-t border-white/10">
-                <blockquote class="text-sm text-zinc-300 italic">
-                  {item.data.testimonial}
-                </blockquote>
-                {item.data.testimonialAuthor ? (
-                  <p class="mt-3 text-sm text-zinc-300">— {item.data.testimonialAuthor}</p>
-                ) : null}
+              <!-- Card Body -->
+              <div class="p-8 md:p-10 grid gap-8 md:grid-cols-[1.3fr_0.7fr]">
+                <div class="space-y-6">
+                  <p class="text-surface-300 leading-relaxed">{item.data.summary}</p>
+
+                  <div class="space-y-4">
+                    <div>
+                      <span class="font-mono text-[10px] tracking-[0.15em] uppercase text-gold-500 block mb-2">Challenge</span>
+                      <p class="text-sm text-surface-400 leading-relaxed">{item.data.challenge}</p>
+                    </div>
+                    <div>
+                      <span class="font-mono text-[10px] tracking-[0.15em] uppercase text-gold-500 block mb-2">Solution</span>
+                      <p class="text-sm text-surface-400 leading-relaxed">{item.data.solution}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex flex-col justify-end gap-6">
+                                    <a
+                    class="group inline-flex items-center gap-2 text-sm text-white font-medium hover:text-gold-500 transition-colors mt-auto"
+                    href={`/${item.slug}`}
+                  >
+                    <span>View case study</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="transition-transform group-hover:translate-x-1"
+                      aria-hidden="true"
+                    >
+                      <path d="M5 12h14m-7-7l7 7-7 7" />
+                    </svg>
+                  </a>
+                </div>
               </div>
-            ) : null}
-          </article>
-        </div>
-      </section>
-    )})}
+
+              <!-- Testimonial (if exists) -->
+              {item.data.testimonial && (
+                <div class="px-8 md:px-10 py-6 md:py-8 border-t border-white/[0.06] bg-white/[0.02]">
+                  <blockquote class="relative">
+                    <span class="absolute -top-2 -left-2 text-4xl text-gold-500/20 font-serif">"</span>
+                    <p class="text-sm text-surface-300 italic leading-relaxed pl-4">
+                      {item.data.testimonial}
+                    </p>
+                    {item.data.testimonialAuthor && (
+                      <footer class="mt-4 pl-4">
+                        <span class="text-sm text-surface-500">— {item.data.testimonialAuthor}</span>
+                      </footer>
+                    )}
+                  </blockquote>
+                </div>
+              )}
+            </article>
+          </div>
+        </section>
+      );
+    })}
   </div>
 </section>
 

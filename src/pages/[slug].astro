@@ -1,0 +1,173 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("work");
+  return entries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry }
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+const desktopBg = entry.data.backgroundImage;
+const tabletBg = entry.data.backgroundImageTablet || desktopBg;
+const mobileBg = entry.data.backgroundImageMobile || tabletBg;
+
+const backgroundStyle = desktopBg
+  ? `--work-bg-desktop: url('${desktopBg}') top center / cover no-repeat; --work-bg-tablet: url('${tabletBg}') top center / cover no-repeat; --work-bg-mobile: url('${mobileBg}') top center / cover no-repeat;`
+  : undefined;
+---
+<BaseLayout title={entry.data.title} description={entry.data.summary}>
+  <article>
+    <!-- Hero Section -->
+    <div
+      class={`relative pt-32 pb-20 md:pt-40 md:pb-28 px-6 md:px-12 lg:px-16 ${desktopBg ? 'work-detail-bg' : ''}`}
+      style={backgroundStyle}
+    >
+      <!-- Overlay for better text readability -->
+      <div class="absolute inset-0 bg-gradient-to-b from-surface-950/40 via-surface-950/60 to-surface-950 pointer-events-none"></div>
+
+      <div class="relative max-w-5xl mx-auto">
+        <!-- Header Card -->
+        <div class="border border-white/[0.08] bg-surface-950/80 backdrop-blur-xl p-8 md:p-12">
+          <!-- Corner accents -->
+          <div class="absolute top-0 left-0 w-6 h-6 border-l border-t border-gold-500/30 -ml-px -mt-px"></div>
+          <div class="absolute bottom-0 right-0 w-6 h-6 border-r border-b border-gold-500/30 -mr-px -mb-px"></div>
+
+          <!-- Meta -->
+          <div class="flex flex-wrap items-center gap-4 mb-6">
+            <span class="font-mono text-[10px] tracking-[0.2em] uppercase text-gold-500">
+              {entry.data.clientType}
+            </span>
+          </div>
+
+          <!-- Title -->
+          <h1 class="heading-display text-4xl md:text-5xl lg:text-6xl text-white mb-6">
+            {entry.data.title}
+          </h1>
+
+          <!-- Summary -->
+          <p class="text-lg text-surface-300 max-w-2xl leading-relaxed">
+            {entry.data.summary}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="px-6 md:px-12 lg:px-16 py-16 md:py-24 border-b border-white/[0.06]">
+      <div class="max-w-5xl mx-auto">
+        <!-- Challenge & Solution Grid -->
+        <div class="grid md:grid-cols-2 gap-px bg-white/[0.06] mb-16">
+          <div class="bg-surface-950 p-8 md:p-10">
+            <span class="label block mb-4">Challenge</span>
+            <p class="text-surface-300 leading-relaxed">{entry.data.challenge}</p>
+          </div>
+          <div class="bg-surface-950 p-8 md:p-10">
+            <span class="label block mb-4">Solution</span>
+            <p class="text-surface-300 leading-relaxed">{entry.data.solution}</p>
+          </div>
+        </div>
+
+        <!-- Outcomes -->
+        <div class="mb-16 border border-white/[0.08] bg-surface-950/50 p-8 md:p-10">
+          <span class="label block mb-6">Outcomes</span>
+          {Array.isArray(entry.data.outcomes) ? (
+            <ul class="grid md:grid-cols-2 gap-4">
+              {entry.data.outcomes.map((outcome) => (
+                <li class="flex items-start gap-3">
+                  <span class="w-1.5 h-1.5 bg-gold-500 mt-2 flex-shrink-0"></span>
+                  <span class="text-surface-300">{outcome}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="text-surface-300">{entry.data.outcomes}</p>
+          )}
+        </div>
+
+        <!-- Testimonial -->
+        {entry.data.testimonial && (
+          <div class="mb-16 border border-white/[0.08] bg-surface-950/50 p-8 md:p-10 relative">
+            <span class="absolute -top-4 left-8 text-6xl text-gold-500/20 font-serif">"</span>
+            <span class="label block mb-6">Testimonial</span>
+            <blockquote>
+              <p class="text-lg text-surface-200 italic leading-relaxed pl-4 border-l-2 border-gold-500/30">
+                {entry.data.testimonial}
+              </p>
+              {entry.data.testimonialAuthor && (
+                <footer class="mt-6 pl-4">
+                  <span class="text-surface-400">— {entry.data.testimonialAuthor}</span>
+                </footer>
+              )}
+            </blockquote>
+          </div>
+        )}
+
+        <!-- Additional Content from Markdown -->
+        <div class="work-content work-sections">
+          <Content />
+        </div>
+
+        <!-- Project Link -->
+        {entry.data.url && (
+          <div class="mt-12 pt-8 border-t border-white/[0.06]">
+            <a
+              href={entry.data.url}
+              target="_blank"
+              rel="noreferrer"
+              class="btn-secondary inline-flex"
+            >
+              <span>Visit project site</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M15 3h6v6m-11 5L21 3m-3 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              </svg>
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+
+    <!-- Back to Home Navigation -->
+    <div class="px-6 md:px-12 lg:px-16 py-12">
+      <div class="max-w-5xl mx-auto">
+        <a
+          href="/"
+          class="group inline-flex items-center gap-3 text-surface-400 hover:text-gold-500 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="transition-transform group-hover:-translate-x-1"
+            aria-hidden="true"
+          >
+            <path d="M19 12H5m7-7-7 7 7 7" />
+          </svg>
+          <span class="font-mono text-[11px] tracking-[0.15em] uppercase">Back to home</span>
+        </a>
+      </div>
+    </div>
+  </article>
+</BaseLayout>

@@ -16,29 +16,46 @@ const tools = [
   "Olo"
 ];
 ---
-<section id="expertise" class="py-20 px-6 border-b border-white/5 bg-black overflow-hidden">
-  <div class="tools-carousel">
-    <div class="tools-carousel-track">
-      {tools.map((tool) => (
-        <span class="tools-carousel-item px-5 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-400 text-sm font-medium whitespace-nowrap">
-          {tool}
-        </span>
-      ))}
-      {tools.map((tool) => (
-        <span class="tools-carousel-item px-5 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-400 text-sm font-medium whitespace-nowrap" aria-hidden="true">
-          {tool}
-        </span>
-      ))}
-      {tools.map((tool) => (
-        <span class="tools-carousel-item px-5 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-400 text-sm font-medium whitespace-nowrap" aria-hidden="true">
-          {tool}
-        </span>
-      ))}
-      {tools.map((tool) => (
-        <span class="tools-carousel-item px-5 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-400 text-sm font-medium whitespace-nowrap" aria-hidden="true">
-          {tool}
-        </span>
-      ))}
+<section id="expertise" class="relative py-16 md:py-20 overflow-hidden border-b border-white/[0.06]">
+  <!-- Section label -->
+  <div class="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 mb-8">
+    <span class="label">Tech Stack</span>
+  </div>
+
+  <!-- Carousel with fade edges -->
+  <div class="relative">
+    <!-- Left fade -->
+    <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none"></div>
+    <!-- Right fade -->
+    <div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none"></div>
+
+    <div class="tools-carousel">
+      <div class="tools-carousel-track">
+        {/* First set */}
+        {tools.map((tool) => (
+          <span class="tools-carousel-item">
+            {tool}
+          </span>
+        ))}
+        {/* Duplicate for seamless loop */}
+        {tools.map((tool) => (
+          <span class="tools-carousel-item" aria-hidden="true">
+            {tool}
+          </span>
+        ))}
+        {/* Third set for longer screens */}
+        {tools.map((tool) => (
+          <span class="tools-carousel-item" aria-hidden="true">
+            {tool}
+          </span>
+        ))}
+        {/* Fourth set */}
+        {tools.map((tool) => (
+          <span class="tools-carousel-item" aria-hidden="true">
+            {tool}
+          </span>
+        ))}
+      </div>
     </div>
   </div>
 </section>

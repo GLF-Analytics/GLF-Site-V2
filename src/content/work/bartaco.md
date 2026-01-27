@@ -18,11 +18,6 @@ logo: "/images/work/bartaco.svg"
 backgroundImage: "/images/work/bartaco.jpg"
 ---
 <section class="work-section">
-  <h2>Overview</h2>
-  <p>Owned digital growth strategy spanning QR ordering, loyalty, paid media, and third-party delivery.</p>
-</section>
-
-<section class="work-section">
   <h2>What we delivered</h2>
   <ul>
     <li>QR-code ordering platform launch.</li>

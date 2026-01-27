@@ -1,45 +1,61 @@
-<section class="py-24 px-6 border-b border-white/5">
+---
+---
+<section class="py-24 md:py-32 px-6 md:px-12 lg:px-16 border-b border-white/[0.06]">
   <div
-    class="max-w-4xl mx-auto bg-gradient-to-br from-zinc-900 to-zinc-950 border border-white/10 rounded-2xl overflow-hidden relative reveal-card"
+    class="max-w-4xl mx-auto reveal-card relative overflow-hidden"
     data-reveal
   >
-    <div class="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl"></div>
-    <div class="p-8 md:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-      <div>
-        <div class="flex items-center gap-2 mb-4">
-          <span class="w-2 h-2 rounded-full bg-orange-500"></span>
-          <span class="text-xs font-mono text-zinc-400 uppercase tracking-wider">Substack</span>
+    <!-- Background pattern -->
+    <div class="absolute inset-0 opacity-30" aria-hidden="true">
+      <div class="absolute inset-0 bg-gradient-to-br from-gold-500/10 via-transparent to-gold-500/5"></div>
+      <div class="absolute top-0 right-0 w-64 h-64 bg-gold-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+    </div>
+
+    <!-- Card content -->
+    <div class="relative border border-white/[0.08] bg-surface-950/80 backdrop-blur-xl p-8 md:p-12 lg:p-16">
+      <!-- Corner accents -->
+      <div class="absolute top-0 left-0 w-8 h-8 border-l border-t border-gold-500/30"></div>
+      <div class="absolute bottom-0 right-0 w-8 h-8 border-r border-b border-gold-500/30"></div>
+
+      <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+        <div>
+          <div class="flex items-center gap-3 mb-6">
+            <span class="w-2 h-2 bg-gold-500 animate-pulse"></span>
+            <span class="font-mono text-[10px] tracking-[0.2em] uppercase text-gold-500">Newsletter</span>
+          </div>
+          <h2 class="heading-display text-3xl md:text-4xl text-white mb-4">
+            GLF Analytics on Substack
+          </h2>
+          <p class="text-surface-400 max-w-md leading-relaxed">
+            Deep dives into data strategy, eCommerce trends, and technical tutorials.
+            Read our latest thoughts on building scalable tech stacks.
+          </p>
         </div>
-        <h2 class="text-2xl font-semibold text-white mb-3">GLF Analytics on Substack</h2>
-        <p class="text-sm text-zinc-400 max-w-md">
-          Deep dives into data strategy, eCommerce trends, and technical tutorials. Read our latest thoughts on building scalable tech stacks.
-        </p>
-      </div>
-      <a
-        href="https://substack.com/@glfanalytics"
-        target="_blank"
-        rel="noreferrer"
-        class="flex-shrink-0 px-6 py-3 bg-white text-black text-sm font-medium rounded-lg hover:bg-zinc-200 transition-colors flex items-center gap-2"
-      >
-        Read the Newsletter
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-          role="img"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
+
+        <a
+          href="https://substack.com/@glfanalytics"
+          target="_blank"
+          rel="noreferrer"
+          class="btn-primary group flex-shrink-0"
         >
-          <path
+          <span>Read the Newsletter</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
+            stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
-            stroke-width="2"
-            d="M15 3h6v6m-11 5L21 3m-3 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
-          ></path>
-        </svg>
-      </a>
+            class="relative z-10 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+            aria-hidden="true"
+          >
+            <path d="M15 3h6v6m-11 5L21 3m-3 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+          </svg>
+        </a>
+      </div>
     </div>
   </div>
 </section>

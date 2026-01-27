@@ -20,11 +20,6 @@ testimonial: "Being remote was irrelevant. GLF was part of our team. The work th
 testimonialAuthor: "Joanne Wilson, Founder @ Gotham NYC"
 ---
 <section class="work-section">
-  <h2>Overview</h2>
-  <p>Owned ecommerce launch execution across development, analytics, and lifecycle marketing.</p>
-</section>
-
-<section class="work-section">
   <h2>What we delivered</h2>
   <ul>
     <li>Custom-coded ecommerce site build.</li>

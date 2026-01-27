@@ -16,13 +16,10 @@ const { title, description, canonical, ogImage, noindex } = Astro.props;
       document.documentElement.classList.add("js-split");
     </script>
     <link rel="icon" href="/images/glf-favicon.svg" type="image/svg+xml" />
-    <link
-      rel="preload"
-      href="/fonts/Inter-VariableFont_opsz,wght.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
+    <!-- Preconnect for faster font loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <Seo
       title={title}
       description={description}
@@ -32,9 +29,15 @@ const { title, description, canonical, ogImage, noindex } = Astro.props;
     />
     <JsonLd />
   </head>
-  <body class="antialiased selection:bg-white/20 selection:text-white">
+  <body class="antialiased">
+    <!-- Animated Grid Background -->
+    <div class="grid-bg" aria-hidden="true"></div>
+
+    <!-- Grain Texture Overlay -->
+    <div class="grain-overlay" aria-hidden="true"></div>
+
     <Nav />
-    <main>
+    <main class="relative z-10">
       <slot />
     </main>
     <Footer />

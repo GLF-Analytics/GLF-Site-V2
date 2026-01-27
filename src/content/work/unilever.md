@@ -17,11 +17,6 @@ url: "https://example.com"
 backgroundImage: "/images/work/unilever.jpg"
 ---
 <section class="work-section">
-  <h2>Overview</h2>
-  <p>Built a SQL database in BigQuery to serve as the reporting backbone for Unilever's Beauty &amp; Wellbeing division.</p>
-</section>
-
-<section class="work-section">
   <h2>What we delivered</h2>
   <ul>
     <li>BigQuery data model and data integration.</li>

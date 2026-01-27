@@ -21,11 +21,6 @@ testimonial: "GLF built automated performance reports used across our business t
 testimonialAuthor: "Varun Sriram, Director of Partnerships @ UCAN"
 ---
 <section class="work-section">
-  <h2>Overview</h2>
-  <p>Built the data system and served as a long-term digital strategist for UCAN's growth initiatives.</p>
-</section>
-
-<section class="work-section">
   <h2>What we delivered</h2>
   <ul>
     <li>BigQuery data warehouse and reporting stack.</li>

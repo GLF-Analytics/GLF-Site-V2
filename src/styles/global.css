@@ -1,135 +1,449 @@
+/* Typography - Google Fonts (must be first) */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   SWISS BRUTALIST TECH DESIGN SYSTEM
+   GLF Analytics - Premium Tech Consulting
+   ============================================ */
+
 :root {
   color-scheme: dark;
+
+  /* Primary Palette */
+  --color-bg: #050505;
+  --color-bg-elevated: #0a0a0a;
+  --color-bg-card: rgba(10, 10, 10, 0.8);
+
+  /* Gold Accent System */
+  --color-gold: #D4A853;
+  --color-gold-light: #E8C97A;
+  --color-gold-dark: #B8860B;
+
+  /* Neutral Scale */
+  --color-text-primary: #FAFAFA;
+  --color-text-secondary: #A3A3A3;
+  --color-text-tertiary: #525252;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-hover: rgba(255, 255, 255, 0.15);
+
+  /* Grid System */
+  --grid-color: rgba(212, 168, 83, 0.03);
+  --grid-size: 60px;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-base: 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-reveal: 800ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Geist fonts from Vercel */
 @font-face {
-  font-family: "Inter";
-  src: url("/fonts/Inter-VariableFont_opsz,wght.woff2") format("woff2");
-  font-weight: 300 700;
+  font-family: 'Geist';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans/Geist-Regular.woff2') format('woff2');
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Geist';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans/Geist-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans/Geist-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-mono/GeistMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-mono/GeistMono-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Base Styles */
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  background-color: #09090b;
-  color: #e4e4e7;
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  overflow-x: hidden;
 }
 
+/* Selection */
 ::selection {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background: var(--color-gold);
+  color: var(--color-bg);
 }
 
-/* Subtle custom scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #09090b;
+  background: var(--color-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
-  border-radius: 4px;
+  background: var(--color-gold-dark);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: var(--color-gold);
 }
 
-.glass-nav {
-  background: rgba(9, 9, 11, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+/* ============================================
+   ANIMATED GRID BACKGROUND
+   ============================================ */
+
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
 
-.mesh-gradient {
-  background:
-    radial-gradient(circle at 50% 0%, rgba(120, 119, 198, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.05) 0%, transparent 30%);
+.grid-bg::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+  transform: perspective(500px) rotateX(60deg) scale(2.5);
+  transform-origin: center center;
+  animation: gridPulse 8s ease-in-out infinite;
+  mask-image: radial-gradient(ellipse 80% 50% at 50% 50%, black 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 50%, black 20%, transparent 70%);
 }
 
-summary::-webkit-details-marker {
-  display: none;
+.grid-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 40% at 50% 30%, rgba(212, 168, 83, 0.04) 0%, transparent 60%);
 }
 
-summary {
-  list-style: none;
+@keyframes gridPulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
-.work-content {
-  color: #a1a1aa;
-  font-size: 0.875rem;
-  line-height: 1.7;
+/* Grain overlay for texture */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
-.work-sections {
-  display: grid;
-  gap: 1.5rem;
+/* ============================================
+   NAVIGATION
+   ============================================ */
+
+.nav-glass {
+  background: rgba(5, 5, 5, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--color-border);
 }
 
-.work-section {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(9, 9, 11, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 1rem;
-  padding: 1.5rem;
+.nav-hidden {
+  transform: translateY(-100%);
 }
 
-.work-content h2 {
-  color: #ffffff;
-  font-size: 1.1rem;
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.btn-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  background: var(--color-gold);
+  color: var(--color-bg);
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all var(--transition-base);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--color-gold-light);
+  transform: translateY(100%);
+  transition: transform var(--transition-base);
+}
+
+.btn-primary:hover::before {
+  transform: translateY(0);
+}
+
+.btn-primary span {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+
+.card {
+  position: relative;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: all var(--transition-base);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(212, 168, 83, 0.03) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  pointer-events: none;
+}
+
+.card:hover {
+  border-color: var(--color-border-hover);
+  transform: translateY(-2px);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+/* Gold accent line on cards */
+.card-accent {
+  position: relative;
+}
+
+.card-accent::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--color-gold);
+  transition: width var(--transition-base);
+}
+
+.card-accent:hover::after {
+  width: 100%;
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+
+.heading-display {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.heading-sans {
+  font-family: 'Geist', sans-serif;
   font-weight: 600;
-  margin: 1.5rem 0 0.75rem;
+  letter-spacing: -0.02em;
 }
 
-.work-section h2 {
-  margin-top: 0;
+.text-mono {
+  font-family: 'Geist Mono', monospace;
+  letter-spacing: 0.05em;
 }
 
-.work-content ul {
-  margin: 0.75rem 0 1rem 1rem;
-  list-style: disc;
+.label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-gold);
 }
 
-.work-section ul {
-  margin-bottom: 0;
+/* ============================================
+   REVEAL ANIMATIONS
+   ============================================ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity var(--transition-reveal), transform var(--transition-reveal);
 }
 
-.work-content li {
-  margin-bottom: 0.35rem;
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-/* Work detail page responsive background */
-.work-detail-bg {
-  background: var(--work-bg-desktop);
+.reveal-delay-1 { transition-delay: 100ms; }
+.reveal-delay-2 { transition-delay: 200ms; }
+.reveal-delay-3 { transition-delay: 300ms; }
+.reveal-delay-4 { transition-delay: 400ms; }
+.reveal-delay-5 { transition-delay: 500ms; }
+
+/* Stagger children */
+.stagger-children > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
 
-@media (max-width: 1024px) {
-  .work-detail-bg {
-    background: var(--work-bg-tablet);
-  }
+.stagger-children.is-visible > *:nth-child(1) { transition-delay: 0ms; opacity: 1; transform: translateY(0); }
+.stagger-children.is-visible > *:nth-child(2) { transition-delay: 100ms; opacity: 1; transform: translateY(0); }
+.stagger-children.is-visible > *:nth-child(3) { transition-delay: 200ms; opacity: 1; transform: translateY(0); }
+.stagger-children.is-visible > *:nth-child(4) { transition-delay: 300ms; opacity: 1; transform: translateY(0); }
+.stagger-children.is-visible > *:nth-child(5) { transition-delay: 400ms; opacity: 1; transform: translateY(0); }
+.stagger-children.is-visible > *:nth-child(6) { transition-delay: 500ms; opacity: 1; transform: translateY(0); }
+
+/* Text reveal animation */
+.text-reveal {
+  display: inline-block;
+  overflow: hidden;
 }
 
-@media (max-width: 767px) {
-  .work-detail-bg {
-    background: var(--work-bg-mobile);
-  }
+.text-reveal > span {
+  display: inline-block;
+  transform: translateY(100%);
+  transition: transform var(--transition-reveal);
 }
 
-/* Card styling - no longer sticky for smooth continuous scroll */
+.text-reveal.is-visible > span {
+  transform: translateY(0);
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+
+.hero-gradient {
+  background:
+    radial-gradient(ellipse 80% 50% at 80% 0%, rgba(212, 168, 83, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 20% 100%, rgba(212, 168, 83, 0.05) 0%, transparent 40%);
+}
+
+/* Animated text underline */
+.text-underline-gold {
+  position: relative;
+  display: inline-block;
+}
+
+.text-underline-gold::after {
+  content: '';
+  position: absolute;
+  bottom: 0.1em;
+  left: 0;
+  width: 100%;
+  height: 0.08em;
+  background: var(--color-gold);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--transition-base);
+}
+
+.text-underline-gold:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ============================================
+   CAPABILITIES SECTION
+   ============================================ */
+
+.capability-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  color: var(--color-gold);
+  transition: all var(--transition-base);
+}
+
+.card:hover .capability-icon {
+  border-color: var(--color-gold);
+  background: rgba(212, 168, 83, 0.1);
+}
+
+/* ============================================
+   WORK SECTION - STACKED CARDS
+   ============================================ */
 
 .work-stack-container {
   position: relative;
@@ -163,17 +477,6 @@ summary {
   overflow: hidden;
 }
 
-.work-stack-card .space-y-4 {
-  overflow: hidden;
-}
-
-.work-stack-card .space-y-4 p {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 .work-stack-bg {
   position: fixed;
   top: 0;
@@ -191,7 +494,7 @@ summary {
   position: absolute;
   inset: 0;
   background: var(--stack-bg-current);
-  opacity: 0.9;
+  opacity: 0.85;
   transform: scale(1);
   transition: none;
 }
@@ -212,33 +515,268 @@ summary {
 }
 
 .work-stack-container.is-transitioning .work-stack-bg::after {
-  opacity: 0.9;
+  opacity: 0.85;
   transform: scale(1);
 }
 
-/* Tablet responsive backgrounds (768px - 1024px) */
 @media (max-width: 1024px) {
   .work-stack-bg::before,
   .work-stack-bg::after {
     background: var(--stack-bg-tablet-current);
   }
-
   .work-stack-bg::after {
     background: var(--stack-bg-tablet-next);
   }
 }
 
-/* Mobile responsive backgrounds (below 768px) */
 @media (max-width: 767px) {
   .work-stack-bg::before,
   .work-stack-bg::after {
     background: var(--stack-bg-mobile-current);
   }
-
   .work-stack-bg::after {
     background: var(--stack-bg-mobile-next);
   }
 }
+
+/* Work detail page */
+.work-detail-bg {
+  background: var(--work-bg-desktop);
+}
+
+@media (max-width: 1024px) {
+  .work-detail-bg {
+    background: var(--work-bg-tablet);
+  }
+}
+
+@media (max-width: 767px) {
+  .work-detail-bg {
+    background: var(--work-bg-mobile);
+  }
+}
+
+/* ============================================
+   TOOLS CAROUSEL
+   ============================================ */
+
+.tools-carousel {
+  width: 100%;
+  overflow: hidden;
+}
+
+.tools-carousel-track {
+  display: flex;
+  gap: 1rem;
+  animation: scroll-left 25s linear infinite;
+  width: max-content;
+}
+
+.tools-carousel:hover .tools-carousel-track {
+  animation-play-state: paused;
+}
+
+.tools-carousel-item {
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  transition: all var(--transition-base);
+}
+
+.tools-carousel-item:hover {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-25%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tools-carousel-track {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+/* ============================================
+   WORK CONTENT (Case Study Pages)
+   ============================================ */
+
+.work-content {
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.8;
+}
+
+.work-sections {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.work-section {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 2rem;
+}
+
+.work-content h2 {
+  color: var(--color-text-primary);
+  font-family: 'Geist', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 2rem 0 1rem;
+  letter-spacing: -0.01em;
+}
+
+.work-section h2 {
+  margin-top: 0;
+}
+
+.work-content ul {
+  margin: 1rem 0 1.5rem 1.25rem;
+  list-style: none;
+}
+
+.work-content li {
+  position: relative;
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.work-content li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: 4px;
+  height: 4px;
+  background: var(--color-gold);
+}
+
+.work-section ul {
+  margin-bottom: 0;
+}
+
+/* ============================================
+   DIVIDERS & DECORATIVE ELEMENTS
+   ============================================ */
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+}
+
+.divider-gold {
+  width: 60px;
+  height: 2px;
+  background: var(--color-gold);
+}
+
+/* Corner accents for premium feel */
+.corner-accent {
+  position: relative;
+}
+
+.corner-accent::before,
+.corner-accent::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: var(--color-gold);
+  border-style: solid;
+  opacity: 0.3;
+}
+
+.corner-accent::before {
+  top: -1px;
+  left: -1px;
+  border-width: 1px 0 0 1px;
+}
+
+.corner-accent::after {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 1px 1px 0;
+}
+
+/* ============================================
+   SUMMARY/DETAILS (FAQ, etc.)
+   ============================================ */
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary {
+  list-style: none;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.gold-text {
+  color: var(--color-gold);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, var(--color-gold-light) 0%, var(--color-gold) 50%, var(--color-gold-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Horizontal rule with gold center */
+.hr-gold {
+  position: relative;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.hr-gold::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 3px;
+  background: var(--color-gold);
+}
+
+/* ============================================
+   RESPONSIVE UTILITIES
+   ============================================ */
+
+@media (max-width: 768px) {
+  :root {
+    --grid-size: 40px;
+  }
+
+  .work-section {
+    padding: 1.5rem;
+  }
+}
+
+/* ============================================
+   ANIMATED HEADING (kept for compatibility)
+   ============================================ */
 
 .capabilities-heading-mask {
   overflow: hidden;
@@ -248,7 +786,7 @@ summary {
 .capabilities-heading {
   transform: translateY(120%);
   opacity: 0;
-  transition: transform 700ms ease, opacity 500ms ease;
+  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1), opacity 500ms ease;
 }
 
 .capabilities-heading-mask.is-visible .capabilities-heading {
@@ -298,52 +836,4 @@ summary {
 .reveal-card.is-visible {
   transform: translateY(0);
   opacity: 1;
-}
-
-.nav-hidden {
-  transform: translateY(-100%);
-}
-
-/* Tools Carousel */
-.tools-carousel {
-  width: 100%;
-  overflow: hidden;
-}
-
-.tools-carousel-track {
-  display: flex;
-  gap: 1.25rem;
-  animation: scroll-left 20s linear infinite;
-  width: max-content;
-}
-
-.tools-carousel:hover .tools-carousel-track {
-  animation-play-state: paused;
-}
-
-.tools-carousel-item {
-  transition: border-color 200ms ease, background-color 200ms ease, color 200ms ease;
-}
-
-.tools-carousel-item:hover {
-  border-color: #52525b;
-  background-color: #27272a;
-  color: #e4e4e7;
-}
-
-@keyframes scroll-left {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-25%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tools-carousel-track {
-    animation: none;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
 }
