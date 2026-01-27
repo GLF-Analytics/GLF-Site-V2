@@ -13,7 +13,7 @@ tags: ["Data Strategy", "SQL", "Enterprise BI"]
 featured: true
 order: 6
 duration: "4 months"
-url: "https://example.com"
+url: "https://www.unilever.com/"
 backgroundImage: "/images/work/unilever.jpg"
 ---
 <section class="work-section">

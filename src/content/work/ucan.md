@@ -13,7 +13,7 @@ tags: ["Data Infrastructure", "Digital Strategy", "Analytics"]
 featured: true
 order: 7
 duration: "18 months"
-url: "https://example.com"
+url: "https://ucan.co/"
 backgroundImage: "/images/work/ucan.jpg"
 backgroundImageTablet: "/images/work/ucan-tablet.jpg"
 backgroundImageMobile: "/images/work/ucan-mobile.jpg"
