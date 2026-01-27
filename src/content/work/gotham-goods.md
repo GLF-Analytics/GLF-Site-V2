@@ -16,7 +16,7 @@ duration: "12 months"
 url: "https://www.gothamgoods.nyc/"
 logo: "/images/work/gotham-goods.svg"
 backgroundImage: "/images/work/gothamgoods.jpg"
-testimonial: "Being remote was irrelevant. GLF was part of our team. The work they did was an integral part of getting us to where we are today."
+testimonial: "GLF was part of our team. The work they did was an integral part of getting us to where we are today."
 testimonialAuthor: "Joanne Wilson, Founder @ Gotham NYC"
 ---
 <section class="work-section">
