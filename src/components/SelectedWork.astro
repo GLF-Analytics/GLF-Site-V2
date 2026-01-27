@@ -34,14 +34,8 @@ const getResponsiveBackgrounds = (item, index) => {
 ---
 <section id="selected-work" class="work-stack-container bg-surface-950">
   <!-- Section header -->
-  <div class="relative z-10 py-16 md:py-24 px-6 md:px-12 lg:px-16 border-b border-white/[0.06]">
-    <div class="max-w-7xl mx-auto">
-      <span class="label block mb-4">Portfolio</span>
-      <h2 class="heading-display text-4xl md:text-5xl lg:text-6xl text-white">
-        Selected Work
-      </h2>
-    </div>
-  </div>
+  <div class="relative z-10 bg-surface-950 py-16 md:py-24 px-6 md:px-12 lg:px-16 border-b border-white/[0.06]">
+
 
   <div class="work-stack-bg" aria-hidden="true"></div>
   <div class="work-stack">
@@ -145,6 +139,44 @@ const getResponsiveBackgrounds = (item, index) => {
   const container = document.querySelector("#selected-work");
   const sections = Array.from(document.querySelectorAll(".work-stack-section"));
   let transitionTimeout;
+  const scrollToSelectedWork = (behavior = "smooth") => {
+    const firstSection = sections[0];
+    if (!firstSection) {
+      return;
+    }
+    const card = firstSection.querySelector(".work-stack-card") ?? firstSection;
+    const rect = card.getBoundingClientRect();
+    const top = window.scrollY + rect.top + rect.height / 2 - window.innerHeight / 2;
+    window.scrollTo({ top: Math.max(0, top), behavior });
+  };
+
+  const handleSelectedWorkClick = (event) => {
+    if (!(event.currentTarget instanceof HTMLAnchorElement)) {
+      return;
+    }
+    event.preventDefault();
+    if (window.location.hash !== "#selected-work") {
+      history.pushState(null, "", "#selected-work");
+    }
+    scrollToSelectedWork("smooth");
+  };
+
+  document
+    .querySelectorAll('a[href="#selected-work"]')
+    .forEach((link) => link.addEventListener("click", handleSelectedWorkClick));
+
+  window.addEventListener("hashchange", () => {
+    if (window.location.hash === "#selected-work") {
+      scrollToSelectedWork("smooth");
+    }
+  });
+
+  if (window.location.hash === "#selected-work") {
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => scrollToSelectedWork("auto"));
+    });
+  }
+
   if (sections.length) {
     let currentActive = sections[0];
     const initialBg = currentActive.style.getPropertyValue("--stack-bg");
