@@ -27,7 +27,7 @@
       if (current <= 0) {
         navOffset = 0;
       } else {
-        navOffset = Math.min(navHeight, Math.max(0, navOffset + delta));
+        navOffset = Math.min(navHeight, Math.max(0, navOffset += delta * 0.6));
       }
 
       nav.style.transform = `translateY(${-navOffset}px)`;
