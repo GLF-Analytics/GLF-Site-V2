@@ -16,22 +16,37 @@
 
   if (nav) {
     let lastScrollY = window.scrollY;
-    let navOffset = 0;
+    let targetOffset = 0;
+    let currentOffset = 0;
     let navHeight = nav.offsetHeight;
     let ticking = false;
 
-    const updateNav = () => {
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    const updateTarget = () => {
       const current = window.scrollY;
       const delta = current - lastScrollY;
 
       if (current <= 0) {
-        navOffset = 0;
+        targetOffset = 0;
       } else {
-        navOffset = Math.min(navHeight, Math.max(0, navOffset += delta * 0.6));
+        targetOffset = Math.min(navHeight, Math.max(0, targetOffset + delta));
       }
 
-      nav.style.transform = `translateY(${-navOffset}px)`;
       lastScrollY = current;
+    };
+
+    const animateNav = () => {
+      currentOffset = lerp(currentOffset, targetOffset, 0.15);
+      nav.style.transform = `translateY(${-currentOffset}px)`;
+
+      if (Math.abs(targetOffset - currentOffset) > 0.5) {
+        window.requestAnimationFrame(animateNav);
+        return;
+      }
+
+      currentOffset = targetOffset;
+      nav.style.transform = `translateY(${-currentOffset}px)`;
       ticking = false;
     };
 
@@ -39,8 +54,11 @@
       "scroll",
       () => {
         if (!ticking) {
-          window.requestAnimationFrame(updateNav);
           ticking = true;
+          updateTarget();
+          window.requestAnimationFrame(animateNav);
+        } else {
+          updateTarget();
         }
       },
       { passive: true }
@@ -48,7 +66,8 @@
 
     window.addEventListener("resize", () => {
       navHeight = nav.offsetHeight;
-      navOffset = Math.min(navOffset, navHeight);
+      targetOffset = Math.min(targetOffset, navHeight);
+      currentOffset = Math.min(currentOffset, navHeight);
     });
   }
 </script>
