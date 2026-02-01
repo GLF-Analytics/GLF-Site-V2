@@ -19,8 +19,10 @@
 
   function onScroll() {
     const currentY = window.scrollY;
+    const maxY = document.documentElement.scrollHeight - window.innerHeight;
 
-    if (currentY <= 0) {
+    if (currentY <= 0 || currentY >= maxY) {
+      lastScrollY = Math.min(Math.max(currentY, 0), maxY);
       nav?.classList.remove('nav-hidden');
       ticking = false;
       return;
