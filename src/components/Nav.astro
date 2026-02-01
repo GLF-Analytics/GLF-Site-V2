@@ -1,6 +1,6 @@
 ---
 ---
-<nav class="fixed top-0 w-full z-50 nav-glass nav-shell">
+<nav class="fixed top-0 w-full z-50 nav-glass">
   <div class="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 h-20 flex items-center justify-center">
     <a href="/" class="font-mono text-[11px] tracking-[0.25em] text-white uppercase">
       GLF Analytics
@@ -12,62 +12,39 @@
 </nav>
 
 <script>
-  const nav = document.querySelector("nav");
+  const nav = document.querySelector('nav');
+  let lastScrollY = window.scrollY;
+  let ticking = false;
+  const SCROLL_DELTA = 5;
+  const NAV_HEIGHT = 80;
 
-  if (nav) {
-    let lastScrollY = window.scrollY;
-    let targetOffset = 0;
-    let currentOffset = 0;
-    let navHeight = nav.offsetHeight;
-    let ticking = false;
+  function onScroll() {
+    const currentY = window.scrollY;
 
-    const lerp = (a, b, t) => a + (b - a) * t;
-
-    const updateTarget = () => {
-      const current = window.scrollY;
-      const delta = current - lastScrollY;
-
-      if (current <= 0) {
-        targetOffset = 0;
-      } else {
-        targetOffset = Math.min(navHeight, Math.max(0, targetOffset + delta));
-      }
-
-      lastScrollY = current;
-    };
-
-    const animateNav = () => {
-      currentOffset = lerp(currentOffset, targetOffset, 0.15);
-      nav.style.transform = `translateY(${-currentOffset}px)`;
-
-      if (Math.abs(targetOffset - currentOffset) > 0.5) {
-        window.requestAnimationFrame(animateNav);
-        return;
-      }
-
-      currentOffset = targetOffset;
-      nav.style.transform = `translateY(${-currentOffset}px)`;
+    if (currentY < NAV_HEIGHT) {
+      nav?.classList.remove('nav-hidden');
+      lastScrollY = currentY;
       ticking = false;
-    };
+      return;
+    }
 
-    window.addEventListener(
-      "scroll",
-      () => {
-        if (!ticking) {
-          ticking = true;
-          updateTarget();
-          window.requestAnimationFrame(animateNav);
-        } else {
-          updateTarget();
-        }
-      },
-      { passive: true }
-    );
+    const delta = currentY - lastScrollY;
 
-    window.addEventListener("resize", () => {
-      navHeight = nav.offsetHeight;
-      targetOffset = Math.min(targetOffset, navHeight);
-      currentOffset = Math.min(currentOffset, navHeight);
-    });
+    if (delta > SCROLL_DELTA) {
+      nav?.classList.add('nav-hidden');
+      lastScrollY = currentY;
+    } else if (delta < -SCROLL_DELTA) {
+      nav?.classList.remove('nav-hidden');
+      lastScrollY = currentY;
+    }
+
+    ticking = false;
   }
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(onScroll);
+      ticking = true;
+    }
+  }, { passive: true });
 </script>
