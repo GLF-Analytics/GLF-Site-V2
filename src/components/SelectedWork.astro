@@ -189,34 +189,67 @@ const getResponsiveBackgrounds = (item, index) => {
     container?.style.setProperty("--stack-bg-mobile-current", initialBgMobile);
     container?.style.setProperty("--stack-bg-mobile-next", initialBgMobile);
 
+    const currentlyIntersecting = new Set();
+
     const observer = new IntersectionObserver(
       (entries) => {
-        const visible = entries.filter((entry) => entry.isIntersecting);
-        if (!visible.length) {
-          return;
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            currentlyIntersecting.add(entry.target);
+          } else {
+            currentlyIntersecting.delete(entry.target);
+          }
         }
 
-        const next = visible.sort(
-          (a, b) => b.intersectionRatio - a.intersectionRatio
-        )[0]?.target;
+        if (currentlyIntersecting.size === 0) return;
+
+        // Prefer the entry with the highest ratio from this callback batch
+        const visible = entries.filter(
+          (entry) => entry.isIntersecting && currentlyIntersecting.has(entry.target)
+        );
+
+        let next;
+        if (visible.length > 0) {
+          next = visible.sort(
+            (a, b) => b.intersectionRatio - a.intersectionRatio
+          )[0].target;
+        } else {
+          // Only exit events in this batch, but something is still in the zone
+          next = currentlyIntersecting.values().next().value;
+        }
 
         if (next && next !== currentActive) {
           const nextBg = next.style.getPropertyValue("--stack-bg");
           const nextBgTablet = next.style.getPropertyValue("--stack-bg-tablet");
           const nextBgMobile = next.style.getPropertyValue("--stack-bg-mobile");
+
+          // If a transition is already in-flight, commit it instantly before starting a new one
+          if (transitionTimeout) {
+            clearTimeout(transitionTimeout);
+            transitionTimeout = undefined;
+            const inflight = container?.style.getPropertyValue("--stack-bg-next");
+            const inflightTablet = container?.style.getPropertyValue("--stack-bg-tablet-next");
+            const inflightMobile = container?.style.getPropertyValue("--stack-bg-mobile-next");
+            container?.style.setProperty("--stack-bg-current", inflight);
+            container?.style.setProperty("--stack-bg-tablet-current", inflightTablet);
+            container?.style.setProperty("--stack-bg-mobile-current", inflightMobile);
+            container?.classList.remove("is-transitioning");
+            container?.offsetHeight;
+          }
+
           container?.style.setProperty("--stack-bg-next", nextBg);
           container?.style.setProperty("--stack-bg-tablet-next", nextBgTablet);
           container?.style.setProperty("--stack-bg-mobile-next", nextBgMobile);
           container?.classList.add("is-transitioning");
-          if (transitionTimeout) {
-            clearTimeout(transitionTimeout);
-          }
+
           transitionTimeout = window.setTimeout(() => {
             container?.style.setProperty("--stack-bg-current", nextBg);
             container?.style.setProperty("--stack-bg-tablet-current", nextBgTablet);
             container?.style.setProperty("--stack-bg-mobile-current", nextBgMobile);
             container?.classList.remove("is-transitioning");
+            transitionTimeout = undefined;
           }, 700);
+
           currentActive = next;
         }
       },
