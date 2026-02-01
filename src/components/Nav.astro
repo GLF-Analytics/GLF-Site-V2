@@ -19,6 +19,13 @@
 
   function onScroll() {
     const currentY = window.scrollY;
+
+    if (currentY <= 0) {
+      nav?.classList.remove('nav-hidden');
+      ticking = false;
+      return;
+    }
+
     const delta = currentY - lastScrollY;
 
     if (delta > SCROLL_DELTA) {
