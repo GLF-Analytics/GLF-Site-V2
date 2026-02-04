@@ -31,7 +31,7 @@ const backgroundStyle = desktopBg
 
       <div class="relative max-w-5xl mx-auto">
         <!-- Header Card -->
-        <div class="border border-white/[0.08] bg-surface-950/80 backdrop-blur-xl p-8 md:p-12">
+        <div class="border border-white/[0.08] bg-surface-950/80 backdrop-blur-xl p-8 md:p-12 reveal-card" data-reveal>
           <!-- Corner accents -->
           <div class="absolute top-0 left-0 w-6 h-6 border-l border-t border-gold-500/30 -ml-px -mt-px"></div>
           <div class="absolute bottom-0 right-0 w-6 h-6 border-r border-b border-gold-500/30 -mr-px -mb-px"></div>
@@ -60,7 +60,7 @@ const backgroundStyle = desktopBg
     <div class="px-6 md:px-12 lg:px-16 py-16 md:py-24 border-b border-white/[0.06]">
       <div class="max-w-5xl mx-auto">
         <!-- Challenge & Solution Grid -->
-        <div class="grid md:grid-cols-2 gap-px bg-white/[0.06] mb-16">
+        <div class="grid md:grid-cols-2 gap-px bg-white/[0.06] mb-16 stagger-children" data-reveal>
           <div class="bg-surface-950 p-8 md:p-10">
             <span class="label block mb-4">Challenge</span>
             <p class="text-surface-300 leading-relaxed">{entry.data.challenge}</p>
@@ -72,7 +72,7 @@ const backgroundStyle = desktopBg
         </div>
 
         <!-- Outcomes -->
-        <div class="mb-16 border border-white/[0.08] bg-surface-950/50 p-8 md:p-10">
+        <div class="mb-16 border border-white/[0.08] bg-surface-950/50 p-8 md:p-10 reveal-card" data-reveal>
           <span class="label block mb-6">Outcomes</span>
           {Array.isArray(entry.data.outcomes) ? (
             <ul class="grid md:grid-cols-2 gap-4">
@@ -90,7 +90,7 @@ const backgroundStyle = desktopBg
 
         <!-- Testimonial -->
         {entry.data.testimonial && (
-          <div class="mb-16 border border-white/[0.08] bg-surface-950/50 p-8 md:p-10 relative">
+          <div class="mb-16 border border-white/[0.08] bg-surface-950/50 p-8 md:p-10 relative reveal-card" data-reveal>
             <span class="absolute -top-4 left-8 text-6xl text-gold-500/20 font-serif">"</span>
             <span class="label block mb-6">Testimonial</span>
             <blockquote>
@@ -107,13 +107,13 @@ const backgroundStyle = desktopBg
         )}
 
         <!-- Additional Content from Markdown -->
-        <div class="work-content work-sections">
+        <div class="work-content work-sections stagger-children" data-reveal>
           <Content />
         </div>
 
         <!-- Project Link -->
         {entry.data.url && (
-          <div class="mt-12 pt-8 border-t border-white/[0.06]">
+          <div class="mt-12 pt-8 border-t border-white/[0.06] reveal" data-reveal>
             <a
               href={entry.data.url}
               target="_blank"
@@ -142,7 +142,7 @@ const backgroundStyle = desktopBg
     </div>
 
     <!-- Back to Home Navigation -->
-    <div class="px-6 md:px-12 lg:px-16 py-12">
+    <div class="px-6 md:px-12 lg:px-16 py-12 reveal" data-reveal>
       <div class="max-w-5xl mx-auto">
         <a
           href="/"
