@@ -1,0 +1,26 @@
+---
+import { orgInfo, socialLinks } from "../config/site";
+const mailto = `mailto:${orgInfo.email}?subject=${encodeURIComponent("Working together")}`;
+---
+<section id="contact" class="py-20 md:py-28 px-6 md:px-12 lg:px-16 border-b border-white/[0.06]">
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-10 lg:gap-8 items-end">
+    <div class="lg:col-span-8" data-reveal>
+      <span class="label block mb-4">Working together</span>
+      <h2 class="heading-display text-3xl md:text-4xl lg:text-5xl text-white max-w-3xl">
+        I take on a few retainers at a time, and the right full-time role.
+      </h2>
+      <p class="mt-5 text-surface-400 text-base md:text-lg max-w-xl leading-relaxed">
+        If your numbers, reporting, or systems need someone to own them, email me. I reply within a day.
+      </p>
+    </div>
+    <div class="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-4 lg:items-start lg:pl-8 lg:border-l border-white/[0.06]" data-reveal>
+      <a href={mailto} class="btn-primary group">
+        <span>Email me</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="relative z-10 transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
+      </a>
+      <a href={socialLinks.linkedin} target="_blank" rel="noreferrer" class="btn-secondary">
+        <span>LinkedIn</span>
+      </a>
+    </div>
+  </div>
+</section>

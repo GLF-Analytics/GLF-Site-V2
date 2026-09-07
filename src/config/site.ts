@@ -2,7 +2,7 @@ export const siteName = "GLF Analytics";
 export const siteUrl = "https://glfanalytics.com";
 export const defaultTitle = "GLF Analytics | Data, growth, and the tech that runs your business";
 export const defaultDescription =
-  "Gabriel Freeman helps businesses grow with numbers: data infrastructure, growth strategy, forecasting, and the websites, apps, and systems behind them. Since 2017, across eCommerce, CPG, and restaurants.";
+  "Gabriel Freeman helps brands grow with numbers and the right tools: data infrastructure, growth strategy, and the systems a business runs on. Since 2017, across eCommerce, CPG, and restaurants.";
 
 export const socialLinks = {
   linkedin: "https://www.linkedin.com/in/gabriel-freeman-47b80389/",
@@ -24,6 +24,6 @@ export const orgInfo = {
 
 export const bcStatsSource = {
   label: "Vercel Web Analytics on birthday-cards.ai",
-  productUrl: "https://birthday-cards.ai",
+  productUrl: "https://www.birthday-cards.ai",
   launchMonth: "March 2026"
 };

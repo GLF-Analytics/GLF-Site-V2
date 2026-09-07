@@ -4,7 +4,6 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        serif: ['"Instrument Serif"', 'Georgia', 'Cambria', '"Times New Roman"', 'Times', 'serif'],
         mono: ['"Geist Mono"', 'ui-monospace', 'SFMono-Regular', '"SF Mono"', 'Menlo', 'Consolas', 'monospace'],
         sans: ['"Geist"', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
       },

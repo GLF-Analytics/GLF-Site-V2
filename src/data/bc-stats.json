@@ -1,11 +1,11 @@
 {
-  "fetched_at": "2026-09-06",
+  "fetched_at": "2026-09-07",
   "window_days": 30,
-  "window_since": "2026-08-07",
-  "window_until": "2026-09-06",
-  "cards_30d": 296,
-  "cards_since_launch": 796,
-  "visitors_30d": 389,
-  "search_visitors_30d": 65,
+  "window_since": "2026-08-08",
+  "window_until": "2026-09-07",
+  "cards_30d": 311,
+  "cards_since_launch": 811,
+  "visitors_30d": 402,
+  "search_visitors_30d": 70,
   "source": "Vercel Web Analytics, birthday-card-app project, beta surfaces excluded"
 }

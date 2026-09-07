@@ -1,0 +1,33 @@
+---
+import { socialLinks } from "../config/site";
+---
+<section id="about" class="py-20 md:py-28 px-6 md:px-12 lg:px-16 border-b border-white/[0.06]">
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-10 lg:gap-8 items-start">
+    <div class="lg:col-span-3 flex lg:block items-center gap-5" data-reveal>
+      <img
+        src="/images/gabriel-freeman.webp"
+        alt="Gabriel Freeman"
+        width="427"
+        height="427"
+        loading="lazy"
+        decoding="async"
+        class="w-20 h-20 md:w-28 md:h-28 lg:w-36 lg:h-36 rounded-full border border-white/[0.08] flex-shrink-0"
+      />
+      <span class="label block lg:mt-6">About</span>
+    </div>
+
+    <div class="lg:col-span-9 max-w-2xl" data-reveal>
+      <p class="text-lg md:text-xl text-white leading-relaxed">
+        I'm Gabriel Freeman. I run GLF Analytics from Los Angeles and every engagement is mine start to finish. Before GLF I worked in growth and analytics for consumer brands.
+      </p>
+      <p class="mt-5 text-surface-400 leading-relaxed">
+        Now: delivery analytics for a 34-market restaurant group and an AI rollout at a construction management firm.
+      </p>
+      <ul class="mt-8 flex flex-wrap gap-x-8 gap-y-3 font-mono text-[11px] tracking-[0.15em] uppercase">
+        <li><a href={socialLinks.linkedin} target="_blank" rel="noreferrer" class="text-surface-400 hover:text-gold-500 transition-colors">LinkedIn</a></li>
+        <li><a href={socialLinks.substack} target="_blank" rel="noreferrer" class="text-surface-400 hover:text-gold-500 transition-colors">Substack</a></li>
+        <li><a href="https://www.hirethestarters.com/" target="_blank" rel="noreferrer" class="text-surface-400 hover:text-gold-500 transition-colors">Recognized by The Starters</a></li>
+      </ul>
+    </div>
+  </div>
+</section>

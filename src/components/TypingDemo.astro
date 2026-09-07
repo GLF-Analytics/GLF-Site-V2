@@ -1,0 +1,59 @@
+---
+/*
+  Ported from birthday-cards.ai's hero demo (app/_components/TypingDemo.tsx).
+  Pure CSS: rules live in global.css under TYPING DEMO. THE CONTRACT: each
+  slot's typed text length must equal the ch width and steps() count of its
+  slot rule (slot 1 = 18, slot 2 = 18, slot 3 = 20, slot 4 = 19). Change a
+  message and you change the rule with it, or the cursor stops early.
+  The whole block is one link to the product, in a new tab, and it says it
+  is a demo before anyone clicks.
+*/
+import { bcStatsSource } from "../config/site";
+
+const slots = [
+  { text: "happy bday alex <3", src: "/images/samples/card-giraffe-alex.jpg", alt: "Birthday card of a giraffe on the savanna at sunset, reading happy bday alex" },
+  { text: "Happy Birthday Mom", src: "/images/samples/card-japanese-great-wave-mom.jpg", alt: "Birthday card in the style of a Japanese woodblock wave, reading Happy Birthday Mom" },
+  { text: "Happy Birthday Anne!", src: "/images/samples/card-hot-air-balloon-anne.jpg", alt: "Birthday card of a woman in a hot air balloon over mountains, reading Happy Birthday Anne" },
+  { text: "Happy Birthday Sis!", src: "/images/samples/card-flowers-sis.jpg", alt: "Birthday card of a laughing woman among sunflowers and red tulips, reading Happy Birthday Sis" }
+];
+
+const expected = [18, 18, 20, 19];
+slots.forEach((slot, i) => {
+  if (slot.text.length !== expected[i]) {
+    throw new Error(`TypingDemo slot ${i + 1}: "${slot.text}" is ${slot.text.length} chars, the CSS rule expects ${expected[i]}.`);
+  }
+});
+---
+<a
+  href={bcStatsSource.productUrl}
+  target="_blank"
+  rel="noreferrer"
+  class="group block w-full max-w-xs mx-auto"
+  aria-label="Open birthday-cards.ai in a new tab"
+>
+  <span class="block font-mono text-[10px] tracking-[0.2em] uppercase text-surface-500 mb-3">Demo. Click to make your own.</span>
+  <span class="sr-only">A message types itself and the finished card appears.</span>
+
+  <div aria-hidden="true">
+    <span class="block font-mono text-[10px] tracking-[0.15em] uppercase text-surface-600 mb-2">Their message</span>
+    <div class="demo-input group-hover:border-gold-500/40 transition-colors">
+      {slots.map((slot, i) => (
+        <span class={`demo-typed demo-typed-${i + 1}`}>{slot.text}</span>
+      ))}
+    </div>
+  </div>
+
+  <div class="demo-stage mx-auto mt-6">
+    {slots.map((slot, i) => (
+      <img
+        class={`demo-card demo-card-${i + 1}`}
+        src={slot.src}
+        alt={slot.alt}
+        width="480"
+        height="720"
+        loading={i === 0 ? "eager" : "lazy"}
+        decoding="async"
+      />
+    ))}
+  </div>
+</a>

@@ -1,50 +1,24 @@
 ---
+import { orgInfo } from "../config/site";
 ---
 <nav class="fixed top-0 w-full z-50 nav-glass">
-  <div class="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 h-20 flex items-center justify-center">
-    <a href="/" class="font-mono text-[11px] tracking-[0.25em] text-white uppercase">
-      GLF Analytics
+  <div class="max-w-7xl mx-auto px-5 md:px-12 lg:px-16 h-14 flex items-center justify-between gap-4">
+    <a href="/" class="font-mono text-[11px] tracking-[0.25em] text-white uppercase whitespace-nowrap">
+      <span class="hidden sm:inline">GLF Analytics</span>
+      <span class="sm:hidden">GLF</span>
     </a>
+
+    <div class="flex items-center gap-4 sm:gap-7 font-mono text-[11px] tracking-[0.1em] sm:tracking-[0.18em] uppercase whitespace-nowrap">
+      <a href="/#services" class="text-surface-400 hover:text-white transition-colors">What I do</a>
+      <a href="/#live" class="text-surface-400 hover:text-white transition-colors">
+        <span class="hidden sm:inline">Live sample</span>
+        <span class="sm:hidden">Sample</span>
+      </a>
+      <a href="/#selected-work" class="text-surface-400 hover:text-white transition-colors">
+        <span class="hidden sm:inline">Case studies</span>
+        <span class="sm:hidden">Work</span>
+      </a>
+      <a href={`mailto:${orgInfo.email}`} class="text-gold-500 hover:text-gold-300 transition-colors">Email</a>
+    </div>
   </div>
-
-  <!-- Bottom accent line -->
-  <div class="absolute bottom-0 left-0 right-0 h-px bg-white/[0.06]"></div>
 </nav>
-
-<script>
-  const nav = document.querySelector('nav');
-  let lastScrollY = window.scrollY;
-  let ticking = false;
-  const SCROLL_DELTA = 5;
-
-  function onScroll() {
-    const currentY = window.scrollY;
-    const maxY = document.documentElement.scrollHeight - window.innerHeight;
-
-    if (currentY <= 0 || currentY >= maxY) {
-      lastScrollY = Math.min(Math.max(currentY, 0), maxY);
-      nav?.classList.remove('nav-hidden');
-      ticking = false;
-      return;
-    }
-
-    const delta = currentY - lastScrollY;
-
-    if (delta > SCROLL_DELTA) {
-      nav?.classList.add('nav-hidden');
-      lastScrollY = currentY;
-    } else if (delta < -SCROLL_DELTA) {
-      nav?.classList.remove('nav-hidden');
-      lastScrollY = currentY;
-    }
-
-    ticking = false;
-  }
-
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(onScroll);
-      ticking = true;
-    }
-  }, { passive: true });
-</script>

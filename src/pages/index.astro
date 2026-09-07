@@ -4,8 +4,9 @@ import Hero from "../components/Hero.astro";
 import Capabilities from "../components/Capabilities.astro";
 import LiveStats from "../components/LiveStats.astro";
 import SelectedWork from "../components/SelectedWork.astro";
-import SocialProofStarters from "../components/SocialProofStarters.astro";
+import About from "../components/About.astro";
 import SubstackCTA from "../components/SubstackCTA.astro";
+import WorkingTogether from "../components/WorkingTogether.astro";
 import { defaultTitle, defaultDescription } from "../config/site";
 ---
 <BaseLayout title={defaultTitle} description={defaultDescription}>
@@ -13,6 +14,7 @@ import { defaultTitle, defaultDescription } from "../config/site";
   <Capabilities />
   <LiveStats />
   <SelectedWork />
-  <SocialProofStarters />
+  <About />
   <SubstackCTA />
+  <WorkingTogether />
 </BaseLayout>

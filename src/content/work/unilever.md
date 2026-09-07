@@ -15,6 +15,7 @@ order: 2
 duration: "4 months"
 url: "https://www.unilever.com/"
 backgroundImage: "/images/work/unilever.jpg"
+outcome: "One warehouse the brand teams report from."
 ---
 <section class="work-section">
   <h2>What I delivered</h2>

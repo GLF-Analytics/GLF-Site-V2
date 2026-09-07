@@ -20,7 +20,11 @@ const work = defineCollection({
     backgroundImage: z.string().optional(),
     backgroundImageTablet: z.string().optional(),
     backgroundImageMobile: z.string().optional(),
-    companyDescription: z.string().optional()
+    companyDescription: z.string().optional(),
+    outcome: z.string().optional(),
+    tools: z.array(z.string()).optional(),
+    functions: z.array(z.string()).optional(),
+    showLiveStats: z.boolean().optional()
   })
 });
 

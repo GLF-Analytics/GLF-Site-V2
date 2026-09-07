@@ -1,13 +1,10 @@
-/* Typography - Google Fonts (must be first) */
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ============================================
-   SWISS BRUTALIST TECH DESIGN SYSTEM
-   GLF Analytics - Premium Tech Consulting
+   GLF Analytics design system (S4, Sep 2026): one flat ground,
+   hairline borders, gold as a flat accent, Geist + Geist Mono only.
    ============================================ */
 
 :root {
@@ -16,7 +13,7 @@
   /* Primary Palette */
   --color-bg: #050505;
   --color-bg-elevated: #0a0a0a;
-  --color-bg-card: rgba(10, 10, 10, 0.8);
+  --color-bg-card: #0a0a0a;
 
   /* Gold Accent System */
   --color-gold: #D4A853;
@@ -164,14 +161,13 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.875rem 1.75rem;
+  padding: 0.8rem 1.5rem;
   background: var(--color-gold);
   color: var(--color-bg);
-  font-family: 'Geist Mono', monospace;
-  font-size: 0.75rem;
+  font-family: 'Geist', sans-serif;
+  font-size: 0.875rem;
   font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
   border: none;
   cursor: pointer;
   overflow: hidden;
@@ -201,14 +197,13 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.875rem 1.75rem;
+  padding: 0.8rem 1.5rem;
   background: transparent;
   color: var(--color-text-primary);
-  font-family: 'Geist Mono', monospace;
-  font-size: 0.75rem;
+  font-family: 'Geist', sans-serif;
+  font-size: 0.875rem;
   font-weight: 500;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
   border: 1px solid var(--color-border);
   cursor: pointer;
   transition: all var(--transition-base);
@@ -227,14 +222,11 @@ body {
   position: relative;
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  transition: all var(--transition-base);
+  transition: border-color var(--transition-base);
 }
 
 .card:hover {
   border-color: var(--color-border-hover);
-  transform: translateY(-2px);
 }
 
 /* Gold accent line on cards */
@@ -262,10 +254,10 @@ body {
    ============================================ */
 
 .heading-display {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-weight: 400;
-  line-height: 1;
-  letter-spacing: -0.03em;
+  font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
 }
 
 .heading-sans {
@@ -579,8 +571,6 @@ body {
 .work-section {
   border: 1px solid var(--color-border);
   background: var(--color-bg-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   padding: 2rem;
 }
 
@@ -780,4 +770,107 @@ summary {
 .reveal-card.is-visible {
   transform: translateY(0);
   opacity: 1;
+}
+
+/* ============================================
+   ANCHOR OFFSETS (fixed nav is 3.5rem tall)
+   ============================================ */
+
+#services,
+#live,
+#selected-work,
+#about,
+#contact {
+  scroll-margin-top: 4rem;
+}
+
+/* ============================================
+   TYPING DEMO (ported from birthday-cards.ai, S4)
+   Four messages type themselves into the box and the
+   real card carrying those exact words fades in. One
+   24s loop, four 6s phases. THE CONTRACT: the ch width
+   and the steps() count of each slot equal the message's
+   character count, spaces and punctuation included.
+   Slot 1 = 18ch, slot 2 = 18ch, slot 3 = 20ch, slot 4 = 19ch.
+   ============================================ */
+
+.demo-input {
+  position: relative;
+  height: 3rem;
+  border: 1px solid var(--color-border);
+  background: #101010;
+  overflow: hidden;
+}
+
+.demo-typed {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Geist Mono', monospace;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 2px solid var(--color-gold);
+  opacity: 0;
+  width: 0;
+}
+
+.demo-typed-1 { animation: demoType18 24s steps(18, end) infinite; }
+.demo-typed-2 { animation: demoType18 24s steps(18, end) infinite 6s; }
+.demo-typed-3 { animation: demoType20 24s steps(20, end) infinite 12s; }
+.demo-typed-4 { animation: demoType19 24s steps(19, end) infinite 18s; }
+
+@keyframes demoType18 {
+  0% { opacity: 1; width: 0; }
+  7% { opacity: 1; width: 18ch; }
+  23% { opacity: 1; width: 18ch; }
+  25%, 100% { opacity: 0; width: 18ch; }
+}
+@keyframes demoType19 {
+  0% { opacity: 1; width: 0; }
+  7% { opacity: 1; width: 19ch; }
+  23% { opacity: 1; width: 19ch; }
+  25%, 100% { opacity: 0; width: 19ch; }
+}
+@keyframes demoType20 {
+  0% { opacity: 1; width: 0; }
+  7% { opacity: 1; width: 20ch; }
+  23% { opacity: 1; width: 20ch; }
+  25%, 100% { opacity: 0; width: 20ch; }
+}
+
+.demo-stage {
+  position: relative;
+  width: 220px;
+  aspect-ratio: 2 / 3;
+}
+
+.demo-card {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  opacity: 0;
+}
+
+.demo-card-1 { animation: demoCardFade 24s ease infinite; }
+.demo-card-2 { animation: demoCardFade 24s ease infinite 6s; }
+.demo-card-3 { animation: demoCardFade 24s ease infinite 12s; }
+.demo-card-4 { animation: demoCardFade 24s ease infinite 18s; }
+
+@keyframes demoCardFade {
+  0%, 7% { opacity: 0; transform: translateY(10px) scale(0.975); }
+  11%, 24% { opacity: 1; transform: translateY(0) scale(1); }
+  27%, 100% { opacity: 0; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-typed-1 { animation: none; opacity: 1; width: auto; border-right-color: transparent; }
+  .demo-typed-2, .demo-typed-3, .demo-typed-4 { animation: none; opacity: 0; }
+  .demo-card-1 { animation: none; opacity: 1; }
+  .demo-card-2, .demo-card-3, .demo-card-4 { animation: none; opacity: 0; }
 }

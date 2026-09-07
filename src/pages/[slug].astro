@@ -31,10 +31,7 @@ const backgroundStyle = desktopBg
 
       <div class="relative max-w-5xl mx-auto">
         <!-- Header Card -->
-        <div class="border border-white/[0.08] bg-surface-950/80 backdrop-blur-xl p-8 md:p-12 reveal-card" data-reveal>
-          <!-- Corner accents -->
-          <div class="absolute top-0 left-0 w-6 h-6 border-l border-t border-gold-500/30 -ml-px -mt-px"></div>
-          <div class="absolute bottom-0 right-0 w-6 h-6 border-r border-b border-gold-500/30 -mr-px -mb-px"></div>
+        <div class="border border-white/[0.08] bg-surface-950 p-8 md:p-12 reveal-card" data-reveal>
 
           <!-- Meta -->
           <div class="flex flex-wrap items-center gap-4 mb-6">
@@ -52,6 +49,13 @@ const backgroundStyle = desktopBg
           <p class="text-lg text-surface-300 max-w-2xl leading-relaxed">
             {entry.data.summary}
           </p>
+          {entry.data.tools && (
+            <ul class="mt-6 flex flex-wrap gap-1.5">
+              {entry.data.tools.map((tool) => (
+                <li class="border border-white/[0.08] px-2 py-1 font-mono text-[10px] tracking-[0.05em] text-surface-300">{tool}</li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>
@@ -91,10 +95,9 @@ const backgroundStyle = desktopBg
         <!-- Testimonial -->
         {entry.data.testimonial && (
           <div class="mb-16 border border-white/[0.08] bg-surface-950/50 p-8 md:p-10 relative reveal-card" data-reveal>
-            <span class="absolute -top-4 left-8 text-6xl text-gold-500/20 font-serif">"</span>
             <span class="label block mb-6">Testimonial</span>
             <blockquote>
-              <p class="text-lg text-surface-200 italic leading-relaxed pl-4 border-l-2 border-gold-500/30">
+              <p class="text-lg text-surface-200 leading-relaxed pl-4 border-l-2 border-gold-500/30">
                 {entry.data.testimonial}
               </p>
               {entry.data.testimonialAuthor && (
@@ -120,7 +123,7 @@ const backgroundStyle = desktopBg
               rel="noreferrer"
               class="btn-secondary inline-flex"
             >
-              <span>Visit project site</span>
+              <span>Open the site</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="14"

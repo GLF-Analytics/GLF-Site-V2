@@ -18,6 +18,7 @@ logo: "/images/work/gotham-goods.svg"
 backgroundImage: "/images/work/gothamgoods.jpg"
 testimonial: "GLF was part of our team. The work they did was an integral part of getting us to where we are today."
 testimonialAuthor: "Joanne Wilson, Founder @ Gotham NYC"
+outcome: "A custom site, full tracking, and an email program from day one."
 ---
 <section class="work-section">
   <h2>What I delivered</h2>
