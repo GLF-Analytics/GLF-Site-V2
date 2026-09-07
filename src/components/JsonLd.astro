@@ -1,25 +1,43 @@
 ---
 import { orgInfo, siteName, siteUrl, defaultDescription, socialLinks } from "../config/site";
 
+const sameAs = Object.values(socialLinks).filter(Boolean);
+
 const jsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": `${siteUrl}/#organization`,
     name: orgInfo.name,
     legalName: orgInfo.legalName,
     url: siteUrl,
     logo: `${siteUrl}${orgInfo.logo}`,
-    sameAs: Object.values(socialLinks).filter(Boolean),
     email: orgInfo.email,
-    telephone: orgInfo.phone,
+    sameAs,
+    founder: { "@id": `${siteUrl}/#person` },
     address: {
       "@type": "PostalAddress",
-      streetAddress: orgInfo.address.street,
       addressLocality: orgInfo.address.city,
       addressRegion: orgInfo.address.region,
-      postalCode: orgInfo.address.postalCode,
       addressCountry: orgInfo.address.country
     }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": `${siteUrl}/#person`,
+    name: orgInfo.founder,
+    jobTitle: "Founder, GLF Analytics",
+    url: siteUrl,
+    email: orgInfo.email,
+    sameAs,
+    worksFor: { "@id": `${siteUrl}/#organization` },
+    knowsAbout: [
+      "data infrastructure and reporting (BigQuery, SQL, Looker Studio)",
+      "growth strategy and paid media",
+      "eCommerce and digital systems (Shopify, CRMs, integrations)",
+      "AI tooling and document automation"
+    ]
   },
   {
     "@context": "https://schema.org",
@@ -27,11 +45,7 @@ const jsonLd = [
     name: siteName,
     url: siteUrl,
     description: defaultDescription,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: `${siteUrl}?query={search_term_string}`,
-      "query-input": "required name=search_term_string"
-    }
+    publisher: { "@id": `${siteUrl}/#organization` }
   },
   {
     "@context": "https://schema.org",
@@ -41,15 +55,12 @@ const jsonLd = [
     description: defaultDescription,
     areaServed: "US",
     serviceType: [
-      "eCommerce management",
-      "data strategy",
-      "business intelligence",
-      "growth marketing",
-      "tech stack audits"
+      "data infrastructure and reporting",
+      "growth strategy and paid media",
+      "eCommerce and digital systems",
+      "AI tooling"
     ]
   }
 ];
 ---
-<script type="application/ld+json">
-  {JSON.stringify(jsonLd)}
-</script>
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

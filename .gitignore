@@ -26,3 +26,4 @@ pnpm-debug.log*
 
 # misc
 *.swp
+!.env.example

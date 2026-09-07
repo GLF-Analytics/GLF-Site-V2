@@ -20,7 +20,7 @@ testimonial: "GLF became a valuable extension of our team, bringing strong execu
 testimonialAuthor: "Lindsay Crasnick, Director of Digital Experience + Product @ bartaco"
 ---
 <section class="work-section">
-  <h2>What we delivered</h2>
+  <h2>What I delivered</h2>
   <ul>
     <li>QR-code ordering platform launch.</li>
     <li>Email, loyalty, and paid performance strategy.</li>

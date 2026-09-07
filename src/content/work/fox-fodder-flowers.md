@@ -11,14 +11,14 @@ outcomes:
   - "More traffic and conversions from paid search"
 tags: ["SEO", "Google Ads", "Reporting"]
 featured: true
-order: 2
+order: 7
 duration: "10 months"
 url: "https://www.foxfodderflowers.com/"
 logo: "/images/work/fox-fodder-flowers.svg"
 backgroundImage: "/images/work/foxfodderflowers.jpg"
 ---
 <section class="work-section">
-  <h2>What we delivered</h2>
+  <h2>What I delivered</h2>
   <ul>
     <li>SEO audit and technical fixes (canonical, duplicate content, sitemap).</li>
     <li>Internal linking improvements.</li>

@@ -1,151 +1,101 @@
 ---
-const capabilities = [
+const areas = [
   {
-    title: "eCommerce Management",
+    number: "01",
+    title: "Data infrastructure and reporting",
     description:
-      "Full setup and administration of online shops. We handle SKU settings, 3PL warehouse connections, and the day-to-day admin of running your shop.",
-    bullets: ["Shopify Theme Dev", "App Integrations"],
-    icon: "bag",
-    number: "01"
+      "BigQuery warehouses, the SQL that feeds them, GA4 and tagging done right, Looker Studio and Tableau reporting, and forecasting models the finance team can open and follow.",
+    proof: "Unilever, UCAN",
+    href: "/unilever"
   },
   {
-    title: "Data Strategy & BI",
+    number: "02",
+    title: "Growth strategy and marketing",
     description:
-      "Build and manage data warehouses. We set up tracking, reporting, and help stakeholders use data to make better decisions.",
-    bullets: ["SQL & BigQuery", "Tableau & Looker"],
-    icon: "chart",
-    number: "02"
+      "Paid media across Meta, TikTok, Google, and Amazon. Email and lifecycle in Klaviyo. SEO, loyalty, and the delivery channels and restaurant platforms behind them: Uber Eats, DoorDash, Olo, OneDine.",
+    proof: "bartaco, Fox Fodder Flowers",
+    href: "/bartaco"
   },
   {
-    title: "Growth Marketing",
+    number: "03",
+    title: "The tech that runs the business",
     description:
-      "Develop and implement strategy across Meta, TikTok, Google Ads, and Amazon. We create audience segments and manage paid media campaigns.",
-    bullets: ["Email Marketing (Klaviyo)", "Amazon Buy with Prime"],
-    icon: "megaphone",
-    number: "03"
+      "Shopify builds and theme work, app integrations, 3PL and inventory connections, CRM setup, conversion paths, stack audits that cut cost, and the broken-connection and bug work nobody wants to own.",
+    proof: "Gotham Goods, bartaco",
+    href: "/gotham-goods"
   },
   {
-    title: "Tech Headache Relief",
+    number: "04",
+    title: "AI tooling, inside the same stack",
     description:
-      "We take common tech headaches off your plate: fixing broken app connections, troubleshooting bugs, and addressing SEO roadblocks.",
-    bullets: ["Optimizing conversion paths", "Inventory reporting"],
-    icon: "wrench",
-    number: "04"
-  },
-  {
-    title: "Tech Stack Audit",
-    description:
-      "Audit your current technology stack to bring down costs by implementing the best and most efficient tools for your specific scale.",
-    icon: "layers",
-    number: "05"
-  },
-  {
-    title: "Food & Bev Tech",
-    description:
-      "Grow third-party app sales for restaurants (Ubereats, Doordash) and manage specialized platforms like Olo Engage and OneDine.",
-    icon: "utensils",
-    number: "06"
+      "Document automation on Power Automate and the Claude API for a team that lives in Microsoft tools, and AI products built end to end. My AI practice for construction teams lives at glf-ai.com.",
+    proof: "A construction management company in LA, birthday-cards.ai",
+    href: "/construction-ai-integration"
   }
+];
+
+const howItGoes = [
+  "Exploration first: I map how the business runs and where the numbers break before proposing anything.",
+  "A short ranked list, then a build that ships in weeks. The first win is usually a definition or a denominator, not a dashboard.",
+  "One system, reused: the warehouse feeds the reporting, the reporting feeds the strategy, the same tools run the next project.",
+  "You keep everything. The code, the reporting, the credentials, and a runbook your team can follow without me."
 ];
 ---
 <section class="relative py-24 md:py-32 px-6 md:px-12 lg:px-16 border-b border-white/[0.06]" id="services">
   <div class="max-w-7xl mx-auto">
-    <!-- Section Header -->
-    <div class="grid lg:grid-cols-12 gap-8 mb-16 md:mb-24">
+    <div class="grid lg:grid-cols-12 gap-8 mb-16 md:mb-20">
       <div class="lg:col-span-5">
-        <div class="capabilities-heading-mask" data-reveal>
-          <span class="label block mb-4">What We Do</span>
-        </div>
-        <div class="capabilities-heading-mask" data-reveal>
+        <div><div class="capabilities-heading-mask" data-reveal>
+          <span class="label block mb-4">What I do</span>
+        </div></div>
+        <div><div class="capabilities-heading-mask" data-reveal>
           <h2 class="capabilities-heading heading-display text-4xl md:text-5xl lg:text-6xl text-white">
-            Capabilities
+            Four kinds of work
           </h2>
-        </div>
+        </div></div>
       </div>
       <div class="lg:col-span-7 lg:pt-12">
         <p class="capabilities-subtext text-surface-400 text-base md:text-lg max-w-xl leading-relaxed" data-reveal>
-          We bridge the gap between complex data engineering and creative marketing execution.
-          Technical depth meets strategic clarity.
+          All in service of one question: what should the business do next, and what do the numbers say.
         </p>
       </div>
     </div>
 
-    <!-- Capabilities Grid -->
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/[0.06]">
-      {capabilities.map((capability, index) => (
-        <div
-          class="capability-card card card-accent bg-surface-950 p-8 md:p-10 group"
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/[0.06]">
+      {areas.map((area, index) => (
+        <a
+          href={area.href}
+          class="capability-card card card-accent bg-surface-950 p-8 md:p-10 group block"
           data-reveal
           style={`transition-delay: ${index * 100}ms`}
         >
           <div class="capability-content">
-            <!-- Number and Icon Row -->
-            <div class="flex items-start justify-between mb-8">
-              <span class="font-mono text-[10px] tracking-[0.2em] text-surface-600">
-                {capability.number}
-              </span>
-              <div class="capability-icon">
-                {capability.icon === "bag" && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M16 10a4 4 0 0 1-8 0M3.103 6.034h17.794" />
-                    <path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" />
-                  </svg>
-                )}
-                {capability.icon === "chart" && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M3 3v18h18m-3-4V9m-5 8V5M8 17v-3" />
-                  </svg>
-                )}
-                {capability.icon === "megaphone" && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
-                    <path d="M6 14a12 12 0 0 0 2.4 7.2a2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14M8 6v8" />
-                  </svg>
-                )}
-                {capability.icon === "wrench" && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" />
-                  </svg>
-                )}
-                {capability.icon === "layers" && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
-                    <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" />
-                    <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" />
-                  </svg>
-                )}
-                {capability.icon === "utensils" && (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20m14-7V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2zm0 0v7" />
-                  </svg>
-                )}
-              </div>
-            </div>
-
-            <!-- Title -->
+            <span class="block font-mono text-[10px] tracking-[0.2em] text-surface-600 mb-8">{area.number}</span>
             <h3 class="text-lg md:text-xl font-medium text-white mb-4 group-hover:text-gold-500 transition-colors">
-              {capability.title}
+              {area.title}
             </h3>
-
-            <!-- Description -->
-            <p class="text-sm text-surface-400 leading-relaxed mb-6">
-              {capability.description}
+            <p class="text-sm text-surface-400 leading-relaxed mb-6">{area.description}</p>
+            <p class="flex items-start gap-3 text-xs text-surface-500 leading-relaxed">
+              <span class="w-1 h-1 bg-gold-500 flex-shrink-0 mt-1.5"></span>
+              <span>{area.proof}</span>
             </p>
-
-            <!-- Bullets -->
-            {capability.bullets && (
-              <ul class="space-y-2">
-                {capability.bullets.map((bullet) => (
-                  <li class="flex items-center gap-3 text-xs text-surface-500">
-                    <span class="w-1 h-1 bg-gold-500 flex-shrink-0"></span>
-                    <span>{bullet}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
-        </div>
+        </a>
       ))}
+    </div>
+
+    <div class="mt-16 md:mt-20 grid lg:grid-cols-12 gap-8" data-reveal>
+      <div class="lg:col-span-5">
+        <span class="label block mb-4">How the work goes</span>
+      </div>
+      <ol class="lg:col-span-7 space-y-3">
+        {howItGoes.map((line, i) => (
+          <li class="flex items-start gap-4 text-sm md:text-base text-surface-300 leading-relaxed">
+            <span class="font-mono text-[10px] tracking-[0.2em] text-surface-600 mt-1.5">0{i + 1}</span>
+            <span>{line}</span>
+          </li>
+        ))}
+      </ol>
     </div>
   </div>
 </section>

@@ -68,7 +68,6 @@ export default {
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-gold': 'linear-gradient(135deg, #D4A853 0%, #B8860B 100%)',
       },
     }
   },

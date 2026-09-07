@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # Daily rebuild so the birthday-cards.ai stats block refreshes. 09:17 UTC = 02:17 Los Angeles.
+    - cron: "17 9 * * *"
 
 permissions:
   contents: read
@@ -32,6 +35,10 @@ jobs:
 
       - name: Build Astro site
         run: npm run build
+        env:
+          VERCEL_ANALYTICS_TOKEN: ${{ secrets.VERCEL_ANALYTICS_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          BC_PROJECT_ID: ${{ secrets.BC_PROJECT_ID }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

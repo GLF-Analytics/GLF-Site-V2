@@ -20,7 +20,7 @@ testimonial: "GLF was part of our team. The work they did was an integral part o
 testimonialAuthor: "Joanne Wilson, Founder @ Gotham NYC"
 ---
 <section class="work-section">
-  <h2>What we delivered</h2>
+  <h2>What I delivered</h2>
   <ul>
     <li>Custom-coded ecommerce site build.</li>
     <li>GA4 + GTM tagging and tracking setup.</li>
