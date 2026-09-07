@@ -791,7 +791,7 @@ summary {
    24s loop, four 6s phases. THE CONTRACT: the ch width
    and the steps() count of each slot equal the message's
    character count, spaces and punctuation included.
-   Slot 1 = 18ch, slot 2 = 18ch, slot 3 = 20ch, slot 4 = 19ch.
+   Slot 1 = 10ch, slot 2 = 18ch, slot 3 = 9ch, slot 4 = 20ch.
    ============================================ */
 
 .demo-input {
@@ -817,22 +817,28 @@ summary {
   width: 0;
 }
 
-.demo-typed-1 { animation: demoType18 24s steps(18, end) infinite; }
+.demo-typed-1 { animation: demoType10 24s steps(10, end) infinite; }
 .demo-typed-2 { animation: demoType18 24s steps(18, end) infinite 6s; }
-.demo-typed-3 { animation: demoType20 24s steps(20, end) infinite 12s; }
-.demo-typed-4 { animation: demoType19 24s steps(19, end) infinite 18s; }
+.demo-typed-3 { animation: demoType9 24s steps(9, end) infinite 12s; }
+.demo-typed-4 { animation: demoType20 24s steps(20, end) infinite 18s; }
 
+@keyframes demoType9 {
+  0% { opacity: 1; width: 0; }
+  7% { opacity: 1; width: 9ch; }
+  23% { opacity: 1; width: 9ch; }
+  25%, 100% { opacity: 0; width: 9ch; }
+}
+@keyframes demoType10 {
+  0% { opacity: 1; width: 0; }
+  7% { opacity: 1; width: 10ch; }
+  23% { opacity: 1; width: 10ch; }
+  25%, 100% { opacity: 0; width: 10ch; }
+}
 @keyframes demoType18 {
   0% { opacity: 1; width: 0; }
   7% { opacity: 1; width: 18ch; }
   23% { opacity: 1; width: 18ch; }
   25%, 100% { opacity: 0; width: 18ch; }
-}
-@keyframes demoType19 {
-  0% { opacity: 1; width: 0; }
-  7% { opacity: 1; width: 19ch; }
-  23% { opacity: 1; width: 19ch; }
-  25%, 100% { opacity: 0; width: 19ch; }
 }
 @keyframes demoType20 {
   0% { opacity: 1; width: 0; }
