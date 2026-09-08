@@ -62,7 +62,6 @@ const areas = [
   }
 ];
 
-const steps = ["Exploration first", "A short ranked list", "A build that ships in weeks", "You keep everything"];
 ---
 <section class="relative py-20 md:py-28 px-6 md:px-12 lg:px-16 border-b border-white/[0.06]" id="services">
   <div class="max-w-7xl mx-auto">
@@ -107,16 +106,5 @@ const steps = ["Exploration first", "A short ranked list", "A build that ships i
       ))}
     </div>
 
-    <div class="mt-10 md:mt-12" data-reveal>
-      <span class="block font-mono text-[10px] tracking-[0.2em] uppercase text-surface-500 mb-3">How I work</span>
-      <ol class="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06]">
-        {steps.map((step, i) => (
-          <li class="bg-surface-950 px-5 py-4 flex items-start gap-3">
-            <span class="font-mono text-[10px] tracking-[0.2em] text-surface-600 mt-1">0{i + 1}</span>
-            <span class="text-sm text-surface-300 leading-snug">{step}</span>
-          </li>
-        ))}
-      </ol>
-    </div>
   </div>
 </section>

@@ -406,7 +406,7 @@ body {
 
 .work-stack-section {
   position: relative;
-  height: 110vh;
+  min-height: 110vh;
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -415,8 +415,6 @@ body {
 .work-stack-card {
   position: relative;
   z-index: 1;
-  max-height: calc(110vh - 10rem);
-  overflow: hidden;
 }
 
 .work-stack-bg {

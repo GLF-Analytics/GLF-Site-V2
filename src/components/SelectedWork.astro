@@ -57,6 +57,7 @@ const getResponsiveBackgrounds = (item, index) => {
       const bgs = getResponsiveBackgrounds(item, index);
       return (
         <section
+          id={`work-${item.slug}`}
           class="work-stack-section"
           style={`--stack-bg: ${bgs.desktop}; --stack-bg-tablet: ${bgs.tablet}; --stack-bg-mobile: ${bgs.mobile};`}
         >

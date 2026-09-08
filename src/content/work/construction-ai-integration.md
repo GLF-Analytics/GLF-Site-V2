@@ -1,6 +1,6 @@
 ---
 title: "AI for construction management"
-clientType: "glf-ai.com"
+clientType: "Construction management"
 summary: "My AI practice for construction teams. Report generators on Power Automate and the Claude API, a bid comparison tool, and the training that got a whole firm prompting."
 companyDescription: "The work below is for a construction management company in LA. Weekly client reports, contractor PDFs, bids, budgets."
 challenge: "Hours went to formatting and re-typing, report quality varied by author, and any AI tool had to keep client data private."
