@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "map:dots": "node scripts/world-dots.mjs"
   },
   "dependencies": {
     "astro": "^4.16.0"
@@ -17,8 +18,12 @@
     "@astrojs/sitemap": "^3.7.0",
     "@astrojs/tailwind": "^5.1.0",
     "autoprefixer": "^10.4.19",
+    "d3-geo": "^3.1.1",
+    "i18n-iso-countries": "^7.14.0",
     "patch-package": "^8.0.1",
     "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.7"
+    "tailwindcss": "^3.4.7",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
   }
 }

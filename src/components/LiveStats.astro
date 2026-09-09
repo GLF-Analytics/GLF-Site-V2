@@ -2,6 +2,7 @@
 import { getBcStats } from "../lib/bcStats";
 import { bcStatsSource } from "../config/site";
 import TypingDemo from "./TypingDemo.astro";
+import CountryMap from "./CountryMap.astro";
 
 const s = await getBcStats();
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -55,6 +56,8 @@ const built = [
           </div>
         ))}
       </div>
+
+      <CountryMap />
 
       <div class="mt-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6" data-reveal>
         <a href={bcStatsSource.productUrl} target="_blank" rel="noreferrer" class="btn-primary group">
