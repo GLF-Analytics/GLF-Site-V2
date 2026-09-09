@@ -886,9 +886,9 @@ summary {
    COUNTRY MAP (S10, Sep 2026)
    The "Cards made in N countries" panel under the
    birthday-cards.ai numbers. The component script owns
-   the open state through data-open (hover on a fine
-   pointer, tap everywhere); this CSS only draws the
-   transition. Gold dots fade in west to east on every
+   the open state through data-open (click opens, the X
+   or Escape closes, never hover); this CSS only draws
+   the transition. Gold dots fade in west to east on every
    open. Flat: hairline border, no glow, no gradient.
    ============================================ */
 .bc-map__panel {
