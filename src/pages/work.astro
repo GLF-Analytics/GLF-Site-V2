@@ -28,7 +28,7 @@ const hostOf = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(
         <span class="label block mb-4">Case studies</span>
         <h1 class="heading-display text-4xl md:text-5xl text-white">All work since 2017</h1>
         <p class="mt-6 text-surface-400 text-base md:text-lg leading-relaxed max-w-xl">
-          The homepage shows {featuredCount} of {count}. This page has every one.
+          {featuredCount === count ? `All ${count} case studies in one list, each with its own page.` : `The homepage shows ${featuredCount} of ${count}. This page has every one.`}
         </p>
       </div>
     </div>
@@ -41,7 +41,7 @@ const hostOf = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(
           <div>
             <div class="flex flex-wrap items-center gap-4 mb-4">
               <span class="font-mono text-[10px] tracking-[0.2em] uppercase text-gold-500">{item.data.clientType}</span>
-              {item.data.featured && (
+              {item.data.featured && featuredCount !== count && (
                 <>
                   <span class="w-px h-3 bg-white/20"></span>
                   <span class="font-mono text-[10px] tracking-[0.15em] uppercase text-surface-500">On the homepage</span>

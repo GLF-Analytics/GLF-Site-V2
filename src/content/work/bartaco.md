@@ -12,7 +12,7 @@ outcomes:
 tags: ["Digital Growth", "Paid Media", "Loyalty"]
 featured: true
 order: 1
-duration: "18 months"
+duration: "More than two years"
 url: "https://bartaco.com/"
 backgroundImage: "/images/work/bartaco.jpg"
 testimonial: "GLF became a valuable extension of our team, bringing strong execution, fresh ideas, and the versatility to solve new problems and keep the business moving forward."

@@ -10,7 +10,8 @@ outcomes:
   - "Growth across paid social, influencer, and sampling"
   - "1.5-year strategic partnership"
 tags: ["Data Infrastructure", "Digital Strategy", "Analytics"]
-featured: false
+featured: true
+outcome: "One data stack and eighteen months of strategy across channels."
 order: 6
 duration: "18 months"
 url: "https://ucan.co/"

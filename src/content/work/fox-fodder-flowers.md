@@ -10,7 +10,8 @@ outcomes:
   - "Positive ROI on branded and non-branded campaigns"
   - "More traffic and conversions from paid search"
 tags: ["SEO", "Google Ads", "Reporting"]
-featured: false
+featured: true
+outcome: "Search fixed and a Google Ads account profitable on brand and non-brand terms."
 order: 7
 duration: "10 months"
 url: "https://www.foxfodderflowers.com/"
