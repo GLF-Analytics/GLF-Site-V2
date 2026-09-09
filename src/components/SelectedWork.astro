@@ -78,14 +78,14 @@ const getResponsiveBackgrounds = (item, index) => {
                   {item.data.title}
                 </h3>
                 {item.data.companyDescription && (
-                  <p class="mt-3 text-sm text-surface-400 max-w-xl">
+                  <p class="mt-3 text-sm text-surface-400 max-w-xl md:min-h-[2.5rem]">
                     {item.data.companyDescription}
                   </p>
                 )}
               </div>
 
               <!-- Card Body -->
-              <div class="p-8 md:p-10 grid gap-8 md:grid-cols-[1.3fr_0.7fr]">
+              <div class="p-8 md:p-10 grid gap-8 md:grid-cols-[1.3fr_0.7fr] lg:min-h-[28rem]">
                 <div class="space-y-6">
                   <p class="text-surface-300 leading-relaxed">{item.data.summary}</p>
 
@@ -190,8 +190,11 @@ const getResponsiveBackgrounds = (item, index) => {
       return;
     }
     const card = firstSection.querySelector(".work-stack-card") ?? firstSection;
+    // S9: land the card top at the same offset every section uses (padding-top on .work-stack-section),
+    // so the nav click and natural scrolling put the brand name at one screen height.
     const rect = card.getBoundingClientRect();
-    const top = window.scrollY + rect.top + rect.height / 2 - window.innerHeight / 2;
+    const offset = parseFloat(getComputedStyle(firstSection).paddingTop) || 0;
+    const top = window.scrollY + rect.top - offset;
     window.scrollTo({ top: Math.max(0, top), behavior });
   };
 

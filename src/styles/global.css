@@ -408,7 +408,10 @@ body {
   position: relative;
   min-height: 110vh;
   display: flex;
-  align-items: center;
+  /* S9: cards anchor at one offset instead of centering, so every brand name lands at the same screen height */
+  align-items: flex-start;
+  padding-top: max(4.5rem, 10vh);
+  padding-bottom: max(4.5rem, 10vh);
   overflow: hidden;
 }
 
