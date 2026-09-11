@@ -17,7 +17,7 @@ url: "https://bartaco.com/"
 backgroundImage: "/images/work/bartaco.jpg"
 testimonial: "GLF became a valuable extension of our team, bringing strong execution, fresh ideas, and the versatility to solve new problems and keep the business moving forward."
 testimonialAuthor: "Lindsay Crasnick, Director of Digital Experience + Product @ bartaco"
-outcome: "34 markets, more than two years, ongoing."
+outcome: "The channels I manage for bartaco have grown across 34 markets."
 ---
 <section class="work-section">
   <h2>What I delivered</h2>

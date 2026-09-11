@@ -6,7 +6,9 @@
   each term's font size follows how often it appears across the forty
   bullets (square-root scale so the big words do not drown the rest), the
   top term is gold, and the build throws if a term scores zero or the list
-  is not forty long. No data-reveal on this page: forty hidden bullets is
+  is not forty long. The bullets render in runs: consecutive bullets with the
+  same project sit under one mono heading with an id, so /everything#bartaco
+  lands on that run. No data-reveal on this page: forty hidden bullets is
   the worst case for the reveal observer, so everything renders plainly.
 */
 import BaseLayout from "../layouts/BaseLayout.astro";
@@ -15,6 +17,22 @@ import { intro, bullets, cloudTerms } from "../data/everything";
 if (bullets.length !== 40) {
   throw new Error(`/everything expects 40 bullets, found ${bullets.length}`);
 }
+
+// Runs: consecutive bullets that share a project render under one heading.
+// Order is the data file's order; a project that appears twice (GLF Analytics
+// in 2021 and again now) simply gets two runs. Build throws on an empty label.
+type Run = { project: string; id: string; items: typeof bullets };
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+const runs: Run[] = [];
+for (const b of bullets) {
+  if (!b.project.trim()) throw new Error(`/everything bullet with no project: "${b.text.slice(0, 40)}"`);
+  const last = runs[runs.length - 1];
+  if (last && last.project === b.project) last.items.push(b);
+  else runs.push({ project: b.project, id: slug(b.project), items: [b] });
+}
+const ids = runs.map((r) => r.id);
+const dupIds = ids.filter((id, i) => ids.indexOf(id) !== i);
+runs.forEach((r, i) => { if (dupIds.includes(r.id)) r.id = `${r.id}-${i + 1}`; });
 
 const corpus = bullets.map((b) => `${b.text} ${b.tools.join(" ")}`).join("\n");
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -58,6 +76,7 @@ for (let i = cloud.length - 1; i > 0; i--) {
   [cloud[i], cloud[j]] = [cloud[j], cloud[i]];
 }
 
+console.log(`[everything] ${runs.length} groups: ` + runs.map((r) => `${r.project} ${r.items.length}`).join(", "));
 console.log(
   "[everything] cloud counts: " +
     [...scored].sort((a, b) => b.count - a.count).map((t) => `${t.label} ${t.count}`).join(", ")
@@ -93,21 +112,28 @@ const description =
 
   <section class="px-6 md:px-12 lg:px-16 py-16 md:py-24 border-b border-white/[0.06]">
     <div class="max-w-7xl mx-auto">
-      <ul class="max-w-3xl space-y-8 md:space-y-9">
-        {bullets.map((b) => (
-          <li class="flex items-start gap-4">
-            <span class="w-1.5 h-1.5 bg-gold-500 flex-shrink-0 mt-[0.65rem]" aria-hidden="true"></span>
-            <div>
-              <p class="text-surface-200 leading-relaxed">{b.text}</p>
-              <ul class="mt-3 flex flex-wrap gap-1.5">
-                {b.tools.map((tool) => (
-                  <li class="border border-white/[0.08] px-2 py-1 font-mono text-[10px] tracking-[0.05em] text-surface-400">{tool}</li>
-                ))}
-              </ul>
-            </div>
-          </li>
+      <div class="max-w-3xl">
+        {runs.map((run, i) => (
+          <section id={run.id} class={i === 0 ? "" : "mt-10 pt-8 border-t border-white/[0.06]"} aria-labelledby={`${run.id}-heading`}>
+            <h2 id={`${run.id}-heading`} class="font-mono text-[10px] tracking-[0.15em] text-gold-500 mb-5">{run.project}</h2>
+            <ul class="space-y-6">
+              {run.items.map((b) => (
+                <li class="flex items-start gap-4">
+                  <span class="w-1.5 h-1.5 bg-gold-500 flex-shrink-0 mt-[0.65rem]" aria-hidden="true"></span>
+                  <div>
+                    <p class="text-surface-200 leading-relaxed">{b.text}</p>
+                    <ul class="mt-3 flex flex-wrap gap-1.5">
+                      {b.tools.map((tool) => (
+                        <li class="border border-white/[0.08] px-2 py-1 font-mono text-[10px] tracking-[0.05em] text-surface-400">{tool}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
         ))}
-      </ul>
+      </div>
     </div>
   </section>
 
