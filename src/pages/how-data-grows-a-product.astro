@@ -1,0 +1,169 @@
+---
+/*
+  /how-data-grows-a-product: how birthday-cards.ai runs on its own data, with
+  the live dashboard at the top. Linked from the homepage module ("How I built
+  it") and the birthday-cards case study. Copy lives in src/data/how-data.ts.
+  The dashboard reuses StatGrid, MonthlyCards, and CountryMap (open), so the
+  homepage and this page read the same snapshots and cannot disagree.
+
+  Build-time guards: a paragraph or FAQ answer with a numeral other than a
+  four-digit year throws unless it is flagged numerals: "dated-fact" with a
+  source (the site law: traffic numbers are never typed). The word count is
+  printed so the read-time target (750 to 900 words) is checked every build.
+  No data-reveal on this page (the /everything precedent): the chart and the
+  map animate on their own and the prose renders plainly.
+*/
+import BaseLayout from "../layouts/BaseLayout.astro";
+import StatGrid from "../components/StatGrid.astro";
+import MonthlyCards from "../components/MonthlyCards.astro";
+import CountryMap from "../components/CountryMap.astro";
+import { getBcStats } from "../lib/bcStats";
+import { bcStatsSource, siteUrl } from "../config/site";
+import { meta, sources, sections, faq, namedTokens, type Paragraph } from "../data/how-data";
+
+const s = await getBcStats();
+const fmt = (n: number) => n.toLocaleString("en-US");
+const longDate = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+
+const text = (p: Paragraph) => (typeof p === "string" ? p : p.text);
+const hasStrayNumeral = (t: string) => {
+  let stripped = t.replace(/\b(19|20)\d{2}\b/g, "");
+  for (const token of namedTokens) stripped = stripped.split(token).join("");
+  return /\d/.test(stripped);
+};
+
+for (const sec of sections) {
+  if (sec.heading.includes(",")) throw new Error(`[how-data] heading with a comma: "${sec.heading}"`);
+  for (const p of sec.paragraphs) {
+    const flagged = typeof p !== "string" && p.numerals === "dated-fact" && p.source.trim().length > 0;
+    if (hasStrayNumeral(text(p)) && !flagged) {
+      throw new Error(`[how-data] numeral in prose without a dated-fact source (${sec.id}): "${text(p).slice(0, 60)}"`);
+    }
+  }
+}
+for (const f of faq) {
+  if (hasStrayNumeral(f.a) || hasStrayNumeral(f.q)) throw new Error(`[how-data] numeral in the FAQ: "${f.q}"`);
+}
+
+const searchLine = `In the last ${s.window_days} days ${fmt(s.search_visitors_30d)} of ${fmt(s.visitors_30d)} visitors came from a search engine.`;
+
+const prose = [meta.lede, ...sections.flatMap((sec) => sec.paragraphs.map(text)), searchLine, ...faq.flatMap((f) => [f.q, f.a])].join(" ");
+const wordCount = prose.split(/\s+/).filter(Boolean).length;
+const datedFacts = sections.flatMap((sec) => sec.paragraphs.filter((p) => typeof p !== "string")).length;
+console.log(`[how-data] ${wordCount} words, ${sections.length} sections, ${faq.length} FAQ, ${datedFacts} dated facts`);
+
+const url = `${siteUrl}/how-data-grows-a-product/`;
+const ld = [
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "@id": `${url}#post`,
+    headline: meta.title,
+    description: meta.description,
+    url,
+    mainEntityOfPage: url,
+    datePublished: meta.published,
+    dateModified: meta.published,
+    inLanguage: "en",
+    wordCount,
+    author: { "@id": `${siteUrl}/#person` },
+    publisher: { "@id": `${siteUrl}/#organization` },
+    about: {
+      "@type": "SoftwareApplication",
+      name: "birthday-cards.ai",
+      url: bcStatsSource.productUrl,
+      applicationCategory: "DesignApplication"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${url}#faq`,
+    mainEntity: faq.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a }
+    }))
+  }
+];
+---
+<BaseLayout title={meta.title} description={meta.description}>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(ld)} />
+
+  <section class="pt-32 pb-10 md:pt-40 md:pb-12 px-6 md:px-12 lg:px-16">
+    <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8">
+      <div class="lg:col-span-8">
+        <span class="label block mb-4">{meta.eyebrow}</span>
+        <h1 class="heading-display text-4xl md:text-5xl text-white">{meta.title}</h1>
+        <p class="mt-6 text-surface-400 text-base md:text-lg leading-relaxed max-w-xl">{meta.lede}</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="numbers" class="px-6 md:px-12 lg:px-16 pb-16 md:pb-20 border-b border-white/[0.06]" aria-labelledby="numbers-heading">
+    <div class="max-w-7xl mx-auto">
+      <div class="max-w-3xl">
+        <h2 id="numbers-heading" class="font-mono text-[10px] tracking-[0.15em] text-gold-500 mb-5">The numbers as of today</h2>
+        <StatGrid stats={s} />
+        <MonthlyCards />
+        <CountryMap open />
+        <p class="mt-5 text-xs text-surface-500 leading-relaxed">
+          Refreshed {longDate(s.fetched_at)} from {bcStatsSource.label}. Test traffic excluded.
+        </p>
+        <ul class="mt-4 flex flex-wrap gap-2" aria-label="Connected sources">
+          {sources.map((src) => (
+            <li class="border border-white/[0.08] px-2 py-1 font-mono text-[10px] tracking-[0.05em] text-surface-400">{src}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-6 md:px-12 lg:px-16 py-16 md:py-24 border-b border-white/[0.06]">
+    <div class="max-w-7xl mx-auto">
+      <div class="max-w-3xl">
+        {sections.map((sec, i) => (
+          <section id={sec.id} class={i === 0 ? "" : "mt-10 pt-8 border-t border-white/[0.06]"} aria-labelledby={`${sec.id}-heading`}>
+            <h2 id={`${sec.id}-heading`} class="font-mono text-[10px] tracking-[0.15em] text-gold-500 mb-5">{sec.heading}</h2>
+            {sec.paragraphs.map((p) => (
+              <p class="mt-4 text-surface-200 leading-relaxed">{text(p)}</p>
+            ))}
+            {sec.id === "sources" && <p class="mt-4 text-surface-200 leading-relaxed">{searchLine}</p>}
+            {sec.chips && (
+              <ul class="mt-5 flex flex-wrap gap-1.5">
+                {sec.chips.map((chip) => (
+                  <li class="border border-white/[0.08] px-2 py-1 font-mono text-[10px] tracking-[0.05em] text-surface-400">{chip}</li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ))}
+
+        <section id="faq" class="mt-10 pt-8 border-t border-white/[0.06]" aria-labelledby="faq-heading">
+          <h2 id="faq-heading" class="font-mono text-[10px] tracking-[0.15em] text-gold-500 mb-5">Questions</h2>
+          {faq.map((f) => (
+            <div class="mt-5">
+              <h3 class="text-white font-medium">{f.q}</h3>
+              <p class="mt-2 text-surface-300 leading-relaxed">{f.a}</p>
+            </div>
+          ))}
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-6 md:px-12 lg:px-16 py-16 md:py-20">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-6">
+      <p class="text-surface-400">Working on something like this?</p>
+      <div class="flex flex-wrap gap-x-8 gap-y-3">
+        <a href="/#contact" class="group inline-flex items-center gap-2 text-sm text-white font-medium hover:text-gold-500 transition-colors">
+          <span>Email me</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
+        </a>
+        <a href={bcStatsSource.productUrl} target="_blank" rel="noreferrer" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Open birthday-cards.ai</a>
+        <a href="/" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Back to the homepage</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

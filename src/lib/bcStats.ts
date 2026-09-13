@@ -5,7 +5,13 @@
  * BC_PROJECT_ID are present, it queries the Vercel Web Analytics REST API
  * (https://vercel.com/docs/analytics/web-analytics-api). On any failure, or
  * with no token, it falls back to the committed snapshot in src/data.
- * The token never reaches the browser; only the four numbers do.
+ * The token never reaches the browser; only the numbers do.
+ *
+ * S13 (9/13/26): the aggregate queries send the dimension as `by=` (the REST
+ * parameter name); the earlier `groupBy=` was copied from the MCP response
+ * echo and would have returned an ungrouped total. Still untested until the
+ * Vercel env vars exist. A third snapshot, bc-monthly.json, feeds the chart on
+ * /how-data-grows-a-product through getBcMonthly() below.
  */
 import snapshot from "../data/bc-stats.json";
 
@@ -33,6 +39,7 @@ const SEARCH_HOSTS = new Set([
   "search.brave.com",
   "yandex.com"
 ]);
+const isSearchHost = (host: string) => SEARCH_HOSTS.has(host) || host.endsWith(".search.yahoo.com");
 const NOT_BETA_EVENTS = "not startswith(eventData/surface, 'beta')";
 const NOT_BETA_VISITS = "not startswith(requestPath, '/beta')";
 
@@ -90,12 +97,12 @@ export async function getBcStats(): Promise<BcStats> {
       query("events/count", { ...window, filter: `eventName eq 'card_generated' and ${NOT_BETA_EVENTS}` }, token, teamId, projectId),
       query("events/count", { since: LAUNCH, until: window.until, filter: `eventName eq 'card_generated' and ${NOT_BETA_EVENTS}` }, token, teamId, projectId),
       query("visits/count", { ...window, filter: NOT_BETA_VISITS }, token, teamId, projectId),
-      query("visits/aggregate", { ...window, filter: NOT_BETA_VISITS, groupBy: "referrerHostname", limit: "50" }, token, teamId, projectId)
+      query("visits/aggregate", { ...window, filter: NOT_BETA_VISITS, by: "referrerHostname", limit: "50" }, token, teamId, projectId)
     ]);
 
     const rows: Array<{ referrerHostname?: string; visitors?: number }> = Array.isArray(refs.data) ? refs.data : [];
     const searchVisitors = rows
-      .filter((r) => r.referrerHostname && SEARCH_HOSTS.has(r.referrerHostname))
+      .filter((r) => r.referrerHostname && isSearchHost(r.referrerHostname))
       .reduce((sum, r) => sum + (r.visitors ?? 0), 0);
 
     const stats: BcStats = {
@@ -165,7 +172,7 @@ export async function getBcCountries(): Promise<BcCountries> {
   try {
     const res = await query(
       "events/aggregate",
-      { since: LAUNCH, until, filter: `eventName eq 'card_generated' and ${NOT_BETA_EVENTS}`, groupBy: "country", limit: "100" },
+      { since: LAUNCH, until, filter: `eventName eq 'card_generated' and ${NOT_BETA_EVENTS}`, by: "country", limit: "100" },
       token,
       teamId,
       projectId
@@ -191,5 +198,75 @@ export async function getBcCountries(): Promise<BcCountries> {
   } catch (err) {
     console.warn("[bcStats] countries fetch failed; using committed snapshot from", countriesSnapshot.fetched_at, String(err));
     return countriesFromSnapshot();
+  }
+}
+
+/**
+ * Cards made per month since launch (the chart on /how-data-grows-a-product).
+ * One events/aggregate query by month, beta surfaces excluded. Months only
+ * accrue: a shorter live series, a missing month, or any month lower than the
+ * committed snapshot is a query problem, not a real drop, so the snapshot wins.
+ * The current month is partial by construction; the component labels it.
+ */
+import monthlySnapshot from "../data/bc-monthly.json";
+
+export type BcMonth = { month: string; cards: number; visitors: number };
+export type BcMonthly = {
+  fetched_at: string;
+  since: string;
+  months: BcMonth[];
+  live: boolean;
+};
+
+function monthlyFromSnapshot(): BcMonthly {
+  return {
+    fetched_at: monthlySnapshot.fetched_at,
+    since: monthlySnapshot.since,
+    months: monthlySnapshot.months,
+    live: false
+  };
+}
+
+export async function getBcMonthly(): Promise<BcMonthly> {
+  const token = env("VERCEL_ANALYTICS_TOKEN");
+  const teamId = env("VERCEL_TEAM_ID");
+  const projectId = env("BC_PROJECT_ID");
+
+  if (!token || !teamId || !projectId) {
+    console.warn("[bcStats] no analytics token in env; using committed monthly snapshot from", monthlySnapshot.fetched_at);
+    return monthlyFromSnapshot();
+  }
+
+  const until = isoDate(new Date());
+
+  try {
+    const res = await query(
+      "events/aggregate",
+      { since: LAUNCH, until, filter: `eventName eq 'card_generated' and ${NOT_BETA_EVENTS}`, by: "month", limit: "100" },
+      token,
+      teamId,
+      projectId
+    );
+    const rows = Array.isArray(res.data) ? res.data : [];
+    const months: BcMonth[] = rows
+      .map((r) => {
+        const key = typeof r.month === "string" ? r.month : typeof r.timestamp === "string" ? r.timestamp.slice(0, 7) : "";
+        return { month: key, cards: Number(r.count ?? r.events ?? 0), visitors: Number(r.visitors ?? 0) };
+      })
+      .filter((m) => /^\d{4}-\d{2}$/.test(m.month) && m.month >= LAUNCH.slice(0, 7))
+      .sort((a, b) => a.month.localeCompare(b.month));
+
+    const byMonth = new Map(months.map((m) => [m.month, m.cards]));
+    const regressed = monthlySnapshot.months.some((m) => (byMonth.get(m.month) ?? -1) < m.cards);
+    if (months.length < monthlySnapshot.months.length || regressed) {
+      console.warn("[bcStats] live monthly series shorter or lower than the snapshot; using snapshot instead", months.length);
+      return monthlyFromSnapshot();
+    }
+
+    console.log("[bcStats] live monthly series", months.length, "months");
+    return { fetched_at: until, since: LAUNCH, months, live: true };
+  } catch (err) {
+    console.warn("[bcStats] monthly fetch failed; using committed snapshot from", monthlySnapshot.fetched_at, String(err));
+    return monthlyFromSnapshot();
   }
 }

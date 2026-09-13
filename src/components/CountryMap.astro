@@ -10,9 +10,16 @@
  * and getBcCountries() (live Vercel analytics or src/data/bc-countries.json).
  * Every country with at least one card is gold, same dot size, equal weight.
  * A country too small for the grid gets one gold dot at its centroid.
+ *
+ * Props (S13, 9/13/26): `open` renders the panel expanded from the server
+ * (the dashboard on /how-data-grows-a-product); the homepage keeps the
+ * default, closed. `id` only matters if a page ever mounts two maps.
  */
 import { getBcCountries } from "../lib/bcStats";
 import world from "../data/world-dots.json";
+
+type Props = { open?: boolean; id?: string };
+const { open = false, id = "bc-map-panel" } = Astro.props as Props;
 
 type Dot = [number, number, string];
 type Place = { name: string; cx: number; cy: number };
@@ -55,21 +62,21 @@ const strokeWidth = world.r * 2;
 
 console.log(`[countryMap] ${count} countries, ${goldDots} gold dots (${fallbacks} centroid fallbacks), ${grid.length} grid dots, source ${data.live ? "live" : `snapshot ${data.fetched_at}`}`);
 ---
-<div class="bc-map mt-4" data-open="false">
+<div class="bc-map mt-4" data-open={String(open)}>
   <button
     type="button"
     class="bc-map__button group inline-flex flex-wrap items-center gap-x-3 gap-y-1 text-left text-sm text-white hover:text-gold-500 transition-colors"
-    aria-expanded="false"
-    aria-controls="bc-map-panel"
+    aria-expanded={String(open)}
+    aria-controls={id}
   >
     <span class="inline-flex items-center gap-2">
       <span>Cards made in {count} countries</span>
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="bc-map__chevron" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
     </span>
-    <span class="font-mono text-[10px] tracking-[0.15em] uppercase text-surface-500">Click for the map</span>
+    {!open && <span class="font-mono text-[10px] tracking-[0.15em] uppercase text-surface-500">Click for the map</span>}
   </button>
 
-  <div id="bc-map-panel" class="bc-map__panel">
+  <div id={id} class="bc-map__panel">
     <div class="bc-map__inner">
       <div class="bc-map__content">
         <div class="flex items-start justify-between gap-4 mb-3">
@@ -78,8 +85,8 @@ console.log(`[countryMap] ${count} countries, ${goldDots} gold dots (${fallbacks
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
           </button>
         </div>
-        <svg viewBox={`0 0 ${world.w} ${world.h}`} class="block w-full h-auto" role="img" aria-labelledby="bc-map-title">
-          <title id="bc-map-title">World map with the countries where a card was made marked in gold</title>
+        <svg viewBox={`0 0 ${world.w} ${world.h}`} class="block w-full h-auto" role="img" aria-labelledby={`${id}-title`}>
+          <title id={`${id}-title`}>World map with the countries where a card was made marked in gold</title>
           <path class="bc-map__base" d={baseD} fill="none" stroke="rgba(255,255,255,0.14)" stroke-width={strokeWidth} stroke-linecap="round" />
           {groups.map((g, i) => (
             <path class="bc-map__hl" style={`--i:${i}`} d={g.d} fill="none" stroke="#D4A853" stroke-width={strokeWidth} stroke-linecap="round"><title>{g.name}</title></path>
@@ -92,11 +99,14 @@ console.log(`[countryMap] ${count} countries, ${goldDots} gold dots (${fallbacks
 </div>
 
 <script>
-  const root = document.querySelector<HTMLElement>(".bc-map");
-  const button = root?.querySelector<HTMLButtonElement>(".bc-map__button");
-  const close = root?.querySelector<HTMLButtonElement>(".bc-map__close");
-  if (root && button && close) {
-    let open = false;
+  // One map per page today; the loop keeps it correct if a page ever has two.
+  // The initial state is read from the server-rendered data-open, so a map
+  // that renders open stays open and nothing flashes.
+  document.querySelectorAll<HTMLElement>(".bc-map").forEach((root) => {
+    const button = root.querySelector<HTMLButtonElement>(".bc-map__button");
+    const close = root.querySelector<HTMLButtonElement>(".bc-map__close");
+    if (!button || !close) return;
+    let open = root.dataset.open === "true";
 
     const render = () => {
       root.dataset.open = String(open);
@@ -121,5 +131,5 @@ console.log(`[countryMap] ${count} countries, ${goldDots} gold dots (${fallbacks
         button.focus();
       }
     });
-  }
+  });
 </script>

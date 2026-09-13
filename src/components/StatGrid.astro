@@ -1,0 +1,31 @@
+---
+/**
+ * The four birthday-cards.ai numbers (S13, Sep 2026). Extracted from
+ * LiveStats so the homepage module and /how-data-grows-a-product render one
+ * markup and cannot drift. The page calls getBcStats() once and passes the
+ * result in; this component never fetches. Extra attributes (data-reveal,
+ * class) pass through to the grid element.
+ */
+import type { BcStats } from "../lib/bcStats";
+import { bcStatsSource } from "../config/site";
+
+type Props = { stats: BcStats; class?: string; [key: string]: unknown };
+const { stats: s, class: className, ...rest } = Astro.props as Props;
+const fmt = (n: number) => n.toLocaleString("en-US");
+
+const numbers = [
+  { value: s.cards_30d, label: "cards made", window: "last 30 days" },
+  { value: s.cards_since_launch, label: "cards made", window: `since ${bcStatsSource.launchMonth}` },
+  { value: s.visitors_30d, label: "visitors", window: "last 30 days" },
+  { value: s.search_visitors_30d, label: "visitors from search", window: "last 30 days" }
+];
+---
+<div class:list={["grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06]", className]} {...rest}>
+  {numbers.map((n) => (
+    <div class="bg-surface-950 p-5 md:p-6">
+      <span class="block heading-display text-3xl md:text-4xl text-white tabular-nums">{fmt(n.value)}</span>
+      <span class="block mt-2 text-sm text-surface-300">{n.label}</span>
+      <span class="block mt-1 font-mono text-[10px] tracking-[0.15em] uppercase text-surface-500">{n.window}</span>
+    </div>
+  ))}
+</div>

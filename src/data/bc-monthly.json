@@ -1,0 +1,15 @@
+{
+  "fetched_at": "2026-09-13",
+  "since": "2026-03-01",
+  "until": "2026-09-13",
+  "source": "Vercel Web Analytics, birthday-card-app project, card_generated events by month, beta surfaces excluded",
+  "months": [
+    { "month": "2026-03", "cards": 47, "visitors": 13 },
+    { "month": "2026-04", "cards": 57, "visitors": 21 },
+    { "month": "2026-05", "cards": 63, "visitors": 24 },
+    { "month": "2026-06", "cards": 139, "visitors": 56 },
+    { "month": "2026-07", "cards": 159, "visitors": 64 },
+    { "month": "2026-08", "cards": 277, "visitors": 102 },
+    { "month": "2026-09", "cards": 138, "visitors": 69 }
+  ]
+}

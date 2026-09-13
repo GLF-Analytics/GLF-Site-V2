@@ -25,5 +25,8 @@ export const orgInfo = {
 export const bcStatsSource = {
   label: "Vercel Web Analytics on birthday-cards.ai",
   productUrl: "https://www.birthday-cards.ai",
-  launchMonth: "March 2026"
+  launchMonth: "March 2026",
+  // Indexable search landing pages on the product, counted at each glf website
+  // session from the birthday-cards repo (13 = the zodiac page, pushed 9/13/26).
+  seoPages: "Thirteen"
 };

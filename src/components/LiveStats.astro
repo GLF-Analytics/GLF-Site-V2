@@ -3,18 +3,11 @@ import { getBcStats } from "../lib/bcStats";
 import { bcStatsSource } from "../config/site";
 import TypingDemo from "./TypingDemo.astro";
 import CountryMap from "./CountryMap.astro";
+import StatGrid from "./StatGrid.astro";
 
 const s = await getBcStats();
-const fmt = (n: number) => n.toLocaleString("en-US");
 const longDate = (iso: string) =>
   new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
-
-const numbers = [
-  { value: s.cards_30d, label: "cards made", window: "last 30 days" },
-  { value: s.cards_since_launch, label: "cards made", window: `since ${bcStatsSource.launchMonth}` },
-  { value: s.visitors_30d, label: "visitors", window: "last 30 days" },
-  { value: s.search_visitors_30d, label: "visitors from search", window: "last 30 days" }
-];
 
 const built = [
   "Design",
@@ -23,7 +16,7 @@ const built = [
   "Email and PDF delivery",
   "Share and gift links",
   "Rate limits and spend caps",
-  "Seven search landing pages",
+  `${bcStatsSource.seoPages} search landing pages`,
   "Analytics, about 60 events"
 ];
 ---
@@ -47,26 +40,18 @@ const built = [
         </ul>
       </div>
 
-      <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06]" data-reveal>
-        {numbers.map((n) => (
-          <div class="bg-surface-950 p-5 md:p-6">
-            <span class="block heading-display text-3xl md:text-4xl text-white tabular-nums">{fmt(n.value)}</span>
-            <span class="block mt-2 text-sm text-surface-300">{n.label}</span>
-            <span class="block mt-1 font-mono text-[10px] tracking-[0.15em] uppercase text-surface-500">{n.window}</span>
-          </div>
-        ))}
-      </div>
+      <StatGrid stats={s} class="mt-8" data-reveal />
 
       <CountryMap />
 
       <div class="mt-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6" data-reveal>
-        <a href={bcStatsSource.productUrl} target="_blank" rel="noreferrer" class="btn-primary group">
-          <span>Make a card</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="relative z-10" aria-hidden="true"><path d="M15 3h6v6m-11 5L21 3m-3 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>
-        </a>
-        <a href="/birthday-cards" class="group inline-flex items-center gap-2 text-sm text-white hover:text-gold-500 transition-colors">
+        <a href="/how-data-grows-a-product" class="group inline-flex items-center gap-2 text-sm text-white hover:text-gold-500 transition-colors">
           <span>How I built it</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
+        </a>
+        <a href={bcStatsSource.productUrl} target="_blank" rel="noreferrer" class="group inline-flex items-center gap-2 text-sm text-surface-300 hover:text-gold-500 transition-colors">
+          <span>Open birthday-cards.ai</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6m-11 5L21 3m-3 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>
         </a>
       </div>
 

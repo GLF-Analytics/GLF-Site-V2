@@ -1,0 +1,66 @@
+---
+/**
+ * Cards made per month on birthday-cards.ai since launch (S13, Sep 2026).
+ * One flat inline SVG bar chart, geometry computed here the way CountryMap
+ * computes its paths; the CSS (global.css, MONTHLY CARDS) only animates.
+ * Data: getBcMonthly() (live Vercel analytics or src/data/bc-monthly.json).
+ * The current month is drawn dimmer and labeled "so far"; that flag is
+ * derived from fetched_at at build time, never stored. No library, no
+ * gridlines, one hairline baseline, gold as the only accent.
+ */
+import { getBcMonthly } from "../lib/bcStats";
+
+const data = await getBcMonthly();
+const months = data.months;
+if (!months.length) throw new Error("[bcMonthly] empty series");
+
+const currentKey = data.fetched_at.slice(0, 7);
+const short = (m: string) =>
+  new Date(`${m}-15T12:00:00Z`).toLocaleDateString("en-US", { month: "short", timeZone: "UTC" });
+const long = (m: string) =>
+  new Date(`${m}-15T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+const fmt = (n: number) => n.toLocaleString("en-US");
+
+// Geometry in viewBox units. Width scales to the container; text scales with it.
+const W = 640;
+const H = 224;
+const padX = 12;
+const top = 30;
+const baseline = 184;
+const labelY = 208;
+const slot = (W - padX * 2) / months.length;
+const barW = Math.round(slot * 0.62);
+const max = Math.max(...months.map((m) => m.cards));
+
+const bars = months.map((m, i) => {
+  const h = Math.max(2, Math.round(((baseline - top) * m.cards) / max));
+  const x = Math.round(padX + slot * i + (slot - barW) / 2);
+  const partial = m.month === currentKey;
+  return { ...m, i, x, y: baseline - h, h, cx: x + barW / 2, partial, label: short(m.month) };
+});
+
+const total = months.reduce((s, m) => s + m.cards, 0);
+const desc =
+  `Cards made per month since ${long(months[0].month)}: ` +
+  bars.map((b) => `${long(b.month)} ${fmt(b.cards)}${b.partial ? " so far" : ""}`).join(", ") +
+  ".";
+
+console.log(
+  `[bcMonthly] ${months.length} months, ${total} cards, last ${currentKey} ${bars[bars.length - 1]?.partial ? "partial" : "complete"}, source ${data.live ? "live" : `snapshot ${data.fetched_at}`}`
+);
+---
+<figure class="bc-bars mt-6 border border-white/[0.08] bg-surface-950 p-4 md:p-5">
+  <figcaption class="block font-mono text-[10px] tracking-[0.2em] uppercase text-surface-500 mb-3">Cards made per month</figcaption>
+  <svg viewBox={`0 0 ${W} ${H}`} class="block w-full h-auto" role="img" aria-labelledby="bc-bars-title bc-bars-desc">
+    <title id="bc-bars-title">Cards made per month on birthday-cards.ai</title>
+    <desc id="bc-bars-desc">{desc}</desc>
+    <line x1={padX} x2={W - padX} y1={baseline} y2={baseline} stroke="rgba(255,255,255,0.14)" stroke-width="1" />
+    {bars.map((b) => (
+      <g class="bc-bars__col" style={`--i:${b.i}`}>
+        <rect class:list={["bc-bars__bar", { "bc-bars__bar--partial": b.partial }]} x={b.x} y={b.y} width={barW} height={b.h} fill="#D4A853" />
+        <text class="bc-bars__value" x={b.cx} y={b.y - 9} text-anchor="middle">{fmt(b.cards)}</text>
+        <text class="bc-bars__month" x={b.cx} y={labelY} text-anchor="middle">{b.label}{b.partial ? " so far" : ""}</text>
+      </g>
+    ))}
+  </svg>
+</figure>

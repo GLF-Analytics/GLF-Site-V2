@@ -1,21 +1,23 @@
 {
-  "fetched_at": "2026-09-09",
+  "fetched_at": "2026-09-13",
   "since": "2026-03-01",
-  "until": "2026-09-09",
+  "until": "2026-09-13",
   "source": "Vercel Web Analytics, birthday-card-app project, card_generated events by country, beta surfaces excluded",
   "countries": [
     { "code": "AG", "visitors": 1, "cards": 6 },
+    { "code": "AR", "visitors": 1, "cards": 1 },
     { "code": "AZ", "visitors": 2, "cards": 3 },
     { "code": "BE", "visitors": 1, "cards": 1 },
     { "code": "BR", "visitors": 1, "cards": 1 },
     { "code": "CA", "visitors": 4, "cards": 4 },
     { "code": "CH", "visitors": 2, "cards": 2 },
     { "code": "CZ", "visitors": 1, "cards": 4 },
-    { "code": "DE", "visitors": 1, "cards": 4 },
+    { "code": "DE", "visitors": 2, "cards": 14 },
     { "code": "EE", "visitors": 3, "cards": 4 },
     { "code": "ES", "visitors": 1, "cards": 1 },
-    { "code": "FI", "visitors": 1, "cards": 1 },
-    { "code": "GB", "visitors": 14, "cards": 26 },
+    { "code": "FI", "visitors": 2, "cards": 2 },
+    { "code": "FR", "visitors": 1, "cards": 1 },
+    { "code": "GB", "visitors": 15, "cards": 28 },
     { "code": "GR", "visitors": 4, "cards": 10 },
     { "code": "HR", "visitors": 1, "cards": 1 },
     { "code": "IN", "visitors": 11, "cards": 13 },
@@ -26,9 +28,10 @@
     { "code": "NL", "visitors": 1, "cards": 3 },
     { "code": "NO", "visitors": 1, "cards": 2 },
     { "code": "PT", "visitors": 1, "cards": 2 },
+    { "code": "RW", "visitors": 1, "cards": 1 },
     { "code": "SC", "visitors": 1, "cards": 1 },
     { "code": "SG", "visitors": 1, "cards": 1 },
     { "code": "UA", "visitors": 1, "cards": 1 },
-    { "code": "US", "visitors": 271, "cards": 725 }
+    { "code": "US", "visitors": 279, "cards": 753 }
   ]
 }

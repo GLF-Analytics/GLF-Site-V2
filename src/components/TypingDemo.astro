@@ -6,7 +6,8 @@
   slot rule (slot 1 = 10, slot 2 = 18, slot 3 = 9, slot 4 = 20). Change a
   message and you change the rule with it, or the cursor stops early.
   The whole block is one link to the product, in a new tab, and it says it
-  is a demo before anyone clicks.
+  is a demo and what a click does before anyone clicks (S13, 9/13/26: the
+  line stopped asking the reader to make a card; it names where the click goes).
 */
 import { bcStatsSource } from "../config/site";
 
@@ -31,7 +32,7 @@ slots.forEach((slot, i) => {
   class="group block w-full max-w-xs mx-auto"
   aria-label="Open birthday-cards.ai in a new tab"
 >
-  <span class="block font-mono text-[10px] tracking-[0.2em] uppercase text-surface-500 mb-3">Demo. Click to make your own.</span>
+  <span class="block font-mono text-[10px] tracking-[0.2em] uppercase text-surface-500 mb-3">Demo. A click opens birthday-cards.ai.</span>
   <span class="sr-only">A message types itself and the finished card appears.</span>
 
   <div aria-hidden="true">

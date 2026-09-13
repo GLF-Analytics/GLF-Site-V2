@@ -781,7 +781,16 @@ summary {
 #live,
 #selected-work,
 #about,
-#contact {
+#contact,
+#numbers,
+#loop,
+#instrument,
+#sources,
+#decisions,
+#build,
+#human,
+#for-a-business,
+#faq {
   scroll-margin-top: 4rem;
 }
 
@@ -945,6 +954,57 @@ summary {
     transition: none;
   }
   .bc-map[data-open="true"] .bc-map__hl {
+    animation: none;
+  }
+}
+
+/* ============================================
+   MONTHLY CARDS (S13, Sep 2026)
+   The "Cards made per month" bar chart on
+   /how-data-grows-a-product. Geometry is computed in
+   MonthlyCards.astro; this only animates the bars up
+   from the baseline on load and dims the partial month.
+   Flat: gold fill, one hairline baseline, no gridlines.
+   ============================================ */
+.bc-bars__bar {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: bcBarIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(120ms + var(--i, 0) * 60ms);
+}
+
+.bc-bars__bar--partial {
+  fill-opacity: 0.45;
+}
+
+.bc-bars__value,
+.bc-bars__month {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  animation: bcDotIn 300ms ease-out both;
+  animation-delay: calc(360ms + var(--i, 0) * 60ms);
+}
+
+.bc-bars__value {
+  font-size: 15px;
+  fill: var(--color-text-primary);
+}
+
+.bc-bars__month {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: var(--color-text-secondary);
+}
+
+@keyframes bcBarIn {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bc-bars__bar,
+  .bc-bars__value,
+  .bc-bars__month {
     animation: none;
   }
 }
