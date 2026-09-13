@@ -789,6 +789,8 @@ summary {
 #decisions,
 #build,
 #human,
+#start,
+#command-line,
 #for-a-business,
 #faq {
   scroll-margin-top: 4rem;
@@ -961,7 +963,7 @@ summary {
 /* ============================================
    MONTHLY CARDS (S13, Sep 2026)
    The "Cards made per month" bar chart on
-   /how-data-grows-a-product. Geometry is computed in
+   /using-data-to-build-with-ai. Geometry is computed in
    MonthlyCards.astro; this only animates the bars up
    from the baseline on load and dims the partial month.
    Flat: gold fill, one hairline baseline, no gridlines.

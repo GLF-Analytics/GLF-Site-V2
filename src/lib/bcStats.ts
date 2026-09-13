@@ -11,7 +11,7 @@
  * parameter name); the earlier `groupBy=` was copied from the MCP response
  * echo and would have returned an ungrouped total. Still untested until the
  * Vercel env vars exist. A third snapshot, bc-monthly.json, feeds the chart on
- * /how-data-grows-a-product through getBcMonthly() below.
+ * /using-data-to-build-with-ai through getBcMonthly() below.
  */
 import snapshot from "../data/bc-stats.json";
 
@@ -202,7 +202,7 @@ export async function getBcCountries(): Promise<BcCountries> {
 }
 
 /**
- * Cards made per month since launch (the chart on /how-data-grows-a-product).
+ * Cards made per month since launch (the chart on /using-data-to-build-with-ai).
  * One events/aggregate query by month, beta surfaces excluded. Months only
  * accrue: a shorter live series, a missing month, or any month lower than the
  * committed snapshot is a query problem, not a real drop, so the snapshot wins.

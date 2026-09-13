@@ -27,5 +27,5 @@ showLiveStats: true
     <li>Rate limits, spend caps, and alerts, so a traffic spike cannot run up the bill.</li>
     <li>A white-label sibling, custom-cards.ai, from the same code.</li>
   </ul>
-  <p><a href="/how-data-grows-a-product">How the data runs it</a>, with the live numbers.</p>
+  <p><a href="/using-data-to-build-with-ai">How the data runs it</a>, with the live numbers.</p>
 </section>

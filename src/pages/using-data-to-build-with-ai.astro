@@ -1,6 +1,6 @@
 ---
 /*
-  /how-data-grows-a-product: how birthday-cards.ai runs on its own data, with
+  /using-data-to-build-with-ai: how birthday-cards.ai runs on its own data, with
   the live dashboard at the top. Linked from the homepage module ("How I built
   it") and the birthday-cards case study. Copy lives in src/data/how-data.ts.
   The dashboard reuses StatGrid, MonthlyCards, and CountryMap (open), so the
@@ -53,7 +53,7 @@ const wordCount = prose.split(/\s+/).filter(Boolean).length;
 const datedFacts = sections.flatMap((sec) => sec.paragraphs.filter((p) => typeof p !== "string")).length;
 console.log(`[how-data] ${wordCount} words, ${sections.length} sections, ${faq.length} FAQ, ${datedFacts} dated facts`);
 
-const url = `${siteUrl}/how-data-grows-a-product/`;
+const url = `${siteUrl}/using-data-to-build-with-ai/`;
 const ld = [
   {
     "@context": "https://schema.org",
