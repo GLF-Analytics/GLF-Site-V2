@@ -16,7 +16,8 @@ export const OPTIONS = {
   runner: ["none", "analyst", "engineer", "ai"],
   ecosystem: ["google", "microsoft", "neither"],
   freshness: ["daily", "hourly", "realtime"],
-  askAi: ["no", "few", "everyone"]
+  askAi: ["no", "few", "everyone"],
+  budget: ["under100", "100-500", "500-2000", "2000+", "unsure"]
 } as const;
 
 type Opt<K extends keyof typeof OPTIONS> = (typeof OPTIONS)[K][number];
@@ -30,11 +31,13 @@ export type Answers = {
   ecosystem: Opt<"ecosystem">;
   freshness: Opt<"freshness">;
   askAi: Opt<"askAi">;
+  /** S17: informs the summary line and the AI read; the rules pick ignores it. */
+  budget: Opt<"budget">;
   notes: string;
 };
 
 export const NOTES_MAX = 600;
-const SINGLE_KEYS = ["readers", "size", "systems", "runner", "ecosystem", "freshness", "askAi"] as const;
+const SINGLE_KEYS = ["readers", "size", "systems", "runner", "ecosystem", "freshness", "askAi", "budget"] as const;
 
 /** Strict validation for anything that crosses a trust boundary (the API body, the URL). */
 export function parseAnswers(input: unknown): Answers | null {
@@ -63,11 +66,12 @@ export function toQuery(a: Answers): string {
   return p.toString();
 }
 
-/** Free text never goes in the URL; a shared link restores the choices only. */
+/** Free text never goes in the URL; a shared link restores the choices only. Links from before S17 carry no budget. */
 export function fromQuery(search: string): Answers | null {
   const p = new URLSearchParams(search);
   const raw: Record<string, unknown> = { notes: "" };
   for (const key of SINGLE_KEYS) raw[key] = p.get(key);
+  raw.budget = p.get("budget") ?? "unsure";
   raw.kinds = p.get("kinds") ? p.get("kinds")!.split(".") : [];
   return parseAnswers(raw);
 }
@@ -245,6 +249,21 @@ export function priceStack(picks: Picks, a: Answers): Stack {
     unpriced: lines.filter((l) => l.price.notPublished && l.tool).map((l) => l.tool!.name),
     estimates: lines.filter((l) => l.price.estimate).length
   };
+}
+
+// ---------- the budget line (S17) ----------
+
+const BUDGET_MAX: Record<Opt<"budget">, number | null> = { under100: 100, "100-500": 500, "500-2000": 2000, "2000+": Infinity, unsure: null };
+
+export type BudgetFit = "fits" | "stretch" | "over" | "unsure";
+
+/** Compares the priced total with the top of the chosen budget band. Unpublished lines are outside the total, as on the page. */
+export function budgetFit(stack: Stack, a: Answers): BudgetFit {
+  const max = BUDGET_MAX[a.budget];
+  if (max === null) return "unsure";
+  if (Math.round(stack.high) <= max) return "fits";
+  if (Math.round(stack.low) <= max) return "stretch";
+  return "over";
 }
 
 export type Alternative = { tool: Tool; price: LinePrice; deltaHigh: number; compatible: boolean };

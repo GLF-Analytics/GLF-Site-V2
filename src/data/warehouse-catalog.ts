@@ -688,19 +688,19 @@ export const catalog: Tool[] = [
 export const scenarios: { name: string; answers: Answers; low: number; high: number }[] = [
   {
     name: "small",
-    answers: { readers: "1-5", size: "1", systems: "1-3", kinds: ["store", "ads", "spreadsheets"], runner: "none", ecosystem: "google", freshness: "daily", askAi: "no", notes: "" },
+    answers: { readers: "1-5", size: "1", systems: "1-3", kinds: ["store", "ads", "spreadsheets"], runner: "none", ecosystem: "google", freshness: "daily", askAi: "no", budget: "unsure", notes: "" },
     low: 30,
     high: 55
   },
   {
     name: "mid",
-    answers: { readers: "6-15", size: "2-10", systems: "4-6", kinds: ["store", "marketplaces", "ads", "crm", "accounting"], runner: "ai", ecosystem: "neither", freshness: "daily", askAi: "few", notes: "" },
+    answers: { readers: "6-15", size: "2-10", systems: "4-6", kinds: ["store", "marketplaces", "ads", "crm", "accounting"], runner: "ai", ecosystem: "neither", freshness: "daily", askAi: "few", budget: "unsure", notes: "" },
     low: 201,
     high: 355
   },
   {
     name: "large",
-    answers: { readers: "50+", size: "50+", systems: "10+", kinds: ["pos", "store", "accounting", "payroll", "ads", "crm"], runner: "engineer", ecosystem: "microsoft", freshness: "hourly", askAi: "everyone", notes: "" },
+    answers: { readers: "50+", size: "50+", systems: "10+", kinds: ["pos", "store", "accounting", "payroll", "ads", "crm"], runner: "engineer", ecosystem: "microsoft", freshness: "hourly", askAi: "everyone", budget: "unsure", notes: "" },
     low: 1426,
     high: 2901
   }

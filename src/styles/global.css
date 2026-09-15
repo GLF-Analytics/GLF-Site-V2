@@ -1012,28 +1012,64 @@ summary {
 }
 
 /* ============================================
-   WAREHOUSE SURVEY (S15, 9/14/26)
+   WAREHOUSE SURVEY (S15, 9/14/26; S17 9/15/26 one question a screen)
    /design-your-data-warehouse. Flat, hairlines, gold as the accent only.
+   The card holds one height (--wh-stage-h, set by the page script to the
+   tallest question) so nothing moves between questions.
    ============================================ */
 
 .wh [hidden] {
   display: none !important;
 }
 
-.wh-dots {
-  display: flex;
-  gap: 6px;
+.wh-card,
+.wh-summary {
+  scroll-margin-top: 6rem;
+  border: 1px solid var(--color-border-hover);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 1.5rem 1.25rem;
 }
 
-.wh-dots li {
-  width: 18px;
+@media (min-width: 768px) {
+  .wh-card,
+  .wh-summary {
+    padding: 2.5rem;
+  }
+}
+
+.wh-result {
+  scroll-margin-top: 6rem;
+}
+
+.wh-progress {
+  margin-bottom: 1.75rem;
+}
+
+.wh-progress__label,
+.wh-eyebrow {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--color-gold);
+  outline: none;
+}
+
+.wh-progress__track {
+  margin-top: 0.75rem;
   height: 2px;
-  background: var(--color-border-hover);
-  transition: background var(--transition-base);
+  background: var(--color-border);
+  overflow: hidden;
 }
 
-.wh-dots li.is-on {
+.wh-progress__fill {
+  width: 0;
+  height: 100%;
   background: var(--color-gold);
+  transition: width var(--transition-base);
+}
+
+.wh-stage {
+  position: relative;
 }
 
 .wh-step {
@@ -1043,33 +1079,58 @@ summary {
   min-width: 0;
 }
 
-.wh-q + .wh-q {
-  margin-top: 2.5rem;
+.wh-step__inner {
+  display: flex;
+  flex-direction: column;
+  min-height: var(--wh-stage-h, 0px);
 }
 
 .wh-q__title {
   color: var(--color-text-primary);
-  font-size: 1.25rem;
+  font-size: 1.375rem;
   font-weight: 500;
   letter-spacing: -0.01em;
-  line-height: 1.35;
+  line-height: 1.3;
+  outline: none;
+}
+
+@media (min-width: 768px) {
+  .wh-q__title {
+    font-size: 1.5rem;
+  }
 }
 
 .wh-q__hint {
-  margin-top: 0.4rem;
+  margin-top: 0.5rem;
+  max-width: 36rem;
+  color: var(--color-text-primary);
+  opacity: 0.68;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+}
+
+.wh-q__count {
+  margin-top: 0.5rem;
+  text-align: right;
   color: var(--color-text-secondary);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 .wh-choices {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.625rem;
+}
+
+@media (min-width: 640px) {
+  .wh-choices {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .wh-chips {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -1079,19 +1140,36 @@ summary {
   position: relative;
   display: flex;
   align-items: center;
-  min-height: 3rem;
-  padding: 0.75rem 1rem;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 3.25rem;
+  padding: 0.875rem 1rem;
   border: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
-  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  line-height: 1.35;
   cursor: pointer;
-  transition: border-color var(--transition-base), color var(--transition-base);
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color var(--transition-base), background-color var(--transition-base);
+}
+
+/* The check: always in the box (transparent until picked) so a pick never reflows. */
+.wh-choice::after {
+  content: "";
+  flex: none;
+  width: 0.4375rem;
+  height: 0.8125rem;
+  margin-right: 0.125rem;
+  border-right: 2px solid var(--color-gold);
+  border-bottom: 2px solid var(--color-gold);
+  transform: translateY(-2px) rotate(45deg);
+  opacity: 0;
 }
 
 .wh-choice--chip {
-  min-height: 0;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.9375rem;
 }
 
 .wh-choice input {
@@ -1102,12 +1180,15 @@ summary {
 
 .wh-choice:hover {
   border-color: var(--color-border-hover);
-  color: var(--color-text-primary);
 }
 
 .wh-choice:has(input:checked) {
   border-color: var(--color-gold);
-  color: var(--color-text-primary);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.wh-choice:has(input:checked)::after {
+  opacity: 1;
 }
 
 .wh-choice:has(input:focus-visible) {
@@ -1116,15 +1197,15 @@ summary {
 }
 
 .wh-notes {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   width: 100%;
   padding: 0.875rem 1rem;
   background: transparent;
   border: 1px solid var(--color-border);
   color: var(--color-text-primary);
-  font-size: 0.9375rem;
+  font-size: 1rem;
   line-height: 1.5;
-  resize: vertical;
+  resize: none;
 }
 
 .wh-notes:focus {
@@ -1132,8 +1213,29 @@ summary {
   border-color: var(--color-gold);
 }
 
+/* Pinned to the card bottom by the column flex above. */
 .wh-nav {
-  margin-top: 2.5rem;
+  margin-top: auto;
+  padding-top: 2rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* One button height, so the row sits at the same y with or without Back. */
+.wh-nav > * {
+  flex: 1 1 0;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 3.25rem;
+}
+
+@media (min-width: 640px) {
+  .wh-nav > * {
+    flex: 0 0 auto;
+  }
+}
+
+.wh-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
@@ -1149,7 +1251,84 @@ summary {
 }
 
 .wh-loading {
-  padding: 4rem 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.wh-summary__total {
+  margin-top: 0.75rem;
+}
+
+.wh-summary__budget {
+  margin-top: 0.5rem;
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+}
+
+.wh-summary__budget[data-status="stretch"],
+.wh-summary__budget[data-status="over"] {
+  color: var(--color-gold);
+}
+
+.wh-summary__rows {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.wh-summary__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.2rem 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-border);
+  align-items: baseline;
+}
+
+.wh-summary__layer {
+  grid-column: 1 / -1;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--color-text-secondary);
+}
+
+.wh-summary__tool {
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+}
+
+.wh-summary__cost {
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .wh-summary__row {
+    grid-template-columns: 12rem minmax(0, 1fr) auto;
+  }
+
+  .wh-summary__layer {
+    grid-column: auto;
+  }
+}
+
+.wh-summary__meta {
+  margin-top: 1rem;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+.wh-summary__meta + .wh-summary__meta {
+  margin-top: 0.4rem;
+}
+
+.wh-sub--details {
+  margin-top: 3rem;
 }
 
 .wh-loading__phrase {
@@ -1319,19 +1498,13 @@ summary {
   color: var(--color-gold);
 }
 
-@media (max-width: 480px) {
-  .wh-choices {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .wh-loading__bar {
     animation: none;
     width: 100%;
   }
 
-  .wh-dots li,
+  .wh-progress__fill,
   .wh-choice {
     transition: none;
   }

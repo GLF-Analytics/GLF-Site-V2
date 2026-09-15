@@ -5,10 +5,14 @@
   astro.config.ts. Gabriel opens it by URL until he links it (and the
   /app-hardening pass is owed before that).
 
-  Flow: four screens of two questions, one free-text screen, a loading state,
-  then the stack. The client script POSTs to /api/warehouse-suggest (AI picks
-  when switched on, rules otherwise) and prices every line locally with
-  src/lib/warehouseCalc.ts, so swaps recalculate without another call.
+  Flow (S17, 9/15/26): ten screens of one question each inside a bordered card
+  that holds one fixed height (the tallest question, measured on load and on a
+  width change), so the buttons never move and the page never scrolls between
+  questions. Then a loading state in the same card, then the result: a summary
+  card first (total, budget line, one row per layer), then the details. The
+  client script POSTs to /api/warehouse-suggest (AI picks when switched on,
+  rules otherwise) and prices every line locally with src/lib/warehouseCalc.ts,
+  so swaps recalculate without another call.
 
   Copy: src/data/warehouse-survey.ts. Prices: src/data/warehouse-catalog.ts.
   Build guards below: sources and dates on every price, three or more tools per
@@ -17,7 +21,7 @@
 */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { catalog, LAYERS, scenarios } from "../data/warehouse-catalog";
-import { meta, steps, notesStep, ui, result, layerCopy } from "../data/warehouse-survey";
+import { meta, questions, ui, result, layerCopy } from "../data/warehouse-survey";
 import { NOTES_MAX, priceStack, recommendByRules } from "../lib/warehouseCalc";
 import { orgInfo } from "../config/site";
 
@@ -33,16 +37,16 @@ for (const layer of LAYERS) {
 }
 const titles = [
   meta.title,
-  result.heading,
+  result.summaryHeading,
+  result.detailsHeading,
   result.movesHeading,
   result.sourcesHeading,
-  notesStep.title,
-  ...steps.flatMap((s) => [...s.singles.map((q) => q.title), ...(s.kinds ? [s.kinds.title] : [])]),
+  ...questions.map((q) => q.title),
   ...Object.values(layerCopy).map((l) => l.name)
 ];
 for (const t of titles) if (t.includes(",")) throw new Error(`[warehouse] comma in a title: "${t}"`);
-const dashes = JSON.stringify({ meta, steps, notesStep, ui, result, layerCopy, catalog: catalog.map((t) => [t.why, t.tradeoff, t.name, t.tier]) });
-if (/[\u2013\u2014]/.test(dashes)) throw new Error("[warehouse] em or en dash in the copy or catalog");
+const dashes = JSON.stringify({ meta, questions, ui, result, layerCopy, catalog: catalog.map((t) => [t.why, t.tradeoff, t.name, t.tier]) });
+if (/[–—]/.test(dashes)) throw new Error("[warehouse] em or en dash in the copy or catalog");
 
 const scenarioTotals = scenarios.map((s) => {
   const stack = priceStack(recommendByRules(s.answers), s.answers);
@@ -55,10 +59,10 @@ const scenarioTotals = scenarios.map((s) => {
 const priced = catalog.filter((t) => t.price.kind !== "notPublished").length;
 const oldest = catalog.map((t) => t.checked).sort()[0];
 console.log(
-  `[warehouse] ${catalog.length} tools, ${priced} priced, ${catalog.length - priced} not published, oldest check ${oldest}, scenarios ${scenarioTotals.join(" / ")}`
+  `[warehouse] ${catalog.length} tools, ${priced} priced, ${catalog.length - priced} not published, oldest check ${oldest}, scenarios ${scenarioTotals.join(" / ")}, ${questions.length} questions`
 );
 
-const totalSteps = steps.length + 1;
+const total = questions.length;
 ---
 <BaseLayout title={meta.title} description={meta.description} noindex>
   <section class="pt-32 pb-10 md:pt-40 md:pb-12 px-6 md:px-12 lg:px-16">
@@ -71,88 +75,79 @@ const totalSteps = steps.length + 1;
     </div>
   </section>
 
-  <section class="px-6 md:px-12 lg:px-16 pb-16 md:pb-24 border-b border-white/[0.06]">
+  <section class="px-4 sm:px-6 md:px-12 lg:px-16 pb-16 md:pb-24 border-b border-white/[0.06]">
     <div class="max-w-7xl mx-auto">
       <div class="wh max-w-3xl" data-email={orgInfo.email}>
         <noscript><p class="mb-8 text-sm text-surface-400">{ui.noScript}</p></noscript>
 
-        <form class="wh-form" novalidate>
-          <div class="flex items-center justify-between gap-4 mb-8">
-            <p class="font-mono text-[10px] tracking-[0.15em] text-gold-500" data-progress aria-live="polite">{ui.stepOf(1, totalSteps)}</p>
-            <ol class="wh-dots" aria-hidden="true">
-              {Array.from({ length: totalSteps }, (_, i) => <li data-dot={i} class={i === 0 ? "is-on" : ""}></li>)}
-            </ol>
-          </div>
+        <div class="wh-card" data-card>
+          <form class="wh-form" novalidate>
+            <div class="wh-progress">
+              <p class="wh-progress__label" data-progress aria-live="polite">{ui.questionOf(1, total)}</p>
+              <div class="wh-progress__track" aria-hidden="true"><div class="wh-progress__fill" data-fill></div></div>
+            </div>
 
-          {steps.map((step, i) => (
-            <fieldset class="wh-step" data-step={i} hidden={i !== 0}>
-              <legend class="sr-only">{ui.stepOf(i + 1, totalSteps)}</legend>
-              {step.singles.map((q) => (
-                <div class="wh-q" role="radiogroup" aria-labelledby={`q-${q.key}`}>
-                  <h2 id={`q-${q.key}`} class="wh-q__title">{q.title}</h2>
-                  {q.hint && <p class="wh-q__hint">{q.hint}</p>}
-                  <div class="wh-choices">
-                    {q.choices.map((c) => (
-                      <label class="wh-choice">
-                        <input type="radio" name={q.key} value={c.value} />
-                        <span>{c.label}</span>
-                      </label>
-                    ))}
+            <div class="wh-stage" data-stage>
+              {questions.map((q, i) => (
+                <fieldset class="wh-step" data-step={i} data-type={q.type} hidden={i !== 0}>
+                  <legend class="sr-only">{ui.questionOf(i + 1, total)}</legend>
+                  <div class="wh-step__inner">
+                    {q.type === "notes" ? (
+                      <div class="wh-q">
+                        <h2 class="wh-q__title" tabindex="-1"><label for="wh-notes">{q.title}</label></h2>
+                        <p class="wh-q__hint" id="wh-notes-hint">{q.hint}</p>
+                        <textarea id="wh-notes" name="notes" rows="5" maxlength={NOTES_MAX} class="wh-notes" placeholder={q.placeholder} aria-describedby="wh-notes-hint wh-notes-count"></textarea>
+                        <p class="wh-q__count" id="wh-notes-count" data-count>0 / {NOTES_MAX}</p>
+                      </div>
+                    ) : (
+                      <div class="wh-q" role={q.type === "single" ? "radiogroup" : "group"} aria-labelledby={`q-${q.key}`}>
+                        <h2 id={`q-${q.key}`} class="wh-q__title" tabindex="-1">{q.title}</h2>
+                        {q.hint && <p class="wh-q__hint">{q.hint}</p>}
+                        <div class={q.type === "single" ? "wh-choices" : "wh-chips"}>
+                          {q.choices.map((c) => (
+                            <label class={q.type === "single" ? "wh-choice" : "wh-choice wh-choice--chip"}>
+                              <input type={q.type === "single" ? "radio" : "checkbox"} name={q.key} value={c.value} />
+                              <span>{c.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    <div class="wh-nav">
+                      {i > 0 && <button type="button" class="btn-secondary" data-back>{ui.back}</button>}
+                      {q.type === "notes" ? (
+                        <button type="submit" class="btn-primary"><span>{ui.submit}</span></button>
+                      ) : (
+                        <button type="button" class="btn-primary" data-next disabled={q.type === "single"}><span>{ui.next}</span></button>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </fieldset>
               ))}
-              {step.kinds && (
-                <div class="wh-q" role="group" aria-labelledby="q-kinds">
-                  <h2 id="q-kinds" class="wh-q__title">{step.kinds.title}</h2>
-                  <p class="wh-q__hint">{step.kinds.hint}</p>
-                  <div class="wh-chips">
-                    {step.kinds.choices.map((c) => (
-                      <label class="wh-choice wh-choice--chip">
-                        <input type="checkbox" name="kinds" value={c.value} />
-                        <span>{c.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <div class="wh-nav">
-                {i > 0 && <button type="button" class="btn-secondary" data-back>{ui.back}</button>}
-                <button type="button" class="btn-primary" data-next disabled><span>{ui.next}</span></button>
-              </div>
-            </fieldset>
-          ))}
-
-          <fieldset class="wh-step" data-step={steps.length} hidden>
-            <legend class="sr-only">{ui.stepOf(totalSteps, totalSteps)}</legend>
-            <div class="wh-q">
-              <h2 class="wh-q__title"><label for="wh-notes">{notesStep.title}</label></h2>
-              <p class="wh-q__hint" id="wh-notes-hint">{notesStep.hint}</p>
-              <textarea id="wh-notes" name="notes" rows="5" maxlength={NOTES_MAX} class="wh-notes" placeholder={notesStep.placeholder} aria-describedby="wh-notes-hint wh-notes-count"></textarea>
-              <p class="wh-q__hint text-right" id="wh-notes-count" data-count>0 / {NOTES_MAX}</p>
             </div>
-            <div class="wh-nav">
-              <button type="button" class="btn-secondary" data-back>{ui.back}</button>
-              <button type="submit" class="btn-primary"><span>{ui.submit}</span></button>
-            </div>
-          </fieldset>
-        </form>
+          </form>
 
-        <div class="wh-loading" data-loading hidden aria-live="polite">
-          <p class="wh-loading__phrase" data-phrase>{ui.loading[0]}</p>
-          <div class="wh-loading__track" aria-hidden="true"><div class="wh-loading__bar"></div></div>
+          <div class="wh-loading" data-loading hidden aria-live="polite">
+            <p class="wh-loading__phrase" data-phrase>{ui.loading[0]}</p>
+            <div class="wh-loading__track" aria-hidden="true"><div class="wh-loading__bar"></div></div>
+          </div>
         </div>
 
-        <section class="wh-result" data-result hidden aria-labelledby="wh-result-heading">
-          <h2 id="wh-result-heading" class="font-mono text-[10px] tracking-[0.15em] text-gold-500 mb-5">{result.heading}</h2>
-          <p class="text-xs text-surface-500" data-source></p>
-          <p class="mt-4 text-surface-200 leading-relaxed" data-summary hidden></p>
-
-          <div class="wh-total">
-            <span class="font-mono text-[10px] tracking-[0.15em] text-surface-400">{result.totalLabel}</span>
-            <p class="mt-2"><strong class="heading-display text-3xl md:text-4xl text-white" data-total></strong><span class="ml-2 text-surface-400">a month</span></p>
-            <p class="mt-2 text-xs text-surface-500" data-total-notes></p>
+        <section class="wh-result" data-result hidden aria-labelledby="wh-summary-heading">
+          <div class="wh-summary">
+            <h2 id="wh-summary-heading" class="wh-eyebrow" tabindex="-1">{result.summaryHeading}</h2>
+            <p class="wh-summary__total">
+              <strong class="heading-display text-3xl md:text-4xl text-white" data-total></strong>
+              <span class="ml-2 text-surface-400">{result.perMonth}</span>
+            </p>
+            <p class="wh-summary__budget" data-budget hidden></p>
+            <ol class="wh-summary__rows" data-rows></ol>
+            <p class="wh-summary__meta" data-total-notes></p>
+            <p class="wh-summary__meta" data-source></p>
           </div>
 
+          <h3 class="wh-sub wh-sub--details">{result.detailsHeading}</h3>
+          <p class="mt-4 text-surface-200 leading-relaxed" data-summary hidden></p>
           <ol class="wh-lines" data-lines></ol>
 
           <h3 class="wh-sub">{result.movesHeading}</h3>
@@ -164,7 +159,7 @@ const totalSteps = steps.length + 1;
           <h3 class="wh-sub">{result.sourcesHeading}</h3>
           <ul class="wh-sources" data-sources></ul>
 
-          <div class="wh-nav mt-10">
+          <div class="wh-actions mt-10">
             <a class="btn-primary" data-email-link href={`mailto:${orgInfo.email}`}><span>{result.emailLabel}</span></a>
             <button type="button" class="btn-secondary" data-restart>{ui.restart}</button>
           </div>
@@ -207,9 +202,10 @@ const totalSteps = steps.length + 1;
 
 <script>
   import { LAYERS, type Layer } from "../data/warehouse-catalog";
-  import { steps, ui, result, layerCopy, traitLabels } from "../data/warehouse-survey";
+  import { questions, ui, result, layerCopy, traitLabels } from "../data/warehouse-survey";
   import {
     alternatives,
+    budgetFit,
     byId,
     fromQuery,
     moneyRange,
@@ -224,9 +220,11 @@ const totalSteps = steps.length + 1;
   const root = document.querySelector<HTMLElement>(".wh");
   const form = root?.querySelector<HTMLFormElement>(".wh-form");
   if (root && form) {
+    const card = root.querySelector<HTMLElement>("[data-card]")!;
+    const stage = form.querySelector<HTMLElement>("[data-stage]")!;
     const stepsEls = [...form.querySelectorAll<HTMLFieldSetElement>(".wh-step")];
-    const dots = [...form.querySelectorAll<HTMLElement>("[data-dot]")];
     const progress = form.querySelector<HTMLElement>("[data-progress]")!;
+    const fill = form.querySelector<HTMLElement>("[data-fill]")!;
     const loading = root.querySelector<HTMLElement>("[data-loading]")!;
     const phrase = root.querySelector<HTMLElement>("[data-phrase]")!;
     const resultEl = root.querySelector<HTMLElement>("[data-result]")!;
@@ -235,26 +233,50 @@ const totalSteps = steps.length + 1;
     const template = root.querySelector<HTMLTemplateElement>("#wh-line")!;
     const email = root.dataset.email ?? "";
     let current = 0;
+    let lastPointer = 0;
+    let advanceTimer = 0;
 
     type View = { answers: Answers; picks: Picks; reasons: Record<string, string>; summary: string; source: "ai" | "rules" };
     let view: View | null = null;
 
-    const singleKeys = (i: number) => (steps[i]?.singles ?? []).map((q) => q.key);
     const checked = (name: string) => form.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value;
 
     function stepReady(i: number): boolean {
-      return singleKeys(i).every((k) => Boolean(checked(k)));
+      const q = questions[i];
+      return !q || q.type !== "single" || Boolean(checked(q.key));
+    }
+
+    // One card height for every question: the tallest one at this width.
+    function measure() {
+      if (card.hidden) return;
+      stage.style.removeProperty("--wh-stage-h");
+      let max = 0;
+      for (const el of stepsEls) {
+        const wasHidden = el.hidden;
+        el.hidden = false;
+        el.style.cssText = "position:absolute;left:0;right:0;top:0;visibility:hidden";
+        max = Math.max(max, el.offsetHeight);
+        el.style.cssText = "";
+        el.hidden = wasHidden;
+      }
+      stage.style.setProperty("--wh-stage-h", `${Math.ceil(max)}px`);
+    }
+
+    // The page stays still: scroll only when the card's top has left the screen.
+    function keepInView() {
+      if (card.getBoundingClientRect().top < 64) card.scrollIntoView({ block: "start", behavior: "smooth" });
     }
 
     function show(i: number, focus = true) {
+      window.clearTimeout(advanceTimer);
       current = i;
       stepsEls.forEach((el, n) => (el.hidden = n !== i));
-      dots.forEach((d, n) => d.classList.toggle("is-on", n <= i));
-      progress.textContent = ui.stepOf(i + 1, stepsEls.length);
+      progress.textContent = ui.questionOf(i + 1, stepsEls.length);
+      fill.style.width = `${((i + 1) / stepsEls.length) * 100}%`;
       refreshNext();
       if (focus) {
-        form!.scrollIntoView({ block: "start", behavior: "smooth" });
-        stepsEls[i].querySelector<HTMLElement>("input, textarea")?.focus({ preventScroll: true });
+        keepInView();
+        stepsEls[i].querySelector<HTMLElement>(".wh-q__title")?.focus({ preventScroll: true });
       }
     }
 
@@ -268,25 +290,36 @@ const totalSteps = steps.length + 1;
         kinds: [...form!.querySelectorAll<HTMLInputElement>('input[name="kinds"]:checked')].map((i) => i.value),
         notes: notes.value.slice(0, notes.maxLength)
       };
-      for (const s of steps) for (const q of s.singles) raw[q.key] = checked(q.key);
+      for (const q of questions) if (q.type === "single") raw[q.key] = checked(q.key);
       return parseAnswers(raw);
     }
 
     function prefill(a: Answers) {
-      for (const s of steps)
-        for (const q of s.singles) {
-          const input = form!.querySelector<HTMLInputElement>(`input[name="${q.key}"][value="${a[q.key]}"]`);
-          if (input) input.checked = true;
-        }
+      for (const q of questions) {
+        if (q.type !== "single") continue;
+        const input = form!.querySelector<HTMLInputElement>(`input[name="${q.key}"][value="${a[q.key]}"]`);
+        if (input) input.checked = true;
+      }
       form!.querySelectorAll<HTMLInputElement>('input[name="kinds"]').forEach((i) => (i.checked = a.kinds.includes(i.value as never)));
     }
 
-    form.addEventListener("change", refreshNext);
+    // A tap on an answer moves on after a beat, so the pick shows first.
+    // Arrow keys also fire change, so only a recent pointer press advances.
+    form.addEventListener("pointerdown", () => (lastPointer = Date.now()));
+    form.addEventListener("change", (e) => {
+      refreshNext();
+      const input = e.target as HTMLInputElement;
+      const from = current;
+      if (input.type !== "radio" || questions[from]?.type !== "single" || Date.now() - lastPointer > 1500) return;
+      if (from >= stepsEls.length - 1) return;
+      window.clearTimeout(advanceTimer);
+      advanceTimer = window.setTimeout(() => current === from && show(from + 1), 260);
+    });
     notes.addEventListener("input", () => (count.textContent = `${notes.value.length} / ${notes.maxLength}`));
     form.querySelectorAll("[data-next]").forEach((b) => b.addEventListener("click", () => stepReady(current) && show(current + 1)));
     form.querySelectorAll("[data-back]").forEach((b) => b.addEventListener("click", () => show(Math.max(0, current - 1))));
 
-    // Enter on a radio should move forward, not submit a half-filled form.
+    // Enter on an answer should move forward, not submit a half-filled form.
     form.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
         e.preventDefault();
@@ -303,10 +336,10 @@ const totalSteps = steps.length + 1;
         return;
       }
       history.replaceState(null, "", `${location.pathname}?${toQuery(answers)}`);
+      loading.style.minHeight = `${form.offsetHeight}px`;
       form.hidden = true;
       resultEl.hidden = true;
       loading.hidden = false;
-      loading.scrollIntoView({ block: "center", behavior: "smooth" });
 
       let n = 0;
       const rotate = window.setInterval(() => {
@@ -338,11 +371,12 @@ const totalSteps = steps.length + 1;
       window.setTimeout(() => {
         window.clearInterval(rotate);
         loading.hidden = true;
+        card.hidden = true;
         view = next;
         render();
         resultEl.hidden = false;
         resultEl.scrollIntoView({ block: "start", behavior: "smooth" });
-        resultEl.querySelector<HTMLElement>("h2")?.focus?.();
+        resultEl.querySelector<HTMLElement>("h2")?.focus({ preventScroll: true });
       }, wait);
     });
 
@@ -357,14 +391,42 @@ const totalSteps = steps.length + 1;
       const { answers, picks, reasons, summary, source } = view;
       const stack = priceStack(picks, answers);
 
+      // ---- the summary card ----
+      root!.querySelector<HTMLElement>("[data-total]")!.textContent = moneyRange(stack.low, stack.high);
+      const fit = budgetFit(stack, answers);
+      const budgetEl = root!.querySelector<HTMLElement>("[data-budget]")!;
+      budgetEl.dataset.status = fit;
+      budgetEl.textContent = fit === "unsure" ? "" : result.budget[fit];
+      budgetEl.hidden = fit === "unsure";
+
+      const rows = root!.querySelector<HTMLOListElement>("[data-rows]")!;
+      rows.replaceChildren();
+      for (const line of stack.lines) {
+        const li = document.createElement("li");
+        li.className = "wh-summary__row";
+        const cells: [string, string][] = [
+          ["wh-summary__layer", layerCopy[line.layer].name],
+          ["wh-summary__tool", line.tool ? line.tool.name : result.notNeeded],
+          ["wh-summary__cost", costText(line)]
+        ];
+        for (const [cls, text] of cells) {
+          const span = document.createElement("span");
+          span.className = cls;
+          span.textContent = text;
+          li.append(span);
+        }
+        rows.append(li);
+      }
+      const totalNotes = [stack.estimates ? result.estimateNote : "", stack.unpriced.length ? result.unpricedNote(stack.unpriced.join(" and ")) : ""];
+      const notesEl = root!.querySelector<HTMLElement>("[data-total-notes]")!;
+      notesEl.textContent = totalNotes.filter(Boolean).join(" ");
+      notesEl.hidden = !notesEl.textContent;
       root!.querySelector<HTMLElement>("[data-source]")!.textContent = source === "ai" ? result.sourceAi : result.sourceRules;
+
+      // ---- the details ----
       const summaryEl = root!.querySelector<HTMLElement>("[data-summary]")!;
       summaryEl.textContent = summary;
       summaryEl.hidden = !summary;
-
-      root!.querySelector<HTMLElement>("[data-total]")!.textContent = moneyRange(stack.low, stack.high);
-      const totalNotes = [stack.estimates ? result.estimateNote : "", stack.unpriced.length ? result.unpricedNote(stack.unpriced.join(" and ")) : ""];
-      root!.querySelector<HTMLElement>("[data-total-notes]")!.textContent = totalNotes.filter(Boolean).join(" ");
 
       const list = root!.querySelector<HTMLOListElement>("[data-lines]")!;
       list.replaceChildren();
@@ -460,20 +522,51 @@ const totalSteps = steps.length + 1;
       count.textContent = `0 / ${notes.maxLength}`;
       history.replaceState(null, "", location.pathname);
       resultEl.hidden = true;
+      card.hidden = false;
       form.hidden = false;
+      loading.style.minHeight = "";
+      measure();
       show(0);
     });
+
+    // Re-measure when the width changes (a phone's URL bar only changes the height).
+    let lastWidth = window.innerWidth;
+    window.addEventListener("resize", () => {
+      if (window.innerWidth === lastWidth) return;
+      lastWidth = window.innerWidth;
+      measure();
+    });
+    measure();
+    const fontsReady = document.fonts?.ready ?? Promise.resolve();
+    fontsReady.then(measure);
 
     // A shared link restores the choices and lands on the last screen.
     const shared = fromQuery(location.search);
     const harness = import.meta.env.DEV ? new URLSearchParams(location.search).get("_state") : null;
     if (harness) {
       // Dev-only screenshot harness (stripped from production builds):
-      // _state=step2 | loading | result, with _swap=layer:id for a swapped result.
-      const a = shared ?? parseAnswers({ readers: "6-15", size: "2-10", systems: "4-6", kinds: ["store", "ads"], runner: "ai", ecosystem: "neither", freshness: "daily", askAi: "few", notes: "" })!;
+      // _state=q1..q10 | measure | loading | result, with _swap=layer:id for a swapped result.
+      const a = shared ?? parseAnswers({ readers: "6-15", size: "2-10", systems: "4-6", kinds: ["store", "ads"], runner: "ai", ecosystem: "neither", freshness: "daily", askAi: "few", budget: "100-500", notes: "" })!;
       prefill(a);
-      if (harness.startsWith("step")) show(Number(harness.slice(4)), false);
+      if (/^q\d+$/.test(harness)) show(Number(harness.slice(1)) - 1, false);
+      if (harness === "measure") {
+        fontsReady.then(() => {
+          measure();
+          const rows = stepsEls.map((el, i) => {
+            show(i, false);
+            const c = card.getBoundingClientRect();
+            const nav = el.querySelector<HTMLElement>(".wh-nav")!.getBoundingClientRect();
+            return `q${i + 1} card top ${Math.round(c.top)} height ${Math.round(c.height)} nav top ${Math.round(nav.top)}`;
+          });
+          show(0, false);
+          const pre = document.createElement("pre");
+          pre.id = "wh-measure";
+          pre.textContent = rows.join("\n");
+          document.body.append(pre);
+        });
+      }
       if (harness === "loading") {
+        loading.style.minHeight = `${form.offsetHeight}px`;
         form.hidden = true;
         loading.hidden = false;
       }
@@ -484,7 +577,7 @@ const totalSteps = steps.length + 1;
           const [layer, id] = swap.split(":");
           view.picks = { ...view.picks, [layer]: id };
         }
-        form.hidden = true;
+        card.hidden = true;
         render();
         resultEl.hidden = false;
       }
