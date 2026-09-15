@@ -31,8 +31,9 @@ const { title, description, canonical, ogImage, noindex } = Astro.props;
     <!-- Grain Texture Overlay -->
     <div class="grain-overlay" aria-hidden="true"></div>
 
+    <a href="#main" class="skip-link">Skip to content</a>
     <Nav />
-    <main class="relative z-10">
+    <main id="main" class="relative z-10">
       <slot />
     </main>
     <Footer />

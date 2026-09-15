@@ -104,7 +104,7 @@ const description =
           <span class={`cloud-term heading-display ${t.tone} ${t.weight}`} style={`--s: ${t.rem}rem`}>{t.label}</span>
         ))}
       </div>
-      <p class="mt-4 font-mono text-[10px] tracking-[0.15em] uppercase text-surface-500">
+      <p class="mt-4 font-mono text-[11px] tracking-[0.15em] uppercase text-surface-500">
         Sized by how often each word appears in the list below
       </p>
     </div>
@@ -112,10 +112,10 @@ const description =
 
   <section class="px-6 md:px-12 lg:px-16 py-16 md:py-24 border-b border-white/[0.06]">
     <div class="max-w-7xl mx-auto">
-      <div class="max-w-3xl">
+      <div class="max-w-2xl">
         {runs.map((run, i) => (
           <section id={run.id} class={i === 0 ? "" : "mt-10 pt-8 border-t border-white/[0.06]"} aria-labelledby={`${run.id}-heading`}>
-            <h2 id={`${run.id}-heading`} class="font-mono text-[10px] tracking-[0.15em] text-gold-500 mb-5">{run.project}</h2>
+            <h2 id={`${run.id}-heading`} class="font-mono text-[11px] tracking-[0.15em] text-gold-500 mb-5">{run.project}</h2>
             <ul class="space-y-6">
               {run.items.map((b) => (
                 <li class="flex items-start gap-4">
@@ -124,7 +124,7 @@ const description =
                     <p class="text-surface-200 leading-relaxed">{b.text}</p>
                     <ul class="mt-3 flex flex-wrap gap-1.5">
                       {b.tools.map((tool) => (
-                        <li class="border border-white/[0.08] px-2 py-1 font-mono text-[10px] tracking-[0.05em] text-surface-400">{tool}</li>
+                        <li class="border border-white/[0.08] px-2 py-1 font-mono text-[11px] tracking-[0.05em] text-surface-400">{tool}</li>
                       ))}
                     </ul>
                   </div>

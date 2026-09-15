@@ -29,14 +29,14 @@ slots.forEach((slot, i) => {
   href={bcStatsSource.productUrl}
   target="_blank"
   rel="noreferrer"
-  class="group block w-full max-w-xs mx-auto"
+  class="group block w-full max-w-xs mx-0 lg:mx-auto"
   aria-label="Open birthday-cards.ai in a new tab"
 >
-  <span class="block font-mono text-[10px] tracking-[0.2em] uppercase text-surface-500 mb-3">Demo. A click opens birthday-cards.ai.</span>
+  <span class="block font-mono text-[11px] tracking-[0.2em] uppercase text-surface-500 mb-3">Demo. A click opens birthday-cards.ai.</span>
   <span class="sr-only">A message types itself and the finished card appears.</span>
 
   <div aria-hidden="true">
-    <span class="block font-mono text-[10px] tracking-[0.15em] uppercase text-surface-600 mb-2">Their message</span>
+    <span class="block font-mono text-[11px] tracking-[0.15em] uppercase text-surface-600 mb-2">Their message</span>
     <div class="demo-input group-hover:border-gold-500/40 transition-colors">
       {slots.map((slot, i) => (
         <span class={`demo-typed demo-typed-${i + 1}`}>{slot.text}</span>
@@ -44,7 +44,7 @@ slots.forEach((slot, i) => {
     </div>
   </div>
 
-  <div class="demo-stage mx-auto mt-6">
+  <div class="demo-stage mx-0 lg:mx-auto mt-6">
     {slots.map((slot, i) => (
       <img
         class={`demo-card demo-card-${i + 1}`}

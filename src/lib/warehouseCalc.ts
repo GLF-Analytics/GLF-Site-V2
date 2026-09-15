@@ -272,10 +272,13 @@ export function alternatives(layer: Layer, picks: Picks, a: Answers): Alternativ
   const ctx = contextFor(a);
   const current = picks[layer] ? byId.get(picks[layer]!) : undefined;
   const currentHigh = current ? priceTool(current, ctx).high : 0;
-  return toolsIn(layer).map((tool) => {
-    const price = priceTool(tool, ctx);
-    return { tool, price, deltaHigh: price.high - currentHigh, compatible: compatible(tool, { ...picks, [layer]: tool.id }) };
-  });
+  // Cheapest first, so the swap list reads as a price ladder (S19).
+  return toolsIn(layer)
+    .map((tool) => {
+      const price = priceTool(tool, ctx);
+      return { tool, price, deltaHigh: price.high - currentHigh, compatible: compatible(tool, { ...picks, [layer]: tool.id }) };
+    })
+    .sort((a, b) => a.price.low - b.price.low || a.price.high - b.price.high);
 }
 
 export const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;

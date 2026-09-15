@@ -14,6 +14,12 @@
   rules otherwise) and prices every line locally with src/lib/warehouseCalc.ts,
   so swaps recalculate without another call.
 
+  S19 (9/15/26): on phones the button row sticks to the bottom of the screen, so
+  Next is always reachable; the total carries its label and a live region; a swap
+  is counted in the source line; a shared or emailed link opens on the stack
+  itself with an Edit answers button; the rules path shows its result at once and
+  only the AI path pauses.
+
   Copy: src/data/warehouse-survey.ts. Prices: src/data/warehouse-catalog.ts.
   Build guards below: sources and dates on every price, three or more tools per
   layer, no comma in a question title or heading, the three reference scenarios
@@ -65,7 +71,7 @@ console.log(
 const total = questions.length;
 ---
 <BaseLayout title={meta.title} description={meta.description} noindex>
-  <section class="pt-32 pb-10 md:pt-40 md:pb-12 px-6 md:px-12 lg:px-16">
+  <section class="pt-24 pb-10 md:pt-40 md:pb-12 px-6 md:px-12 lg:px-16">
     <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8">
       <div class="lg:col-span-8">
         <span class="label block mb-4">{meta.eyebrow}</span>
@@ -75,7 +81,7 @@ const total = questions.length;
     </div>
   </section>
 
-  <section class="px-4 sm:px-6 md:px-12 lg:px-16 pb-16 md:pb-24 border-b border-white/[0.06]">
+  <section class="px-6 md:px-12 lg:px-16 pb-16 md:pb-24 border-b border-white/[0.06]">
     <div class="max-w-7xl mx-auto">
       <div class="wh max-w-3xl" data-email={orgInfo.email}>
         <noscript><p class="mb-8 text-sm text-surface-400">{ui.noScript}</p></noscript>
@@ -114,11 +120,12 @@ const total = questions.length;
                       </div>
                     )}
                     <div class="wh-nav">
+                      <p class="wh-nav__hint" id={`wh-hint-${i}`} data-next-hint data-off={q.type !== "single" ? "" : undefined}>{ui.pickToContinue}</p>
                       {i > 0 && <button type="button" class="btn-secondary" data-back>{ui.back}</button>}
                       {q.type === "notes" ? (
                         <button type="submit" class="btn-primary"><span>{ui.submit}</span></button>
                       ) : (
-                        <button type="button" class="btn-primary" data-next disabled={q.type === "single"}><span>{ui.next}</span></button>
+                        <button type="button" class="btn-primary" data-next disabled={q.type === "single"} aria-describedby={q.type === "single" ? `wh-hint-${i}` : undefined}><span>{ui.next}</span></button>
                       )}
                     </div>
                   </div>
@@ -136,7 +143,8 @@ const total = questions.length;
         <section class="wh-result" data-result hidden aria-labelledby="wh-summary-heading">
           <div class="wh-summary">
             <h2 id="wh-summary-heading" class="wh-eyebrow" tabindex="-1">{result.summaryHeading}</h2>
-            <p class="wh-summary__total">
+            <p class="wh-summary__label">{result.totalLabel}</p>
+            <p class="wh-summary__total" aria-live="polite">
               <strong class="heading-display text-3xl md:text-4xl text-white" data-total></strong>
               <span class="ml-2 text-surface-400">{result.perMonth}</span>
             </p>
@@ -161,6 +169,7 @@ const total = questions.length;
 
           <div class="wh-actions mt-10">
             <a class="btn-primary" data-email-link href={`mailto:${orgInfo.email}`}><span>{result.emailLabel}</span></a>
+            <button type="button" class="btn-secondary" data-edit>{ui.edit}</button>
             <button type="button" class="btn-secondary" data-restart>{ui.restart}</button>
           </div>
         </section>
@@ -201,7 +210,7 @@ const total = questions.length;
 </BaseLayout>
 
 <script>
-  import { LAYERS, type Layer } from "../data/warehouse-catalog";
+  import { type Layer } from "../data/warehouse-catalog";
   import { questions, ui, result, layerCopy, traitLabels } from "../data/warehouse-survey";
   import {
     alternatives,
@@ -234,8 +243,9 @@ const total = questions.length;
     const email = root.dataset.email ?? "";
     let current = 0;
 
-    type View = { answers: Answers; picks: Picks; reasons: Record<string, string>; summary: string; source: "ai" | "rules" };
+    type View = { answers: Answers; picks: Picks; reasons: Record<string, string>; summary: string; source: "ai" | "rules"; swapped: Layer[] };
     let view: View | null = null;
+    const makeView = (answers: Answers, picks: Picks, reasons: Record<string, string>, summary: string, source: "ai" | "rules"): View => ({ answers, picks, reasons, summary, source, swapped: [] });
 
     const checked = (name: string) => form.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value;
 
@@ -261,6 +271,7 @@ const total = questions.length;
     }
 
     // The page stays still: scroll only when the card's top has left the screen.
+    // 64 = the nav (3.5rem) plus half a rem, the same offset as scroll-margin-top in the CSS.
     function keepInView() {
       if (card.getBoundingClientRect().top < 64) card.scrollIntoView({ block: "start", behavior: "smooth" });
     }
@@ -279,8 +290,12 @@ const total = questions.length;
     }
 
     function refreshNext() {
-      const next = stepsEls[current]?.querySelector<HTMLButtonElement>("[data-next]");
+      const step = stepsEls[current];
+      const next = step?.querySelector<HTMLButtonElement>("[data-next]");
       if (next) next.disabled = !stepReady(current);
+      // "Pick one to continue" shows only while Next is disabled; its space is always reserved so the row never moves.
+      const hint = step?.querySelector<HTMLElement>("[data-next-hint]");
+      if (hint) hint.toggleAttribute("data-off", step.dataset.type !== "single" || stepReady(current));
     }
 
     function collect(): Answers | null {
@@ -379,14 +394,39 @@ const total = questions.length;
       resultEl.hidden = true;
       loading.hidden = false;
 
+      // One honest line first. The four phrases only start if the route is still working after 400 ms.
+      phrase.textContent = ui.loading[ui.loading.length - 1];
       let n = 0;
-      const rotate = window.setInterval(() => {
-        n = (n + 1) % ui.loading.length;
-        phrase.textContent = ui.loading[n];
-      }, 1400);
+      let rotate = 0;
+      const slow = window.setTimeout(() => {
+        phrase.textContent = ui.loading[0];
+        rotate = window.setInterval(() => {
+          n = (n + 1) % ui.loading.length;
+          phrase.textContent = ui.loading[n];
+        }, 1400);
+      }, 400);
       const started = Date.now();
 
-      let next: View = { answers, picks: recommendByRules(answers), reasons: {}, summary: "", source: "rules" };
+      const next = await suggest(answers);
+      // The AI path earns its pause; the rules path is instant and shows it.
+      const floor = next.source === "ai" ? 1600 : 0;
+      const wait = Math.max(0, floor - (Date.now() - started));
+      window.setTimeout(() => {
+        window.clearTimeout(slow);
+        if (rotate) window.clearInterval(rotate);
+        loading.hidden = true;
+        card.hidden = true;
+        view = next;
+        render();
+        resultEl.hidden = false;
+        resultEl.scrollIntoView({ block: "start", behavior: "smooth" });
+        resultEl.querySelector<HTMLElement>("h2")?.focus({ preventScroll: true });
+      }, wait);
+    });
+
+    // The rules pick first; the route may upgrade it to an AI pick. Any failure keeps the rules pick.
+    async function suggest(answers: Answers): Promise<View> {
+      let next = makeView(answers, recommendByRules(answers), {}, "", "rules");
       try {
         const ctrl = new AbortController();
         const timer = window.setTimeout(() => ctrl.abort(), 45_000);
@@ -399,34 +439,23 @@ const total = questions.length;
         window.clearTimeout(timer);
         const data = await res.json();
         if (data && data.picks && (data.source === "ai" || data.source === "rules")) {
-          next = { answers, picks: data.picks, reasons: data.reasons ?? {}, summary: data.summary ?? "", source: data.source };
+          next = makeView(answers, data.picks, data.reasons ?? {}, data.summary ?? "", data.source);
         }
       } catch {
         // Offline, timed out, or the route is missing: the rules pick stands.
       }
-
-      const wait = Math.max(0, 1600 - (Date.now() - started));
-      window.setTimeout(() => {
-        window.clearInterval(rotate);
-        loading.hidden = true;
-        card.hidden = true;
-        view = next;
-        render();
-        resultEl.hidden = false;
-        resultEl.scrollIntoView({ block: "start", behavior: "smooth" });
-        resultEl.querySelector<HTMLElement>("h2")?.focus({ preventScroll: true });
-      }, wait);
-    });
+      return next;
+    }
 
     function costText(line: ReturnType<typeof priceStack>["lines"][number]): string {
-      if (!line.tool) return "$0";
+      if (!line.tool) return "";
       if (line.price.notPublished) return "Price not published";
       return `${moneyRange(line.price.low, line.price.high)}${line.price.estimate ? " est." : ""}`;
     }
 
     function render() {
       if (!view) return;
-      const { answers, picks, reasons, summary, source } = view;
+      const { answers, picks, reasons, summary, source, swapped } = view;
       const stack = priceStack(picks, answers);
 
       // ---- the summary card ----
@@ -459,7 +488,8 @@ const total = questions.length;
       const notesEl = root!.querySelector<HTMLElement>("[data-total-notes]")!;
       notesEl.textContent = totalNotes.filter(Boolean).join(" ");
       notesEl.hidden = !notesEl.textContent;
-      root!.querySelector<HTMLElement>("[data-source]")!.textContent = source === "ai" ? result.sourceAi : result.sourceRules;
+      const sourceLine = source === "ai" ? result.sourceAi : result.sourceRules;
+      root!.querySelector<HTMLElement>("[data-source]")!.textContent = swapped.length ? `${sourceLine} ${result.swapped(swapped.length)}` : sourceLine;
 
       // ---- the details ----
       const summaryEl = root!.querySelector<HTMLElement>("[data-summary]")!;
@@ -507,12 +537,13 @@ const total = questions.length;
         }
 
         const select = node.querySelector<HTMLSelectElement>("[data-swap]")!;
+        select.dataset.layer = line.layer;
         select.setAttribute("aria-label", `${result.swapLabel} ${copy.name}`);
         for (const alt of alternatives(line.layer, picks, answers)) {
           const opt = document.createElement("option");
           opt.value = alt.tool.id;
           const cost = alt.price.notPublished ? "price not published" : moneyRange(alt.price.low, alt.price.high);
-          opt.textContent = `${alt.tool.name}${alt.tool.tier ? ` (${alt.tool.tier})` : ""}: ${cost}${alt.compatible ? "" : ". Needs another pick"}`;
+          opt.textContent = `${alt.tool.name}${alt.tool.tier ? ` (${alt.tool.tier})` : ""}, ${cost}${alt.compatible ? "" : " (needs another pick)"}`;
           opt.selected = alt.tool.id === t.id;
           select.append(opt);
         }
@@ -520,8 +551,9 @@ const total = questions.length;
           if (!view) return;
           view.picks = { ...view.picks, [line.layer]: select.value };
           delete view.reasons[line.layer];
+          if (!view.swapped.includes(line.layer)) view.swapped.push(line.layer);
           render();
-          list.querySelectorAll<HTMLSelectElement>("[data-swap]")[LAYERS.indexOf(line.layer as Layer)]?.focus();
+          list.querySelector<HTMLSelectElement>(`[data-swap][data-layer="${line.layer}"]`)?.focus();
         });
         list.append(node);
       }
@@ -540,7 +572,7 @@ const total = questions.length;
         sources.append(li);
       }
 
-      const lines = stack.lines.map((l) => `${layerCopy[l.layer].name}: ${l.tool ? l.tool.name + (l.tool.tier ? ` (${l.tool.tier})` : "") : "not needed"}, ${costText(l)}`);
+      const lines = stack.lines.map((l) => `${layerCopy[l.layer].name}: ${l.tool ? `${l.tool.name}${l.tool.tier ? ` (${l.tool.tier})` : ""}, ${costText(l)}` : "not needed"}`);
       const body = [
         "Here is the stack the planner suggested:",
         "",
@@ -553,6 +585,17 @@ const total = questions.length;
       root!.querySelector<HTMLAnchorElement>("[data-email-link]")!.href =
         `mailto:${email}?subject=${encodeURIComponent(result.emailSubject)}&body=${encodeURIComponent(body)}`;
     }
+
+    // Edit answers: back to question 1 with every pick held (the form was prefilled or filled by hand).
+    root.querySelector("[data-edit]")?.addEventListener("click", () => {
+      view = null;
+      resultEl.hidden = true;
+      card.hidden = false;
+      form.hidden = false;
+      loading.style.minHeight = "";
+      measure();
+      show(0);
+    });
 
     root.querySelector("[data-restart]")?.addEventListener("click", () => {
       view = null;
@@ -578,7 +621,7 @@ const total = questions.length;
     const fontsReady = document.fonts?.ready ?? Promise.resolve();
     fontsReady.then(measure);
 
-    // A shared link restores the choices and lands on the last screen.
+    // A shared or emailed link opens on the stack itself (S19); Edit answers reopens the questions with every pick held.
     const shared = fromQuery(location.search);
     const harness = import.meta.env.DEV ? new URLSearchParams(location.search).get("_state") : null;
     if (harness) {
@@ -609,7 +652,7 @@ const total = questions.length;
         loading.hidden = false;
       }
       if (harness === "result") {
-        view = { answers: a, picks: recommendByRules(a), reasons: {}, summary: "", source: "rules" };
+        view = makeView(a, recommendByRules(a), {}, "", "rules");
         const swap = new URLSearchParams(location.search).get("_swap");
         if (swap) {
           const [layer, id] = swap.split(":");
@@ -621,7 +664,17 @@ const total = questions.length;
       }
     } else if (shared) {
       prefill(shared);
-      show(stepsEls.length - 1, false);
+      view = makeView(shared, recommendByRules(shared), {}, "", "rules");
+      card.hidden = true;
+      render();
+      resultEl.hidden = false;
+      // Upgrade to the AI pick in the background, unless the reader has swapped something meanwhile.
+      suggest(shared).then((next) => {
+        if (view && view.answers === shared && next.source === "ai" && !view.swapped.length) {
+          view = next;
+          render();
+        }
+      });
     } else if (!restoreDraft()) {
       show(0, false);
     }

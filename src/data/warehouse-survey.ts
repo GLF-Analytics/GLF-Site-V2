@@ -57,7 +57,7 @@ export const questions: Question[] = [
     type: "single",
     key: "systems",
     title: "How many data sources?",
-    hint: "A data source is any system with numbers you want in one place. Your online store, accounting software, ad accounts, and CRM count as four.",
+    hint: "Any system with numbers you want in one place: your store, accounting, ad accounts, CRM.",
     choices: [
       { value: "1-3", label: "1 to 3" },
       { value: "4-6", label: "4 to 6" },
@@ -151,6 +151,8 @@ export const ui = {
   back: "Back",
   submit: "Suggest my stack",
   restart: "Start over",
+  edit: "Edit answers",
+  pickToContinue: "Pick one to continue",
   questionOf: (n: number, total: number) => `Question ${n} of ${total}`,
   loading: ["Reading your answers", "Matching tools to your data", "Checking list prices", "Adding up the monthly cost"],
   noScript: "This planner needs JavaScript to add up a stack."
@@ -159,7 +161,7 @@ export const ui = {
 export const result = {
   summaryHeading: "Summary",
   detailsHeading: "Details",
-  totalLabel: "Estimated monthly tool cost",
+  totalLabel: "Estimated tool cost",
   perMonth: "a month",
   notNeeded: "Not needed",
   budget: {
@@ -169,6 +171,7 @@ export const result = {
   },
   sourceAi: "Picked by AI from your answers. Every price comes from the list below and not from the AI.",
   sourceRules: "Picked by rules from your answers.",
+  swapped: (n: number) => (n === 1 ? "You swapped one layer." : `You swapped ${n} layers.`),
   swapLabel: "Swap",
   unpricedNote: (names: string) => `Not in the total because the vendor does not publish a price: ${names}.`,
   estimateNote: "Lines marked est. are usage based and depend on how much data you move.",

@@ -93,6 +93,35 @@ body {
   overflow-x: clip;
 }
 
+/* Focus: one gold ring for keyboard users, nothing for pointer users (S19, 9/15/26) */
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  transform: translateY(-200%);
+  padding: 0.75rem 1rem;
+  background: var(--color-gold);
+  color: var(--color-bg);
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
 /* Selection */
 ::selection {
   background: var(--color-gold);
@@ -273,7 +302,7 @@ body {
 
 .label {
   font-family: 'Geist Mono', monospace;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -413,6 +442,16 @@ body {
   padding-top: max(4.5rem, 10vh);
   padding-bottom: max(4.5rem, 10vh);
   overflow: hidden;
+}
+
+/* S19 (9/15/26): on phones and tablets the cards flow. A 110vh section left up to half
+   a screen of black between cards, five times; the desktop stack keeps its anchoring. */
+@media (max-width: 1023px) {
+  .work-stack-section {
+    min-height: auto;
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
 }
 
 .work-stack-card {
@@ -1024,7 +1063,7 @@ summary {
 
 .wh-card,
 .wh-summary {
-  scroll-margin-top: 6rem;
+  scroll-margin-top: 4rem;
   border: 1px solid var(--color-border-hover);
   background: rgba(255, 255, 255, 0.02);
   padding: 1.5rem 1.25rem;
@@ -1038,7 +1077,7 @@ summary {
 }
 
 .wh-result {
-  scroll-margin-top: 6rem;
+  scroll-margin-top: 4rem;
 }
 
 .wh-progress {
@@ -1051,7 +1090,6 @@ summary {
   font-size: 11px;
   letter-spacing: 0.15em;
   color: var(--color-gold);
-  outline: none;
 }
 
 .wh-progress__track {
@@ -1091,7 +1129,6 @@ summary {
   font-weight: 500;
   letter-spacing: -0.01em;
   line-height: 1.3;
-  outline: none;
 }
 
 @media (min-width: 768px) {
@@ -1209,7 +1246,6 @@ summary {
 }
 
 .wh-notes:focus {
-  outline: none;
   border-color: var(--color-gold);
 }
 
@@ -1218,20 +1254,65 @@ summary {
   margin-top: auto;
   padding-top: 2rem;
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
 }
 
+/* "Pick one to continue": one reserved line above the buttons, visible only while Next is disabled. */
+.wh-nav__hint {
+  flex: 0 0 100%;
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+}
+
+.wh-nav__hint[data-off] {
+  visibility: hidden;
+}
+
 /* One button height, so the row sits at the same y with or without Back. */
-.wh-nav > * {
+.wh-nav > button,
+.wh-nav > a {
   flex: 1 1 0;
   justify-content: center;
   box-sizing: border-box;
   min-height: 3.25rem;
 }
 
+/* On a phone the primary button takes two shares, so "Suggest my stack" stays on one line at 390px. */
+.wh-nav > .btn-primary {
+  flex-grow: 2;
+}
+
 @media (min-width: 640px) {
-  .wh-nav > * {
+  .wh-nav > button,
+  .wh-nav > a {
     flex: 0 0 auto;
+    flex-grow: 0;
+  }
+}
+
+/* S19 (9/15/26): the row sticks to the bottom of the screen while the card runs past
+   it, so Next is reachable without scrolling on any screen (a 900px laptop included).
+   The negative margins match the card's side padding so the bar spans the card. */
+.wh-nav {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-left: -1.25rem;
+  margin-right: -1.25rem;
+  padding: 0.75rem 1.25rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  background: var(--color-bg-card);
+  border-top: 1px solid var(--color-border);
+}
+
+@media (min-width: 768px) {
+  .wh-nav {
+    margin-left: -2.5rem;
+    margin-right: -2.5rem;
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
   }
 }
 
@@ -1242,7 +1323,7 @@ summary {
 }
 
 .wh-nav .btn-primary:disabled {
-  opacity: 0.35;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -1256,8 +1337,14 @@ summary {
   justify-content: center;
 }
 
-.wh-summary__total {
+.wh-summary__label {
   margin-top: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+.wh-summary__total {
+  margin-top: 0.25rem;
 }
 
 .wh-summary__budget {
@@ -1288,7 +1375,7 @@ summary {
 .wh-summary__layer {
   grid-column: 1 / -1;
   font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   color: var(--color-text-secondary);
 }
@@ -1381,7 +1468,7 @@ summary {
 
 .wh-line__layer {
   font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.15em;
   color: var(--color-gold);
 }
@@ -1423,7 +1510,7 @@ summary {
   border: 1px solid var(--color-border);
   padding: 0.15rem 0.5rem;
   font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.05em;
   color: var(--color-text-secondary);
 }
@@ -1440,7 +1527,7 @@ summary {
   align-items: center;
   gap: 0.75rem;
   font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.15em;
   color: var(--color-text-secondary);
 }
@@ -1449,24 +1536,24 @@ summary {
   flex: 1;
   min-width: 0;
   max-width: 100%;
-  padding: 0.45rem 0.6rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   color: var(--color-text-primary);
   font-family: 'Geist', sans-serif;
-  font-size: 0.8125rem;
+  font-size: 1rem;
   letter-spacing: 0;
 }
 
 .wh-line__swap select:focus {
-  outline: none;
   border-color: var(--color-gold);
 }
 
 .wh-sub {
   margin-top: 2.5rem;
   font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.15em;
   color: var(--color-gold);
 }

@@ -104,7 +104,7 @@ const ld = [
   <section id="numbers" class="px-6 md:px-12 lg:px-16 pb-16 md:pb-20 border-b border-white/[0.06]" aria-labelledby="numbers-heading">
     <div class="max-w-7xl mx-auto">
       <div class="max-w-3xl">
-        <h2 id="numbers-heading" class="font-mono text-[10px] tracking-[0.15em] text-gold-500 mb-5">The numbers as of today</h2>
+        <h2 id="numbers-heading" class="font-mono text-[11px] tracking-[0.15em] text-gold-500 mb-5">The numbers as of today</h2>
         <StatGrid stats={s} />
         <MonthlyCards />
         <CountryMap open />
@@ -113,7 +113,7 @@ const ld = [
         </p>
         <ul class="mt-4 flex flex-wrap gap-2" aria-label="Connected sources">
           {sources.map((src) => (
-            <li class="border border-white/[0.08] px-2 py-1 font-mono text-[10px] tracking-[0.05em] text-surface-400">{src}</li>
+            <li class="border border-white/[0.08] px-2 py-1 font-mono text-[11px] tracking-[0.05em] text-surface-400">{src}</li>
           ))}
         </ul>
       </div>
@@ -122,10 +122,10 @@ const ld = [
 
   <section class="px-6 md:px-12 lg:px-16 py-16 md:py-24 border-b border-white/[0.06]">
     <div class="max-w-7xl mx-auto">
-      <div class="max-w-3xl">
+      <div class="max-w-2xl">
         {sections.map((sec, i) => (
           <section id={sec.id} class={i === 0 ? "" : "mt-10 pt-8 border-t border-white/[0.06]"} aria-labelledby={`${sec.id}-heading`}>
-            <h2 id={`${sec.id}-heading`} class="font-mono text-[10px] tracking-[0.15em] text-gold-500 mb-5">{sec.heading}</h2>
+            <h2 id={`${sec.id}-heading`} class="font-mono text-[11px] tracking-[0.15em] text-gold-500 mb-5">{sec.heading}</h2>
             {sec.paragraphs.map((p) => (
               <p class="mt-4 text-surface-200 leading-relaxed">{text(p)}</p>
             ))}
@@ -133,7 +133,7 @@ const ld = [
             {sec.chips && (
               <ul class="mt-5 flex flex-wrap gap-1.5">
                 {sec.chips.map((chip) => (
-                  <li class="border border-white/[0.08] px-2 py-1 font-mono text-[10px] tracking-[0.05em] text-surface-400">{chip}</li>
+                  <li class="border border-white/[0.08] px-2 py-1 font-mono text-[11px] tracking-[0.05em] text-surface-400">{chip}</li>
                 ))}
               </ul>
             )}
@@ -141,7 +141,7 @@ const ld = [
         ))}
 
         <section id="faq" class="mt-10 pt-8 border-t border-white/[0.06]" aria-labelledby="faq-heading">
-          <h2 id="faq-heading" class="font-mono text-[10px] tracking-[0.15em] text-gold-500 mb-5">Questions</h2>
+          <h2 id="faq-heading" class="font-mono text-[11px] tracking-[0.15em] text-gold-500 mb-5">Questions</h2>
           {faq.map((f) => (
             <div class="mt-5">
               <h3 class="text-white font-medium">{f.q}</h3>

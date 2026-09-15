@@ -72,12 +72,12 @@ export const bullets: Bullet[] = [
   },
   {
     project: "Gotham Goods",
-    text: "Served as tech lead for Gotham through the launch of its first retail store in the Bowery, managing the agency that built the custom-coded site. Gotham did more than $5 million in revenue in year one.",
+    text: "Tech lead for Gotham through the launch of its first retail store in the Bowery, managing the agency that built the custom-coded site. Gotham did more than $5 million in revenue in year one.",
     tools: ["web development", "agency management", "eCommerce"]
   },
   {
     project: "Gotham Goods",
-    text: "Set up Gotham's tagging and analytics from day one in GA4 and Google Tag Manager, then built its email program from the ground up in Klaviyo and ran loyalty and point-of-sale software through the store launch.",
+    text: "Set up Gotham's tagging and analytics from day one in GA4 and Google Tag Manager, built its email program in Klaviyo, and ran loyalty and point-of-sale software through the store launch.",
     tools: ["GA4", "Google Tag Manager", "Klaviyo", "email marketing", "loyalty", "POS"]
   },
   {
@@ -87,7 +87,7 @@ export const bullets: Bullet[] = [
   },
   {
     project: "Haven's Kitchen",
-    text: "Integrated Amazon Buy with Prime for Haven's Kitchen, a new channel and a new piece of software for the brand, and ran the Aioli line launch with new product pages, Google Ads, and the weekly strategy call.",
+    text: "Integrated Amazon Buy with Prime for Haven's Kitchen, a new channel for the brand, and ran the Aioli line launch with new product pages, Google Ads, and the weekly strategy call.",
     tools: ["Amazon", "Buy with Prime", "Google Ads", "growth marketing"]
   },
   {
@@ -122,7 +122,7 @@ export const bullets: Bullet[] = [
   },
   {
     project: "bartaco",
-    text: "Took over Uber Eats and DoorDash for bartaco and replaced a spend-everywhere ad program with a market-by-market profitability framework. Every market gets a keep, remove, or candidate call each month, taken to the CEO and CFO.",
+    text: "Took over Uber Eats and DoorDash for bartaco and replaced a spend-everywhere ad program with a market-by-market profitability framework. Every market gets a keep or remove call each month, taken to the CEO and CFO.",
     tools: ["Uber Eats", "DoorDash", "growth strategy", "delivery marketing"]
   },
   {
@@ -137,7 +137,7 @@ export const bullets: Bullet[] = [
   },
   {
     project: "bartaco",
-    text: "Built the 3PD operations analysis: a monthly pipeline for missing items, wrong orders, and cancellations across 31 markets on both platforms, cut three ways for the CEO, regional managers, and GMs. It showed that missing items on bundled orders, not wrong orders, drove most of the cost, which turned a menu debate into a packing checklist.",
+    text: "Built the 3PD operations analysis: a monthly pipeline for missing items, wrong orders, and cancellations across 31 markets, cut for the CEO, regional managers, and GMs. It found the cost was in missing items on bundled orders, which turned a menu debate into a packing checklist.",
     tools: ["Python", "openpyxl", "Excel", "operations analytics"]
   },
   {
@@ -167,7 +167,7 @@ export const bullets: Bullet[] = [
   },
   {
     project: "A construction management firm in LA",
-    text: "Built a weekly report generator for a construction management firm in LA: an employee submits a form with a contractor PDF and gets back a branded report. Power Automate, the Claude API, and Azure Document Intelligence, with no new software for the team and a named human reviewer on every workflow.",
+    text: "Built a weekly report generator for a construction management firm in LA: a form and a contractor PDF in, a branded report out, on Power Automate, the Claude API, and Azure Document Intelligence. No new software for the team and a named human reviewer on every workflow.",
     tools: ["Power Automate", "Claude API", "Azure Document Intelligence", "SharePoint"]
   },
   {
@@ -177,7 +177,7 @@ export const bullets: Bullet[] = [
   },
   {
     project: "A construction management firm in LA",
-    text: "Ran eight rounds of AI training at that firm, built Copilot agents and a prompt library the team maintains, and wrote the firm's voice as a rules register with a style-check skill so every document reads the same no matter who wrote it.",
+    text: "Ran eight rounds of AI training at that firm, built Copilot agents and a prompt library the team maintains, and wrote the firm's voice as a rules register so every document reads the same.",
     tools: ["Microsoft 365 Copilot", "Box AI", "training", "prompt library", "brand voice"]
   },
   {
@@ -212,7 +212,7 @@ export const bullets: Bullet[] = [
   },
   {
     project: "AI on every project",
-    text: "Built .md note systems and harnesses for AI on every project: a briefing file, a state file rewritten each session, an append-only log, a learnings file, and archive-before-delete, more than 240 sessions deep on one product. Authored twelve custom Claude Code skills on top of it, each validated in isolation before use.",
+    text: "Built .md note systems for AI on every project: a briefing file, a state file rewritten each session, an append-only log, and archive-before-delete, more than 240 sessions deep on one product. Wrote twelve Claude Code skills on top, each validated before use.",
     tools: ["Claude Code", "markdown", "context engineering", "skills"]
   },
   {

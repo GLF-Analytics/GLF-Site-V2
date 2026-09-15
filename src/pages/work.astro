@@ -40,11 +40,11 @@ const hostOf = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(
         <li class="bg-surface-950 p-8 md:p-10 flex flex-col gap-6 border-b border-r border-white/[0.06]" data-reveal>
           <div>
             <div class="flex flex-wrap items-center gap-4 mb-4">
-              <span class="font-mono text-[10px] tracking-[0.2em] uppercase text-gold-500">{item.data.clientType}</span>
+              <span class="font-mono text-[11px] tracking-[0.2em] uppercase text-gold-500">{item.data.clientType}</span>
               {item.data.featured && featuredCount !== count && (
                 <>
                   <span class="w-px h-3 bg-white/20"></span>
-                  <span class="font-mono text-[10px] tracking-[0.15em] uppercase text-surface-500">On the homepage</span>
+                  <span class="font-mono text-[11px] tracking-[0.15em] uppercase text-surface-500">On the homepage</span>
                 </>
               )}
             </div>
@@ -56,7 +56,7 @@ const hostOf = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(
 
           {(item.data.outcome || item.data.showLiveStats) && (
             <div>
-              <span class="font-mono text-[10px] tracking-[0.15em] uppercase text-gold-500 block mb-2">Outcome</span>
+              <span class="font-mono text-[11px] tracking-[0.15em] uppercase text-gold-500 block mb-2">Outcome</span>
               <p class="text-sm text-surface-300 leading-relaxed">{item.data.showLiveStats ? liveLine : item.data.outcome}</p>
             </div>
           )}
@@ -64,7 +64,7 @@ const hostOf = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(
           {item.data.tools && (
             <ul class="flex flex-wrap gap-1.5">
               {item.data.tools.map((tool) => (
-                <li class="border border-white/[0.08] px-2 py-1 font-mono text-[10px] tracking-[0.05em] text-surface-300">{tool}</li>
+                <li class="border border-white/[0.08] px-2 py-1 font-mono text-[11px] tracking-[0.05em] text-surface-300">{tool}</li>
               ))}
             </ul>
           )}
