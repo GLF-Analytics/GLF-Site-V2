@@ -1043,6 +1043,8 @@ export const catalog: Tool[] = [
     traits: {},
     fit: { volume: [2, 3], runner: ["engineer", "ai"] }
   },
+  // S22: the three seats below carry an empty fit on purpose. They stay in the swap list and the AI
+  // can pick them, but the rules keep the Claude Code seat: a one dollar cost tie must not unseat it.
   {
     id: "cursor",
     layer: "build",
@@ -1054,7 +1056,7 @@ export const catalog: Tool[] = [
     why: "The editor most builders reach for, with an agent that writes and runs the SQL and scripts.",
     tradeoff: "Usage is capped per seat and heavy agent use spills into usage billing.",
     traits: { codeFirst: true },
-    fit: { volume: ALL_VOLUMES }
+    fit: {}
   },
   {
     id: "ghcopilot",
@@ -1067,7 +1069,7 @@ export const catalog: Tool[] = [
     why: "Already inside GitHub where the code and pull requests live, with admin controls.",
     tradeoff: "Every plan is metered in AI credits now, so the seat price understates heavy agent work.",
     traits: { mcp: true, codeFirst: true },
-    fit: { volume: ALL_VOLUMES }
+    fit: {}
   },
   {
     id: "geminicode",
@@ -1081,7 +1083,7 @@ export const catalog: Tool[] = [
     why: "The natural seat for a shop that already runs on Google Cloud and BigQuery.",
     tradeoff: "The free individual tier stopped in June 2026 and Google's pricing page hides its numbers, so the seat price is secondary.",
     traits: { codeFirst: true },
-    fit: { volume: ALL_VOLUMES }
+    fit: {}
   }
 ];
 
