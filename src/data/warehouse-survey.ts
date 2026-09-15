@@ -155,6 +155,7 @@ export const ui = {
   pickToContinue: "Pick one to continue",
   questionOf: (n: number, total: number) => `Question ${n} of ${total}`,
   loading: ["Reading your answers", "Matching tools to your data", "Checking list prices", "Adding up the monthly cost"],
+  loadingNote: "The AI read usually takes about 30 seconds.",
   noScript: "This planner needs JavaScript to add up a stack."
 };
 
@@ -171,6 +172,7 @@ export const result = {
   },
   sourceAi: "Picked by AI from your answers. Every price comes from the list below and not from the AI.",
   sourceRules: "Picked by rules from your answers.",
+  sourcePending: "Picked by rules for now. The AI read is on its way, usually about 30 seconds.",
   swapped: (n: number) => (n === 1 ? "You swapped one layer." : `You swapped ${n} layers.`),
   swapLabel: "Swap",
   unpricedNote: (names: string) => `Not in the total because the vendor does not publish a price: ${names}.`,

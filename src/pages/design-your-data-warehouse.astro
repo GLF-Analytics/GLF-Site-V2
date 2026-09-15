@@ -136,7 +136,8 @@ const total = questions.length;
 
           <div class="wh-loading" data-loading hidden aria-live="polite">
             <p class="wh-loading__phrase" data-phrase>{ui.loading[0]}</p>
-            <div class="wh-loading__track" aria-hidden="true"><div class="wh-loading__bar"></div></div>
+            <div class="wh-loading__track" aria-hidden="true"><div class="wh-loading__bar" data-bar></div></div>
+            <p class="wh-loading__note" data-loading-note hidden>{ui.loadingNote}</p>
           </div>
         </div>
 
@@ -236,6 +237,8 @@ const total = questions.length;
     const fill = form.querySelector<HTMLElement>("[data-fill]")!;
     const loading = root.querySelector<HTMLElement>("[data-loading]")!;
     const phrase = root.querySelector<HTMLElement>("[data-phrase]")!;
+    const bar = root.querySelector<HTMLElement>("[data-bar]")!;
+    const loadingNote = root.querySelector<HTMLElement>("[data-loading-note]")!;
     const resultEl = root.querySelector<HTMLElement>("[data-result]")!;
     const notes = form.querySelector<HTMLTextAreaElement>("#wh-notes")!;
     const count = form.querySelector<HTMLElement>("[data-count]")!;
@@ -243,7 +246,7 @@ const total = questions.length;
     const email = root.dataset.email ?? "";
     let current = 0;
 
-    type View = { answers: Answers; picks: Picks; reasons: Record<string, string>; summary: string; source: "ai" | "rules"; swapped: Layer[] };
+    type View = { answers: Answers; picks: Picks; reasons: Record<string, string>; summary: string; source: "ai" | "rules"; swapped: Layer[]; pending?: boolean };
     let view: View | null = null;
     const makeView = (answers: Answers, picks: Picks, reasons: Record<string, string>, summary: string, source: "ai" | "rules"): View => ({ answers, picks, reasons, summary, source, swapped: [] });
 
@@ -394,23 +397,35 @@ const total = questions.length;
       resultEl.hidden = true;
       loading.hidden = false;
 
-      // One honest line first. The four phrases only start if the route is still working after 400 ms.
+      // One honest line first. The four phrases, the wait note, and the meter only start if the
+      // route is still working after 400 ms (the rules path answers before that).
       phrase.textContent = ui.loading[ui.loading.length - 1];
+      bar.style.width = "0%";
+      loadingNote.hidden = true;
       let n = 0;
       let rotate = 0;
+      let tick = 0;
+      const started = Date.now();
       const slow = window.setTimeout(() => {
         phrase.textContent = ui.loading[0];
+        loadingNote.hidden = false;
         rotate = window.setInterval(() => {
           n = (n + 1) % ui.loading.length;
           phrase.textContent = ui.loading[n];
         }, 1400);
+        // The meter: time based, eases toward 92% (about 81% at 30 s), then jumps to full on arrival.
+        tick = window.setInterval(() => {
+          const t = (Date.now() - started) / 1000;
+          bar.style.width = `${(92 * (1 - Math.exp(-t / 14))).toFixed(1)}%`;
+        }, 200);
       }, 400);
-      const started = Date.now();
 
       const next = await suggest(answers);
       // The AI path earns its pause; the rules path is instant and shows it.
       const floor = next.source === "ai" ? 1600 : 0;
       const wait = Math.max(0, floor - (Date.now() - started));
+      if (tick) window.clearInterval(tick);
+      bar.style.width = "100%";
       window.setTimeout(() => {
         window.clearTimeout(slow);
         if (rotate) window.clearInterval(rotate);
@@ -488,7 +503,7 @@ const total = questions.length;
       const notesEl = root!.querySelector<HTMLElement>("[data-total-notes]")!;
       notesEl.textContent = totalNotes.filter(Boolean).join(" ");
       notesEl.hidden = !notesEl.textContent;
-      const sourceLine = source === "ai" ? result.sourceAi : result.sourceRules;
+      const sourceLine = view.pending ? result.sourcePending : source === "ai" ? result.sourceAi : result.sourceRules;
       root!.querySelector<HTMLElement>("[data-source]")!.textContent = swapped.length ? `${sourceLine} ${result.swapped(swapped.length)}` : sourceLine;
 
       // ---- the details ----
@@ -650,6 +665,8 @@ const total = questions.length;
         loading.style.minHeight = `${form.offsetHeight}px`;
         form.hidden = true;
         loading.hidden = false;
+        loadingNote.hidden = false;
+        bar.style.width = "55%";
       }
       if (harness === "result") {
         view = makeView(a, recommendByRules(a), {}, "", "rules");
@@ -665,15 +682,16 @@ const total = questions.length;
     } else if (shared) {
       prefill(shared);
       view = makeView(shared, recommendByRules(shared), {}, "", "rules");
+      view.pending = true;
       card.hidden = true;
       render();
       resultEl.hidden = false;
       // Upgrade to the AI pick in the background, unless the reader has swapped something meanwhile.
       suggest(shared).then((next) => {
-        if (view && view.answers === shared && next.source === "ai" && !view.swapped.length) {
-          view = next;
-          render();
-        }
+        if (!view || view.answers !== shared) return;
+        if (next.source === "ai" && !view.swapped.length) view = next;
+        else view.pending = false;
+        render();
       });
     } else if (!restoreDraft()) {
       show(0, false);
