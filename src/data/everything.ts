@@ -1,7 +1,8 @@
 /*
-  /everything: the long list. Forty things Gabriel has done since 2017, in
+  /everything: the long list. Everything Gabriel has done since 2017, in
   order (Mindshare first, this month last; the page never says it is
-  chronological). Each bullet names its project; consecutive bullets with the
+  chronological). S20 (9/15/26): consolidated from forty bullets to fewer,
+  longer ones (bartaco five, birthday-cards.ai three) with no fact dropped. Each bullet names its project; consecutive bullets with the
   same project render under one mono heading on the page, so a run of bartaco
   bullets reads as one block. Each bullet is one or two plain sentences plus
   the tools it used. The word cloud on the page is COMPUTED from this text at build time,
@@ -31,17 +32,12 @@ export const bullets: Bullet[] = [
     tools: ["SQL", "ETL", "Tableau"]
   },
   {
-    project: "A DTC brand",
-    text: "Joined a DTC brand as its first data hire and built the data warehouse and the reporting the business ran on as revenue passed $60 million.",
-    tools: ["SQL", "data warehouse", "reporting"]
+    project: "Your Super",
+    text: "Joined Your Super as its first data hire and built the data warehouse and the reporting the business ran on as revenue passed $60 million. The SQL tables carried the business logic, so every report used the same definition of an order, a subscriber, and a refund.",
+    tools: ["SQL", "data warehouse", "reporting", "data modeling"]
   },
   {
-    project: "A DTC brand",
-    text: "Wrote the SQL tables that carried the business logic, so every report ran on the same data and the same definition of an order, a subscriber, and a refund.",
-    tools: ["SQL", "data modeling"]
-  },
-  {
-    project: "A DTC brand",
+    project: "Your Super",
     text: "Built the forecasting models operations used day to day, inventory projections and demand for new products, and the retention reporting behind a growing subscription program.",
     tools: ["forecasting", "Excel", "SQL", "analytics"]
   },
@@ -82,88 +78,43 @@ export const bullets: Bullet[] = [
   },
   {
     project: "Haven's Kitchen",
-    text: "Launched direct-to-consumer eCommerce for Haven's Kitchen, a brand that had only sold through retail and Amazon, managing the three engineers who built it.",
-    tools: ["eCommerce", "web development"]
-  },
-  {
-    project: "Haven's Kitchen",
-    text: "Integrated Amazon Buy with Prime for Haven's Kitchen, a new channel for the brand, and ran the Aioli line launch with new product pages, Google Ads, and the weekly strategy call.",
-    tools: ["Amazon", "Buy with Prime", "Google Ads", "growth marketing"]
+    text: "Launched direct-to-consumer eCommerce for Haven's Kitchen, a brand that had only sold through retail and Amazon, managing the three engineers who built it. Then integrated Amazon Buy with Prime and ran the Aioli line launch with new product pages, Google Ads, and the weekly strategy call.",
+    tools: ["eCommerce", "web development", "Amazon", "Buy with Prime", "Google Ads", "growth marketing"]
   },
   {
     project: "Super Teeth",
-    text: "Built a complete database and reporting system for Super Teeth in six weeks, then trained the team to run it without me.",
+    text: "Built a complete database and reporting system for Super Teeth in six weeks, then trained the team to run it on their own.",
     tools: ["BigQuery", "Looker Studio", "GA4", "training"]
   },
   {
     project: "Fox Fodder Flowers",
-    text: "Ran a full technical SEO audit for Fox Fodder Flowers: canonical tags, duplicate content, the XML sitemap, internal linking.",
-    tools: ["SEO audit"]
-  },
-  {
-    project: "Fox Fodder Flowers",
-    text: "Built Fox Fodder's Google Ads account from nothing and kept it profitable on brand and non-brand terms. Sales grew 20% that year.",
-    tools: ["Google Ads", "paid search", "growth"]
+    text: "Ran a technical SEO audit for Fox Fodder Flowers, canonical tags to sitemap to internal linking, then built its Google Ads account from nothing and kept it profitable on brand and non-brand terms. Sales grew 20% that year.",
+    tools: ["SEO audit", "Google Ads", "paid search", "growth"]
   },
   {
     project: "bartaco",
-    text: "Led digital marketing and growth for bartaco across 34 markets: email, loyalty, paid media, website, app, and the takeout experience.",
-    tools: ["Klaviyo", "paid media", "loyalty", "Olo", "growth marketing"]
+    text: "Led digital marketing and growth for bartaco across 34 markets: email, loyalty, paid media, website, app, and takeout. Ran the email program to more than 500,000 subscribers and built an AI-assisted creative workflow that turns a concept into a finished Klaviyo campaign.",
+    tools: ["Klaviyo", "paid media", "loyalty", "Olo", "growth marketing", "email marketing", "lifecycle", "Adobe Firefly", "Claude", "brand"]
   },
   {
     project: "bartaco",
-    text: "Managed bartaco's email marketing to a list of more than 500,000 subscribers.",
-    tools: ["Klaviyo", "email marketing", "lifecycle"]
+    text: "Ran the QR dine-in ordering rollout across 30 locations with multiple vendors and more than 50 people, and the ezCater catering listings in seven markets: sponsored budgets, commission bids that set search rank, a store-by-store audit of the return.",
+    tools: ["Olo", "OneDine", "project management", "product", "ezCater", "marketplace advertising"]
   },
   {
     project: "bartaco",
-    text: "Ran the QR dine-in ordering rollout across 30 bartaco locations, a project with multiple vendors and more than 50 people on it.",
-    tools: ["Olo", "OneDine", "project management", "product"]
+    text: "Moved Uber Eats and DoorDash onto a market-by-market profitability framework: a keep or remove call on every market each month, taken to the CEO and CFO. Delivery is measured on payout dollars, not platform-reported sales, which gave the two platforms two jobs: one wins new customers, the other keeps them.",
+    tools: ["Uber Eats", "DoorDash", "growth strategy", "delivery marketing", "analytics", "customer acquisition", "Loop"]
   },
   {
     project: "bartaco",
-    text: "Took over Uber Eats and DoorDash for bartaco and replaced a spend-everywhere ad program with a market-by-market profitability framework. Every market gets a keep or remove call each month, taken to the CEO and CFO.",
-    tools: ["Uber Eats", "DoorDash", "growth strategy", "delivery marketing"]
+    text: "Built the delivery reporting in Python: an automated month close (payout exports in, a year-over-year Google Sheet with an executive overview out) and a monthly operations pipeline for missing items, wrong orders, and cancellations across 31 markets, cut for the CEO, regional managers, and GMs. It found the cost sat in missing items on bundled orders and turned a menu debate into a packing checklist.",
+    tools: ["Python", "pandas", "Google Sheets API", "Claude Code", "openpyxl", "Excel", "operations analytics"]
   },
   {
     project: "bartaco",
-    text: "Measured delivery on payout dollars instead of platform-reported sales, and read markets with ad money against markets without it. That split the two platforms into two jobs: one brings new customers in, the other keeps them.",
-    tools: ["analytics", "customer acquisition", "Loop"]
-  },
-  {
-    project: "bartaco",
-    text: "Built the automated month close in Python: Uber Eats and DoorDash payout exports in, a Google Sheet with year-over-year tabs and an executive overview out, with a runbook the team keeps.",
-    tools: ["Python", "pandas", "Google Sheets API", "Claude Code"]
-  },
-  {
-    project: "bartaco",
-    text: "Built the 3PD operations analysis: a monthly pipeline for missing items, wrong orders, and cancellations across 31 markets, cut for the CEO, regional managers, and GMs. It found the cost was in missing items on bundled orders, which turned a menu debate into a packing checklist.",
-    tools: ["Python", "openpyxl", "Excel", "operations analytics"]
-  },
-  {
-    project: "bartaco",
-    text: "Audited the data before reading it: a DoorDash denominator that made error rates look halved, an Uber Eats export window that mismatched numerator and denominator, and a customer-count undercount that would have inflated a growth story.",
-    tools: ["data audit", "data integrity", "pandas"]
-  },
-  {
-    project: "bartaco",
-    text: "Built a self-serve operations knowledge base that regional managers upload to Claude and ask questions of directly, rebuilt by script through sixteen versions with a privacy scrub on every build.",
-    tools: ["Claude", "Python", "knowledge base", "markdown"]
-  },
-  {
-    project: "bartaco",
-    text: "Ran a five-channel competitor pricing study across ten restaurant brands: more than 1,200 price points collected with Claude Code sub-agents and headless browser scraping, every price traceable to its source.",
-    tools: ["Claude Code", "Python", "headless Edge", "Excel", "pricing analysis"]
-  },
-  {
-    project: "bartaco",
-    text: "Ran bartaco's catering listings on ezCater across seven markets: weekly sponsored budgets, commission bids that set search rank, and a store-by-store audit of what each returned.",
-    tools: ["ezCater", "marketplace advertising"]
-  },
-  {
-    project: "bartaco",
-    text: "Built an AI-assisted email creative workflow for bartaco's designer: concept, copy, and image prompts in, finished Klaviyo campaigns out, inside a documented brand system.",
-    tools: ["Klaviyo", "email marketing", "Adobe Firefly", "Claude", "brand"]
+    text: "Audited the data before reading it: a DoorDash denominator that halved error rates, a mismatched Uber Eats export window, a customer undercount that would have inflated a growth story. Built a self-serve operations knowledge base regional managers upload to Claude and question directly, sixteen versions with a privacy scrub on each, and ran a five-channel competitor pricing study across ten brands, more than 1,200 price points traceable to their sources.",
+    tools: ["data audit", "data integrity", "pandas", "Claude", "Python", "knowledge base", "markdown", "Claude Code", "headless Edge", "Excel", "pricing analysis"]
   },
   {
     project: "A construction management firm in LA",
@@ -182,33 +133,18 @@ export const bullets: Bullet[] = [
   },
   {
     project: "birthday-cards.ai",
-    text: "Designed, built, and launched birthday-cards.ai alone with Claude Code: Next.js, TypeScript, Tailwind, Vercel, OpenAI and Gemini image models, Airtable, Resend, Vercel Blob, Upstash, pdf-lib.",
-    tools: ["Claude Code", "Next.js", "TypeScript", "Tailwind", "Vercel", "OpenAI", "Gemini", "Airtable", "Resend", "Upstash"]
+    text: "Designed, built, and launched birthday-cards.ai with Claude Code, from the Next.js front end to the OpenAI and Gemini image models behind it. Built the brand with it: a style guide, accessible color tokens, line icons, a typing demo, storytelling on every page.",
+    tools: ["Claude Code", "Next.js", "TypeScript", "Tailwind", "Vercel", "OpenAI", "Gemini", "Airtable", "Resend", "Upstash", "brand", "design", "storytelling", "style guide"]
   },
   {
     project: "birthday-cards.ai",
-    text: "Built the brand along with the product: a design language with its own style guide, accessible color tokens, line icons, a typing demo, and the storytelling on every page.",
-    tools: ["brand", "design", "storytelling", "style guide"]
+    text: "Wrote the tracking, about 60 events, so a delivered card counts apart from a click, and built the search and AI-answer page machine: landing pages with canonicals, JSON-LD, an image sitemap, llms.txt. People arrive from Google, Bing, DuckDuckGo, and ChatGPT and make cards.",
+    tools: ["Vercel Web Analytics", "Google Search Console", "Bing Webmaster", "IndexNow", "analytics", "SEO", "GEO", "JSON-LD", "llms.txt"]
   },
   {
     project: "birthday-cards.ai",
-    text: "Wrote the event tracking myself, about 60 events, so a delivered card counts apart from a click, and read the data weekly through Vercel Web Analytics, Google Search Console, and Bing.",
-    tools: ["Vercel Web Analytics", "Google Search Console", "Bing Webmaster", "IndexNow", "analytics"]
-  },
-  {
-    project: "birthday-cards.ai",
-    text: "Built the search and AI-answer page machine: a set of landing pages with canonicals, JSON-LD, an image sitemap, and llms.txt. People arrive from Google, Bing, DuckDuckGo, and ChatGPT and make cards.",
-    tools: ["SEO", "GEO", "JSON-LD", "llms.txt"]
-  },
-  {
-    project: "birthday-cards.ai",
-    text: "Hardened it for real traffic: per-IP rate limits, a daily render budget, spend caps with alerts, one-send email idempotency, and a test suite that runs before every deploy.",
-    tools: ["Upstash", "Vitest", "security", "reliability"]
-  },
-  {
-    project: "birthday-cards.ai",
-    text: "Forked the codebase into custom-cards.ai, a white-label card page for shops, and makemeabook.ai, a five-page illustrated book from one name and one idea.",
-    tools: ["Next.js", "Gemini", "OpenAI", "white-label", "product"]
+    text: "Hardened it for real traffic: per-IP rate limits, a daily render budget, spend caps with alerts, one-send email idempotency, a test suite before every deploy. Then forked the code into custom-cards.ai, a white-label card page for shops, and makemeabook.ai, a five-page illustrated book from one name and one idea.",
+    tools: ["Upstash", "Vitest", "security", "reliability", "Next.js", "Gemini", "OpenAI", "white-label", "product"]
   },
   {
     project: "AI on every project",

@@ -2,9 +2,9 @@
 title: "birthday-cards.ai"
 clientType: "My own product"
 summary: "An AI card generator I designed, built, and run. Built with Claude Code on Next.js and Vercel."
-companyDescription: "Live since March 2026. One person, the whole stack."
-challenge: "Take a product the whole way without a team: design, development, database, email, search, and analytics."
-solution: "Shipped the generator, then email and gift delivery, then search landing pages. Wrote the tracking myself, about 60 events, so a finished card is counted apart from a click."
+companyDescription: "Live since March 2026. Built with Claude Code, end to end."
+challenge: "Take a product the whole way: design, development, database, email, search, and analytics."
+solution: "Shipped the generator, then email and gift delivery, then search landing pages. Wrote the tracking, about 60 events, so a finished card is counted apart from a click."
 outcomes:
   - "People arrive from Google, Bing, DuckDuckGo, and ChatGPT and make cards. The live counts are on the homepage."
   - "Every page and button is measured, so each week's decision is made on numbers."

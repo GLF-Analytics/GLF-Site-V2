@@ -6,7 +6,7 @@
   What it never does: price anything. The caller runs sanitizePicks() and
   priceStack() on whatever comes back.
 
-  Prompt status: UNVALIDATED until the key exists (9/15/26 live test).
+  Prompt status: VALIDATED 9/15/26 on three live answer sets (Microsoft mid, Google small, Snowflake large): catalog-id picks, one-sentence first-person reasons, no dollar figures, no dashes; 21 s cold, about 9 s warm on claude-opus-5 at low effort.
 */
 import Anthropic from "@anthropic-ai/sdk";
 // The SDK's zodOutputFormat reads Zod 4 schemas; zod 3.25 ships Zod 4 at this subpath.

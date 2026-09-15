@@ -15,7 +15,7 @@ featured: true
 order: 4
 duration: "Ongoing retainer, 2026"
 backgroundImage: "/images/work/constructionai.svg"
-outcome: "Reports, bids, and a prompt library the team runs without me. Every workflow has a named human reviewer."
+outcome: "Reports, bids, and a prompt library the team runs on its own. Every workflow has a named human reviewer."
 url: "https://glf-ai.com"
 tools: ["Power Automate", "Claude API", "Azure Document Intelligence", "Microsoft 365", "Copilot", "Claude Code"]
 functions: ["workflow design", "prompt engineering", "document templates", "training"]
@@ -25,6 +25,6 @@ functions: ["workflow design", "prompt engineering", "document templates", "trai
   <ul>
     <li>A weekly report generator on Power Automate, the Claude API, and Azure Document Intelligence. No new software for the team to learn.</li>
     <li>A general document generator and a bid comparison analyzer, built on the same architecture.</li>
-    <li>A prompt library the team maintains, plus eight training sessions, so the firm runs the tools without me.</li>
+    <li>A prompt library the team maintains, plus eight training sessions, so the firm runs the tools on its own.</li>
   </ul>
 </section>

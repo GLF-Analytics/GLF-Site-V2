@@ -102,7 +102,7 @@ export const sections: Section[] = [
     id: "command-line",
     heading: "How I work with Claude Code",
     paragraphs: [
-      "I delegate a lot, but I do not outsource the thinking. I review every plan and make sure it is what I want. Claude helps me check my reasoning, weigh the costs and benefits, and think things through before I decide. I push each release myself from GitHub Desktop."
+      "Claude and I work as a team. It drafts the plan, builds, and verifies. I review every plan and weigh the costs and benefits before anything ships, and the release goes out from GitHub Desktop after that review."
     ]
   },
   {
@@ -121,6 +121,6 @@ export const faq: { q: string; a: string }[] = [
   },
   {
     q: "Who makes the decisions?",
-    a: "I do. Claude helps me think through each trade-off, builds what I pick, and verifies it. I push the release myself."
+    a: "A person does. Claude thinks through each trade-off with me, builds what we pick, and verifies it. The release goes out after my review."
   }
 ];

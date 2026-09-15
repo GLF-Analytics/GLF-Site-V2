@@ -3,19 +3,19 @@
   /everything: the long list. Not in the nav; linked from the About block and
   the row under the case studies on the homepage. Copy lives in
   src/data/everything.ts. The word cloud is computed here from that copy:
-  each term's font size follows how often it appears across the forty
+  each term's font size follows how often it appears across the
   bullets (square-root scale so the big words do not drown the rest), the
   top term is gold, and the build throws if a term scores zero or the list
-  is not forty long. The bullets render in runs: consecutive bullets with the
+  is outside a sane range (S20: the list is consolidated, no fixed count). The bullets render in runs: consecutive bullets with the
   same project sit under one mono heading with an id, so /everything#bartaco
-  lands on that run. No data-reveal on this page: forty hidden bullets is
+  lands on that run. No data-reveal on this page: dozens of hidden bullets is
   the worst case for the reveal observer, so everything renders plainly.
 */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { intro, bullets, cloudTerms } from "../data/everything";
 
-if (bullets.length !== 40) {
-  throw new Error(`/everything expects 40 bullets, found ${bullets.length}`);
+if (bullets.length < 20 || bullets.length > 60) {
+  throw new Error(`/everything expects 20 to 60 bullets, found ${bullets.length}`);
 }
 
 // Runs: consecutive bullets that share a project render under one heading.
@@ -76,14 +76,14 @@ for (let i = cloud.length - 1; i > 0; i--) {
   [cloud[i], cloud[j]] = [cloud[j], cloud[i]];
 }
 
-console.log(`[everything] ${runs.length} groups: ` + runs.map((r) => `${r.project} ${r.items.length}`).join(", "));
+console.log(`[everything] ${bullets.length} bullets, ${runs.length} groups: ` + runs.map((r) => `${r.project} ${r.items.length}`).join(", "));
 console.log(
   "[everything] cloud counts: " +
     [...scored].sort((a, b) => b.count - a.count).map((t) => `${t.label} ${t.count}`).join(", ")
 );
 
 const description =
-  "Forty things Gabriel Freeman has done since 2017, from brand lift studies and BigQuery warehouses to delivery growth for a 34-market restaurant group and an AI product built with Claude Code. Tools named on every line.";
+  "Everything Gabriel Freeman has done since 2017, from brand lift studies and BigQuery warehouses to delivery growth for a 34-market restaurant group and an AI product built with Claude Code. Tools named on every line.";
 ---
 <BaseLayout title={intro.title} description={description}>
   <section class="pt-32 pb-12 md:pt-40 md:pb-16 px-6 md:px-12 lg:px-16">
