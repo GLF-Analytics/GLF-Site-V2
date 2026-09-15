@@ -5,8 +5,9 @@ import vercel from "@astrojs/vercel/serverless";
 import { siteUrl } from "./src/config/site.ts";
 
 // Unlisted pages: built and reachable by URL, kept out of the sitemap (and
-// noindex on the page) until Gabriel links them.
-const UNLISTED = ["/design-your-data-warehouse"];
+// noindex on the page) until Gabriel links them. S23 (9/15/26): the warehouse
+// planner is indexable now; the list stays for the next unlisted page.
+const UNLISTED: string[] = [];
 
 export default defineConfig({
   site: siteUrl,

@@ -26,6 +26,10 @@ const { title, description, canonical, ogImage, noindex } = Astro.props;
       noindex={noindex}
     />
     <JsonLd />
+    {/* Vercel Web Analytics (S23, 9/15/26): no dependency. The queue stub makes window.va a safe no-op
+        until Vercel serves the script (Analytics enabled on the project) and in dev, where it 404s. */}
+    {import.meta.env.PROD && <script is:inline>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>}
+    {import.meta.env.PROD && <script is:inline defer src="/_vercel/insights/script.js"></script>}
   </head>
   <body class="antialiased">
     <!-- Grain Texture Overlay -->

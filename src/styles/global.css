@@ -1611,3 +1611,401 @@ summary {
     transition: none;
   }
 }
+
+/* ============================================
+   WAREHOUSE PLANNER, S23 (9/15/26): the example card, the reveal, the stack
+   card, the finance read, the tradeoff line, the utilities, the offer, the
+   sections under the tool. Flat, hairlines, gold as the accent only.
+   ============================================ */
+
+/* The example card beside the lede: the promise made visible. */
+.wh-example {
+  border: 1px solid var(--color-border);
+  padding: 1rem;
+}
+
+.wh-example__label,
+.wh-loading__label,
+.wh-line__tradeoff > span:first-child,
+.wh-offer__label {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--color-gold);
+}
+
+.wh-example__card {
+  margin-top: 0.75rem;
+  border: 1px solid var(--color-border);
+}
+
+.wh-example__card svg,
+.wh-card-svg svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.wh-example__note {
+  margin-top: 0.75rem;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* The reveal */
+.wh-loading__label {
+  min-height: 1rem;
+}
+
+.wh-loading__phrase {
+  margin-top: 0.75rem;
+}
+
+.wh-loading__text {
+  margin-top: 0.75rem;
+  min-height: 4.6rem;
+  color: var(--color-text-primary);
+  opacity: 0.8;
+  font-size: 1rem;
+  line-height: 1.55;
+  max-width: 36rem;
+}
+
+.wh-loading__phrase.is-swap,
+.wh-loading__text.is-swap {
+  animation: whSwap 360ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes whSwap {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.wh-loading__foot {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.wh-loading__credit {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--color-text-secondary);
+}
+
+.wh-loading__skip {
+  min-height: 2.75rem;
+  padding: 0 0.25rem;
+  background: none;
+  border: 0;
+  color: var(--color-text-primary);
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-hover);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.wh-loading__skip:hover {
+  color: var(--color-gold);
+}
+
+/* The summary additions */
+.wh-summary__small,
+.wh-summary__runs {
+  margin-top: 0.75rem;
+  color: var(--color-text-primary);
+  opacity: 0.85;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.wh-summary__runs {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* The stack card on the results page */
+.wh-card-svg {
+  margin-top: 1rem;
+  border: 1px solid var(--color-border);
+}
+
+/* The tradeoff line on every layer */
+.wh-line__tradeoff {
+  margin-top: 0.4rem;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.wh-line__tradeoff > span:first-child {
+  margin-right: 0.35rem;
+}
+
+/* The utilities row: no call to action, six small tools. */
+.wh-utilities .btn-secondary {
+  padding: 0.6rem 0.95rem;
+  min-height: 2.75rem;
+  font-size: 0.8125rem;
+}
+
+.wh-report-link {
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-hover);
+  text-underline-offset: 3px;
+}
+
+.wh-report-link:hover {
+  color: var(--color-gold);
+}
+
+/* The offer: a small fixed card, in from the bottom, under the grain (9999) and above the nav (50). */
+.wh-offer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  background: var(--color-bg-card);
+  border-top: 1px solid var(--color-border-hover);
+  transform: translateY(102%);
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wh-offer.is-in {
+  transform: none;
+}
+
+@media (min-width: 768px) {
+  .wh-offer {
+    left: auto;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: 26rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--color-border-hover);
+  }
+}
+
+.wh-offer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.wh-offer__x {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-right: -0.75rem;
+  background: none;
+  border: 0;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.wh-offer__x:hover {
+  color: var(--color-gold);
+}
+
+.wh-offer__line {
+  margin-top: 0.5rem;
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.wh-offer__row {
+  margin-top: 0.875rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.wh-offer__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 3rem;
+  padding: 0.6rem 0.875rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+}
+
+.wh-offer__input:focus {
+  border-color: var(--color-gold);
+  outline: none;
+}
+
+.wh-offer__row .btn-primary {
+  flex: none;
+  min-height: 3rem;
+  padding-left: 1.1rem;
+  padding-right: 1.1rem;
+}
+
+/* The honeypot: off screen, never in the tab order, never visible. */
+.wh-offer__hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.wh-offer__opt {
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.wh-offer__opt input {
+  margin-top: 0.15rem;
+  accent-color: var(--color-gold);
+}
+
+.wh-offer__consent,
+.wh-offer__thanks {
+  margin-top: 0.5rem;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.wh-offer__status {
+  margin-top: 0.5rem;
+  color: var(--color-gold);
+  font-size: 0.8125rem;
+}
+
+.wh-offer__no {
+  margin-top: 0.25rem;
+  min-height: 2.75rem;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-hover);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.wh-offer__no:hover {
+  color: var(--color-gold);
+}
+
+.wh-offer__q {
+  margin-top: 0.875rem;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.wh-offer__chips {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.wh-offer__chip {
+  min-height: 2.75rem;
+  padding: 0.4rem 0.8rem;
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.wh-offer__chip:hover {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+.wh-offer__fallback {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.wh-offer__fallback a {
+  color: var(--color-text-primary);
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-hover);
+  text-underline-offset: 3px;
+}
+
+.wh-offer__fallback a:hover {
+  color: var(--color-gold);
+}
+
+/* Under the tool */
+.wh-learn {
+  margin-top: 1rem;
+}
+
+.wh-learn li {
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  opacity: 0.85;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.wh-learn li:last-child {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wh-faq {
+  margin-top: 1rem;
+}
+
+.wh-faq > div {
+  padding: 1rem 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.wh-faq > div:last-child {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wh-faq dt {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.wh-faq dd {
+  margin-top: 0.4rem;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wh-offer,
+  .wh-loading__phrase.is-swap,
+  .wh-loading__text.is-swap {
+    transition: none;
+    animation: none;
+  }
+}

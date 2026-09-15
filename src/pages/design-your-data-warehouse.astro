@@ -1,35 +1,43 @@
 ---
 /*
-  /design-your-data-warehouse (S15, 9/14/26): the tool planner. UNLISTED: not in
-  the nav, not on the homepage, noindex, filtered out of the sitemap in
-  astro.config.ts. Gabriel opens it by URL until he links it (and the
-  /app-hardening pass is owed before that).
+  /design-your-data-warehouse: the tool planner, and since S23 (9/15/26) GLF's
+  lead generator. Indexable, linked from Gabriel's posts. Voice on this page =
+  GLF Analytics "we" (his call 9/15; POSITIONING records the exception).
 
-  Flow (S17, 9/15/26): ten screens of one question each inside a bordered card
-  that holds one fixed height (the tallest question, measured on load and on a
-  width change), so the buttons never move and the page never scrolls between
-  questions. Then a loading state in the same card, then the result: a summary
-  card first (total, budget line, one row per layer), then the details. The
-  client script POSTs to /api/warehouse-suggest (AI picks when switched on,
-  rules otherwise) and prices every line locally with src/lib/warehouseCalc.ts,
-  so swaps recalculate without another call.
-
-  S19 (9/15/26): on phones the button row sticks to the bottom of the screen, so
-  Next is always reachable; the total carries its label and a live region; a swap
-  is counted in the source line; a shared or emailed link opens on the stack
-  itself with an Edit answers button; the rules path shows its result at once and
-  only the AI path pauses.
+  The visitor's path:
+  1. The questions first (ten screens of one question in a bordered card that
+     holds one measured height, S17). No sign-up, no ad above them; an example
+     stack card sits beside the lede so the promise is visible.
+  2. The reveal (S23): while the AI reads, one slide every five seconds says
+     what is being assembled; when the picks land, the same block shows each
+     layer in turn with its tool and reason (a skip button on screen the whole
+     time), then the summary. The rules path (AI off) is instant, as before.
+  3. The result: the summary card, the stack card (an SVG a person can download
+     as a PNG), the finance read (what grows with people, with data, what stays
+     yours, upkeep), the details with a tradeoff on every layer and swaps that
+     say the change in words, the sources, and a utilities row (copy link,
+     Markdown, a CLAUDE.md, open in Claude). No call to action here.
+  4. Ten seconds after the result, once a session: the offer, a small fixed
+     card asking for an email in exchange for the report. It posts to
+     /api/warehouse-report and falls back to a mailto when that route is off.
+  5. Under the tool: how a stack like this runs, who we are, the FAQ.
 
   Copy: src/data/warehouse-survey.ts. Prices: src/data/warehouse-catalog.ts.
+  Engine: src/lib/warehouseCalc.ts (isomorphic). Card: src/lib/warehouseCard.ts.
+  Email: src/lib/warehouseReport.ts + src/pages/api/warehouse-report.ts.
   Build guards below: sources and dates on every price, three or more tools per
-  layer, no comma in a question title or heading, the three reference scenarios
-  priced by the engine must equal the hand totals in the catalog file.
+  layer, no comma in a heading, no dash or exclamation point in the copy, the
+  three reference scenarios priced by the engine must equal the hand totals,
+  and the report email for those scenarios carries no dash and no dollar
+  figure inside the GLF block.
 */
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { catalog, LAYERS, scenarios } from "../data/warehouse-catalog";
-import { meta, questions, ui, result, layerCopy } from "../data/warehouse-survey";
+import { catalog, LAYERS, scenarios, type Layer } from "../data/warehouse-catalog";
+import { meta, questions, ui, result, layerCopy, sequence, offer, learn, who, faq } from "../data/warehouse-survey";
 import { NOTES_MAX, priceStack, recommendByRules } from "../lib/warehouseCalc";
-import { orgInfo } from "../config/site";
+import { stackCardSvg } from "../lib/warehouseCard";
+import { buildReport } from "../lib/warehouseReport";
+import { orgInfo, siteUrl } from "../config/site";
 
 // ---------- build guards ----------
 for (const t of catalog) {
@@ -47,12 +55,22 @@ const titles = [
   result.detailsHeading,
   result.movesHeading,
   result.sourcesHeading,
+  result.cardHeading,
+  result.financeHeading,
+  offer.label,
+  learn.heading,
+  who.heading,
+  ...faq.map((f) => f.q),
   ...questions.map((q) => q.title),
   ...Object.values(layerCopy).map((l) => l.name)
 ];
 for (const t of titles) if (t.includes(",")) throw new Error(`[warehouse] comma in a title: "${t}"`);
-const dashes = JSON.stringify({ meta, questions, ui, result, layerCopy, catalog: catalog.map((t) => [t.why, t.tradeoff, t.name, t.tier]) });
-if (/[–—]/.test(dashes)) throw new Error("[warehouse] em or en dash in the copy or catalog");
+const copyText = JSON.stringify({ meta, questions, ui, result, layerCopy, sequence, offer, learn, who, faq, catalog: catalog.map((t) => [t.why, t.tradeoff, t.name, t.tier]) });
+if (/[–—]/.test(copyText)) throw new Error("[warehouse] em or en dash in the copy or catalog");
+if (/!/.test(JSON.stringify({ meta, ui, result, sequence, offer, learn, who, faq }))) throw new Error("[warehouse] exclamation point in the page copy");
+
+const names = Object.fromEntries(LAYERS.map((l) => [l, layerCopy[l].name])) as Record<Layer, string>;
+const pageUrl = `${siteUrl}/${meta.slug}`;
 
 const scenarioTotals = scenarios.map((s) => {
   const stack = priceStack(recommendByRules(s.answers), s.answers);
@@ -60,30 +78,69 @@ const scenarioTotals = scenarios.map((s) => {
     const detail = stack.lines.map((l) => `${l.layer}=${l.tool?.id ?? "none"} ${l.price.low}-${l.price.high}`).join(", ");
     throw new Error(`[warehouse] scenario "${s.name}" priced ${stack.low}-${stack.high}, expected ${s.low}-${s.high} (${detail})`);
   }
+  // The report email for this scenario: no dash, no exclamation point, and no dollar figure inside the GLF block.
+  const report = buildReport({ answers: s.answers, stack, reasons: {}, summary: "", mentioned: [], answersUrl: pageUrl, postal: "Los Angeles, CA", replyTo: orgInfo.email, sentOn: "2026-09-15" });
+  if (/[–—!]/.test(report.text) || /[–—!]/.test(report.html.replace(/<!doctype html>/i, ""))) throw new Error(`[warehouse] dash or exclamation point in the report for "${s.name}"`);
+  const glf = report.text.split("HOW GLF ANALYTICS WOULD BUILD AND RUN IT")[1]?.split("Edit the answers")[0] ?? "";
+  if (/\$/.test(glf)) throw new Error(`[warehouse] a dollar figure inside the GLF block for "${s.name}"`);
   return `${s.name} $${s.low}-$${s.high}`;
 });
 const priced = catalog.filter((t) => t.price.kind !== "notPublished").length;
 const oldest = catalog.map((t) => t.checked).sort()[0];
 console.log(
-  `[warehouse] ${catalog.length} tools, ${priced} priced, ${catalog.length - priced} not published, oldest check ${oldest}, scenarios ${scenarioTotals.join(" / ")}, ${questions.length} questions`
+  `[warehouse] ${catalog.length} tools, ${priced} priced, ${catalog.length - priced} not published, oldest check ${oldest}, scenarios ${scenarioTotals.join(" / ")}, ${questions.length} questions, ${sequence.slides.length} slides, ${faq.length} faq`
 );
 
 const total = questions.length;
+const example = scenarios[1];
+const exampleSvg = stackCardSvg(priceStack(recommendByRules(example.answers), example.answers), { names, url: pageUrl, answers: example.answers, example: true });
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": `${pageUrl}#app`,
+      name: meta.title,
+      url: pageUrl,
+      description: meta.description,
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Any",
+      isAccessibleForFree: true,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      provider: { "@id": `${siteUrl}/#organization` }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${pageUrl}#faq`,
+      mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } }))
+    }
+  ]
+};
 ---
-<BaseLayout title={meta.title} description={meta.description} noindex>
+<BaseLayout title={meta.title} description={meta.description} ogImage={`${siteUrl}/images/og-warehouse.png`}>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
   <section class="pt-24 pb-10 md:pt-40 md:pb-12 px-6 md:px-12 lg:px-16">
-    <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8">
-      <div class="lg:col-span-8">
+    <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+      <div class="lg:col-span-7">
         <span class="label block mb-4">{meta.eyebrow}</span>
         <h1 class="heading-display text-4xl md:text-5xl text-white">{meta.title}</h1>
         <p class="mt-6 text-surface-400 text-base md:text-lg leading-relaxed max-w-xl">{meta.lede}</p>
+        <p class="mt-4 text-white text-sm md:text-base">{meta.promise}</p>
+        <p class="mt-3 text-surface-500 text-sm leading-relaxed max-w-xl">{meta.independence}</p>
+      </div>
+      <div class="lg:col-span-5 wh-example" aria-labelledby="wh-example-label">
+        <p id="wh-example-label" class="wh-example__label">{meta.exampleLabel}</p>
+        <div class="wh-example__card" set:html={exampleSvg} />
+        <p class="wh-example__note">{meta.exampleNote}</p>
       </div>
     </div>
   </section>
 
   <section class="px-6 md:px-12 lg:px-16 pb-16 md:pb-24 border-b border-white/[0.06]">
     <div class="max-w-7xl mx-auto">
-      <div class="wh max-w-3xl" data-email={orgInfo.email}>
+      <div class="wh max-w-3xl" data-email={orgInfo.email} data-url={pageUrl}>
         <noscript><p class="mb-8 text-sm text-surface-400">{ui.noScript}</p></noscript>
 
         <div class="wh-card" data-card>
@@ -135,9 +192,15 @@ const total = questions.length;
           </form>
 
           <div class="wh-loading" data-loading hidden aria-live="polite">
+            <p class="wh-loading__label" data-seq-label></p>
             <p class="wh-loading__phrase" data-phrase>{ui.loading[0]}</p>
+            <p class="wh-loading__text" data-seq-text></p>
             <div class="wh-loading__track" aria-hidden="true"><div class="wh-loading__bar" data-bar></div></div>
             <p class="wh-loading__note" data-loading-note hidden>{ui.loadingNote}</p>
+            <div class="wh-loading__foot">
+              <p class="wh-loading__credit">{ui.credit}</p>
+              <button type="button" class="wh-loading__skip" data-skip hidden>{ui.skip}</button>
+            </div>
           </div>
         </div>
 
@@ -150,13 +213,25 @@ const total = questions.length;
               <span class="ml-2 text-surface-400">{result.perMonth}</span>
             </p>
             <p class="wh-summary__budget" data-budget hidden></p>
+            <p class="wh-summary__small" data-small hidden>{result.smallStack}</p>
             <ol class="wh-summary__rows" data-rows></ol>
             <p class="wh-summary__meta" data-total-notes></p>
             <p class="wh-summary__meta" data-source></p>
+            <p class="wh-summary__runs" data-runs></p>
             <ul class="wh-summary__mentioned" data-mentioned hidden></ul>
           </div>
 
-          <h3 class="wh-sub wh-sub--details">{result.detailsHeading}</h3>
+          <h3 class="wh-sub wh-sub--details">{result.cardHeading}</h3>
+          <p class="mt-3 text-sm text-surface-400">{result.cardNote}</p>
+          <div class="wh-card-svg" data-card-svg></div>
+          <div class="wh-actions mt-4">
+            <button type="button" class="btn-secondary" data-download-card>{result.downloadCard}</button>
+          </div>
+
+          <h3 class="wh-sub">{result.financeHeading}</h3>
+          <ul class="wh-list" data-finance></ul>
+
+          <h3 class="wh-sub">{result.detailsHeading}</h3>
           <p class="mt-4 text-surface-200 leading-relaxed" data-summary hidden></p>
           <ol class="wh-lines" data-lines></ol>
 
@@ -169,11 +244,15 @@ const total = questions.length;
           <h3 class="wh-sub">{result.sourcesHeading}</h3>
           <ul class="wh-sources" data-sources></ul>
 
-          <div class="wh-actions mt-10">
-            <a class="btn-primary" data-email-link href={`mailto:${orgInfo.email}`}><span>{result.emailLabel}</span></a>
+          <div class="wh-actions wh-utilities mt-10">
+            <button type="button" class="btn-secondary" data-copy="link">{result.utilities.copyLink}</button>
+            <button type="button" class="btn-secondary" data-copy="md">{result.utilities.copyMd}</button>
+            <button type="button" class="btn-secondary" data-copy="claude">{result.utilities.copyClaude}</button>
+            <a class="btn-secondary" data-open-claude href="https://claude.ai/new" target="_blank" rel="noopener">{result.utilities.openClaude}</a>
             <button type="button" class="btn-secondary" data-edit>{ui.edit}</button>
             <button type="button" class="btn-secondary" data-restart>{ui.restart}</button>
           </div>
+          <p class="mt-6 text-sm"><a href="#" class="wh-report-link" data-offer-open>{result.reportLink}</a></p>
         </section>
 
         <template id="wh-line">
@@ -185,6 +264,7 @@ const total = questions.length;
             <p class="wh-line__tool" data-tool></p>
             <p class="wh-line__basis" data-basis></p>
             <p class="wh-line__reason" data-reason></p>
+            <p class="wh-line__tradeoff" data-tradeoff-wrap><span>{result.tradeoffLabel}</span> <span data-tradeoff></span></p>
             <ul class="wh-line__traits" data-traits></ul>
             <p class="wh-line__warn" data-warn hidden></p>
             <label class="wh-line__swap" data-swap-wrap>
@@ -193,6 +273,79 @@ const total = questions.length;
             </label>
           </li>
         </template>
+
+        <div class="wh-offer" data-offer hidden role="region" aria-labelledby="wh-offer-label">
+          <form class="wh-offer__form" data-offer-form novalidate>
+            <div class="wh-offer__head">
+              <p class="wh-offer__label" id="wh-offer-label">{offer.label}</p>
+              <button type="button" class="wh-offer__x" data-offer-dismiss aria-label={offer.dismiss}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+            </div>
+            <p class="wh-offer__line">{offer.line}</p>
+            <div class="wh-offer__row">
+              <label class="sr-only" for="wh-offer-email">{offer.emailLabel}</label>
+              <input id="wh-offer-email" class="wh-offer__input" type="email" name="email" inputmode="email" autocomplete="email" placeholder={offer.placeholder} required />
+              <input class="wh-offer__hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+              <button type="submit" class="btn-primary" data-offer-send><span>{offer.send}</span></button>
+            </div>
+            <label class="wh-offer__opt"><input type="checkbox" name="notes" /><span>{offer.optIn}</span></label>
+            <p class="wh-offer__consent">{offer.consent}</p>
+            <p class="wh-offer__status" data-offer-status aria-live="polite" hidden></p>
+            <button type="button" class="wh-offer__no" data-offer-dismiss>{offer.dismiss}</button>
+          </form>
+          <div class="wh-offer__done" data-offer-done hidden>
+            <div class="wh-offer__head">
+              <p class="wh-offer__label">{offer.label}</p>
+              <button type="button" class="wh-offer__x" data-offer-dismiss aria-label={offer.close}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              </button>
+            </div>
+            <p class="wh-offer__line" data-offer-done-text aria-live="polite"></p>
+            <div data-offer-purpose>
+              <p class="wh-offer__q">{offer.purposeQuestion}</p>
+              <div class="wh-offer__chips">
+                {offer.purposes.map((p) => <button type="button" class="wh-offer__chip" data-purpose={p.value}>{p.label}</button>)}
+              </div>
+            </div>
+            <p class="wh-offer__thanks" data-offer-thanks hidden>{offer.purposeThanks}</p>
+            <p class="wh-offer__fallback" data-offer-fallback hidden><a data-offer-mailto href={`mailto:${orgInfo.email}`}>{result.emailLabel}</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-6 md:px-12 lg:px-16 py-16 md:py-24 border-b border-white/[0.06]">
+    <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-10 lg:gap-8">
+      <div class="lg:col-span-7 max-w-2xl">
+        <h2 class="wh-sub mt-0" id="how-it-runs">{learn.heading}</h2>
+        <ul class="wh-learn">
+          {learn.lines.map((l) => <li>{l}</li>)}
+        </ul>
+      </div>
+      <div class="lg:col-span-5">
+        <h2 class="wh-sub mt-0" id="who">{who.heading}</h2>
+        <div class="mt-4 flex items-start gap-4">
+          <img src="/images/gabriel-freeman.webp" alt="Gabriel Freeman" width="427" height="427" loading="lazy" decoding="async" class="w-14 h-14 md:w-16 md:h-16 rounded-full border border-white/[0.08] flex-shrink-0" />
+          <p class="text-surface-300 leading-relaxed">{who.text}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-6 md:px-12 lg:px-16 py-16 md:py-24 border-b border-white/[0.06]">
+    <div class="max-w-7xl mx-auto">
+      <div class="max-w-2xl">
+        <h2 class="wh-sub mt-0" id="faq">Questions</h2>
+        <dl class="wh-faq">
+          {faq.map((f) => (
+            <div>
+              <dt>{f.q}</dt>
+              <dd>{f.a}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </div>
   </section>
@@ -201,8 +354,8 @@ const total = questions.length;
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-6">
       <p class="text-surface-400">{result.closing}</p>
       <div class="flex flex-wrap gap-x-8 gap-y-3">
-        <a href="/#contact" class="group inline-flex items-center gap-2 text-sm text-white font-medium hover:text-gold-500 transition-colors">
-          <span>Email me</span>
+        <a href={`mailto:${orgInfo.email}?subject=${encodeURIComponent("Building a data warehouse")}`} class="group inline-flex items-center gap-2 text-sm text-white font-medium hover:text-gold-500 transition-colors">
+          <span>Email us</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
         </a>
         <a href="/" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Back to the homepage</a>
@@ -212,22 +365,35 @@ const total = questions.length;
 </BaseLayout>
 
 <script>
-  import { type Layer } from "../data/warehouse-catalog";
-  import { questions, ui, result, layerCopy, traitLabels } from "../data/warehouse-survey";
+  import { LAYERS, type Layer } from "../data/warehouse-catalog";
+  import { questions, ui, result, layerCopy, traitLabels, sequence, offer } from "../data/warehouse-survey";
+  import { stackCardSvg } from "../lib/warehouseCard";
   type Mentioned = { name: string; id: string | null };
   import {
     alternatives,
     budgetFit,
     byId,
+    deltaText,
+    financeRead,
     fromQuery,
     moneyRange,
     parseAnswers,
     priceStack,
     recommendByRules,
+    smallStack,
+    stackToClaudeMd,
+    stackToMarkdown,
     toQuery,
     type Answers,
     type Picks
   } from "../lib/warehouseCalc";
+
+  // Vercel Web Analytics custom events: a no-op until the script is served (see BaseLayout).
+  const track = (name: string, data?: Record<string, string | number | boolean>) => {
+    try {
+      (window as unknown as { va?: (k: string, p: unknown) => void }).va?.("event", { name, data });
+    } catch {}
+  };
 
   const root = document.querySelector<HTMLElement>(".wh");
   const form = root?.querySelector<HTMLFormElement>(".wh-form");
@@ -238,15 +404,39 @@ const total = questions.length;
     const progress = form.querySelector<HTMLElement>("[data-progress]")!;
     const fill = form.querySelector<HTMLElement>("[data-fill]")!;
     const loading = root.querySelector<HTMLElement>("[data-loading]")!;
+    const seqLabel = root.querySelector<HTMLElement>("[data-seq-label]")!;
     const phrase = root.querySelector<HTMLElement>("[data-phrase]")!;
+    const seqText = root.querySelector<HTMLElement>("[data-seq-text]")!;
     const bar = root.querySelector<HTMLElement>("[data-bar]")!;
     const loadingNote = root.querySelector<HTMLElement>("[data-loading-note]")!;
+    const skip = root.querySelector<HTMLButtonElement>("[data-skip]")!;
     const resultEl = root.querySelector<HTMLElement>("[data-result]")!;
     const notes = form.querySelector<HTMLTextAreaElement>("#wh-notes")!;
     const count = form.querySelector<HTMLElement>("[data-count]")!;
     const template = root.querySelector<HTMLTemplateElement>("#wh-line")!;
+    const offerEl = root.querySelector<HTMLElement>("[data-offer]")!;
     const email = root.dataset.email ?? "";
+    const pageUrl = root.dataset.url ?? `${location.origin}${location.pathname}`;
+    const names = Object.fromEntries(LAYERS.map((l) => [l, layerCopy[l].name])) as Record<Layer, string>;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const today = () => new Date().toISOString().slice(0, 10);
     let current = 0;
+
+    // First-touch attribution, read before the submit rewrites the query string.
+    const SRC_KEY = "wh-src";
+    try {
+      const q = new URLSearchParams(location.search);
+      const parts = ["utm_source", "utm_medium", "utm_campaign", "ref"].map((k) => q.get(k)).filter(Boolean) as string[];
+      const src = parts.length ? parts.join("/") : document.referrer ? new URL(document.referrer).hostname : "";
+      if (src && !sessionStorage.getItem(SRC_KEY)) sessionStorage.setItem(SRC_KEY, src.slice(0, 100));
+    } catch {}
+    const ref = () => {
+      try {
+        return sessionStorage.getItem(SRC_KEY) ?? "";
+      } catch {
+        return "";
+      }
+    };
 
     type View = { answers: Answers; picks: Picks; reasons: Record<string, string>; summary: string; source: "ai" | "rules"; swapped: Layer[]; pending?: boolean; mentioned: Mentioned[] };
     let view: View | null = null;
@@ -284,12 +474,16 @@ const total = questions.length;
     }
 
     // The page stays still: scroll only when the card's top has left the screen.
-    // 64 = the nav (3.5rem) plus half a rem, the same offset as scroll-margin-top in the CSS.
     function keepInView() {
       if (card.getBoundingClientRect().top < 64) card.scrollIntoView({ block: "start", behavior: "smooth" });
     }
 
+    let startedOnce = false;
     function show(i: number, focus = true) {
+      if (i > 0 && !startedOnce) {
+        startedOnce = true;
+        track("planner_start");
+      }
       current = i;
       stepsEls.forEach((el, n) => (el.hidden = n !== i));
       progress.textContent = ui.questionOf(i + 1, stepsEls.length);
@@ -306,7 +500,6 @@ const total = questions.length;
       const step = stepsEls[current];
       const next = step?.querySelector<HTMLButtonElement>("[data-next]");
       if (next) next.disabled = !stepReady(current);
-      // "Pick one to continue" shows only while Next is disabled; its space is always reserved so the row never moves.
       const hint = step?.querySelector<HTMLElement>("[data-next-hint]");
       if (hint) hint.toggleAttribute("data-off", step.dataset.type !== "single" || stepReady(current));
     }
@@ -373,7 +566,6 @@ const total = questions.length;
       return true;
     }
 
-    // Picking an answer never moves the screen; Next does.
     form.addEventListener("change", () => {
       refreshNext();
       saveDraft();
@@ -385,7 +577,6 @@ const total = questions.length;
     form.querySelectorAll("[data-next]").forEach((b) => b.addEventListener("click", () => stepReady(current) && show(current + 1)));
     form.querySelectorAll("[data-back]").forEach((b) => b.addEventListener("click", () => show(Math.max(0, current - 1))));
 
-    // Enter on an answer should move forward, not submit a half-filled form.
     form.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
         e.preventDefault();
@@ -393,7 +584,142 @@ const total = questions.length;
       }
     });
 
-    form.addEventListener("submit", async (e) => {
+    // ---------- the reveal ----------
+
+    const REVEAL_TARGET_MS = 30_000;
+    const SLIDE_MS = 5_000;
+    let timers: number[] = [];
+    const clearTimers = () => {
+      for (const t of timers) {
+        window.clearTimeout(t);
+        window.clearInterval(t);
+      }
+      timers = [];
+    };
+
+    const setSeq = (label: string, title: string, text: string) => {
+      seqLabel.textContent = label;
+      phrase.textContent = title;
+      seqText.textContent = text;
+      if (!reducedMotion) {
+        phrase.classList.remove("is-swap");
+        seqText.classList.remove("is-swap");
+        void phrase.offsetWidth;
+        phrase.classList.add("is-swap");
+        seqText.classList.add("is-swap");
+      }
+    };
+
+    function costText(line: ReturnType<typeof priceStack>["lines"][number]): string {
+      if (!line.tool) return "";
+      if (line.price.notPublished) return "Price not published";
+      return `${moneyRange(line.price.low, line.price.high)}${line.price.estimate ? " est." : ""}`;
+    }
+
+    function openLoading() {
+      loading.style.minHeight = `${form.offsetHeight}px`;
+      form.hidden = true;
+      resultEl.hidden = true;
+      loading.hidden = false;
+      skip.hidden = true;
+      bar.style.width = "0%";
+    }
+
+    function finish(next: View) {
+      clearTimers();
+      bar.style.width = "100%";
+      loading.hidden = true;
+      card.hidden = true;
+      skip.hidden = true;
+      view = next;
+      render();
+      resultEl.hidden = false;
+      resultEl.scrollIntoView({ block: "start", behavior: "smooth" });
+      resultEl.querySelector<HTMLElement>("h2")?.focus({ preventScroll: true });
+      track("result_shown", { source: next.source });
+      scheduleOffer();
+    }
+
+    /** The picks are in hand: show each layer in turn, the skip button on screen throughout. */
+    function reveal(next: View, started: number) {
+      const stack = priceStack(next.picks, next.answers);
+      const elapsed = Date.now() - started;
+      const totalMs = Math.min(24_000, Math.max(10_000, REVEAL_TARGET_MS - elapsed));
+      const per = totalMs / stack.lines.length;
+      skip.hidden = false;
+      const showLayer = (i: number) => {
+        const line = stack.lines[i];
+        const name = layerCopy[line.layer].name;
+        if (!line.tool) {
+          setSeq(sequence.revealLabel(i + 1, stack.lines.length), `${name}: ${sequence.notNeeded}`, layerCopy[line.layer].what);
+          return;
+        }
+        const cost = costText(line);
+        setSeq(sequence.revealLabel(i + 1, stack.lines.length), `${name}: ${line.tool.name}`, `${next.reasons[line.layer] || line.tool.why}${cost ? ` ${cost} a month.` : ""}`);
+      };
+      let i = 0;
+      showLayer(0);
+      timers.push(
+        window.setInterval(() => {
+          i += 1;
+          if (i >= stack.lines.length) finish(next);
+          else showLayer(i);
+        }, per)
+      );
+    }
+
+    async function run(answers: Answers) {
+      openLoading();
+      const started = Date.now();
+      // One honest line first. The slides, the note, and the meter only start if the route
+      // is still working after 400 ms (the rules path answers before that).
+      setSeq("", ui.loading[ui.loading.length - 1], "");
+      loadingNote.hidden = true;
+      let slideIdx = 0;
+      timers.push(
+        window.setTimeout(() => {
+          loadingNote.hidden = false;
+          setSeq(sequence.waitLabel, sequence.slides[0].title, sequence.slides[0].text);
+          if (!reducedMotion) {
+            timers.push(
+              window.setInterval(() => {
+                slideIdx = (slideIdx + 1) % sequence.slides.length;
+                setSeq(sequence.waitLabel, sequence.slides[slideIdx].title, sequence.slides[slideIdx].text);
+              }, SLIDE_MS)
+            );
+          }
+          // The meter is time based against the 30 second target and never claims completion before the result.
+          timers.push(
+            window.setInterval(() => {
+              const t = (Date.now() - started) / REVEAL_TARGET_MS;
+              bar.style.width = `${Math.min(95, t * 100).toFixed(1)}%`;
+            }, 200)
+          );
+        }, 400)
+      );
+
+      const next = await suggest(answers);
+      clearTimers();
+      if (next.source !== "ai" || reducedMotion) {
+        finish(next);
+        return;
+      }
+      const onSkip = () => {
+        skip.removeEventListener("click", onSkip);
+        track("reveal_skipped");
+        finish(next);
+      };
+      skip.addEventListener("click", onSkip);
+      timers.push(
+        window.setInterval(() => {
+          const t = (Date.now() - started) / REVEAL_TARGET_MS;
+          bar.style.width = `${Math.min(98, t * 100).toFixed(1)}%`;
+        }, 200)
+      );
+      reveal(next, started);
+    }
+
+    form.addEventListener("submit", (e) => {
       e.preventDefault();
       const answers = collect();
       if (!answers) {
@@ -402,51 +728,8 @@ const total = questions.length;
         return;
       }
       history.replaceState(null, "", `${location.pathname}?${toQuery(answers)}`);
-      loading.style.minHeight = `${form.offsetHeight}px`;
-      form.hidden = true;
-      resultEl.hidden = true;
-      loading.hidden = false;
-
-      // One honest line first. The four phrases, the wait note, and the meter only start if the
-      // route is still working after 400 ms (the rules path answers before that).
-      phrase.textContent = ui.loading[ui.loading.length - 1];
-      bar.style.width = "0%";
-      loadingNote.hidden = true;
-      let n = 0;
-      let rotate = 0;
-      let tick = 0;
-      const started = Date.now();
-      const slow = window.setTimeout(() => {
-        phrase.textContent = ui.loading[0];
-        loadingNote.hidden = false;
-        rotate = window.setInterval(() => {
-          n = (n + 1) % ui.loading.length;
-          phrase.textContent = ui.loading[n];
-        }, 1400);
-        // The meter: time based, eases toward 92% (about 81% at 30 s), then jumps to full on arrival.
-        tick = window.setInterval(() => {
-          const t = (Date.now() - started) / 1000;
-          bar.style.width = `${(92 * (1 - Math.exp(-t / 14))).toFixed(1)}%`;
-        }, 200);
-      }, 400);
-
-      const next = await suggest(answers);
-      // The AI path earns its pause; the rules path is instant and shows it.
-      const floor = next.source === "ai" ? 1600 : 0;
-      const wait = Math.max(0, floor - (Date.now() - started));
-      if (tick) window.clearInterval(tick);
-      bar.style.width = "100%";
-      window.setTimeout(() => {
-        window.clearTimeout(slow);
-        if (rotate) window.clearInterval(rotate);
-        loading.hidden = true;
-        card.hidden = true;
-        view = next;
-        render();
-        resultEl.hidden = false;
-        resultEl.scrollIntoView({ block: "start", behavior: "smooth" });
-        resultEl.querySelector<HTMLElement>("h2")?.focus({ preventScroll: true });
-      }, wait);
+      track("planner_submit", { note: answers.notes.trim() ? 1 : 0 });
+      void run(answers);
     });
 
     // The rules pick first; the route may upgrade it to an AI pick. Any failure keeps the rules pick.
@@ -472,10 +755,29 @@ const total = questions.length;
       return next;
     }
 
-    function costText(line: ReturnType<typeof priceStack>["lines"][number]): string {
-      if (!line.tool) return "";
-      if (line.price.notPublished) return "Price not published";
-      return `${moneyRange(line.price.low, line.price.high)}${line.price.estimate ? " est." : ""}`;
+    // ---------- the result ----------
+
+    const exportOpts = (v: View, stackReasons = true) => ({
+      names,
+      url: `${pageUrl}?${toQuery(v.answers)}`,
+      reasons: stackReasons ? v.reasons : undefined,
+      summary: v.summary,
+      date: today()
+    });
+
+    function mailtoHref(v: View): string {
+      const stack = priceStack(v.picks, v.answers);
+      const lines = stack.lines.map((l) => `${layerCopy[l.layer].name}: ${l.tool ? `${l.tool.name}${l.tool.tier ? ` (${l.tool.tier})` : ""}, ${costText(l)}` : "not needed"}`);
+      const body = [
+        "Please send me the report for this stack:",
+        "",
+        ...lines,
+        "",
+        `${result.totalLabel}: ${moneyRange(stack.low, stack.high)} a month`,
+        "",
+        `My answers: ${pageUrl}?${toQuery(v.answers)}`
+      ].join("\n");
+      return `mailto:${email}?subject=${encodeURIComponent(result.emailSubject)}&body=${encodeURIComponent(body)}`;
     }
 
     function render() {
@@ -490,6 +792,7 @@ const total = questions.length;
       budgetEl.dataset.status = fit;
       budgetEl.textContent = fit === "unsure" ? "" : result.budget[fit];
       budgetEl.hidden = fit === "unsure";
+      root!.querySelector<HTMLElement>("[data-small]")!.hidden = !smallStack(answers);
 
       const rows = root!.querySelector<HTMLOListElement>("[data-rows]")!;
       rows.replaceChildren();
@@ -515,8 +818,8 @@ const total = questions.length;
       notesEl.hidden = !notesEl.textContent;
       const sourceLine = view.pending ? result.sourcePending : source === "ai" ? result.sourceAi : result.sourceRules;
       root!.querySelector<HTMLElement>("[data-source]")!.textContent = swapped.length ? `${sourceLine} ${result.swapped(swapped.length)}` : sourceLine;
+      root!.querySelector<HTMLElement>("[data-runs]")!.textContent = result.runs[answers.runner];
 
-      // Tools the visitor named in the note: in the stack, priced differently, or not in the catalog.
       const mentionedLines = mentioned.map((m) => {
         const tool = m.id ? byId.get(m.id) : undefined;
         if (!tool) return result.mentioned.missing(m.name);
@@ -528,6 +831,26 @@ const total = questions.length;
       const mentionedEl = root!.querySelector<HTMLUListElement>("[data-mentioned]")!;
       mentionedEl.replaceChildren(...mentionedLines.map((text) => { const li = document.createElement("li"); li.textContent = text; return li; }));
       mentionedEl.hidden = !mentionedLines.length;
+
+      // ---- the stack card ----
+      root!.querySelector<HTMLElement>("[data-card-svg]")!.innerHTML = stackCardSvg(stack, { names, url: pageUrl, answers });
+
+      // ---- the finance read ----
+      const fin = financeRead(stack, answers);
+      const finEl = root!.querySelector<HTMLUListElement>("[data-finance]")!;
+      finEl.replaceChildren(
+        ...[
+          result.finance.seats(moneyRange(fin.seats[0], fin.seats[1])),
+          result.finance.usage(moneyRange(fin.usage[0], fin.usage[1])),
+          result.finance.flat(moneyRange(fin.flat[0], fin.flat[1])),
+          result.finance.openSource(fin.openSource, fin.layers),
+          result.finance.upkeep(fin.upkeep[0], fin.upkeep[1])
+        ].map((text) => {
+          const li = document.createElement("li");
+          li.textContent = text;
+          return li;
+        })
+      );
 
       // ---- the details ----
       const summaryEl = root!.querySelector<HTMLElement>("[data-summary]")!;
@@ -547,6 +870,7 @@ const total = questions.length;
           $("[data-tool]").textContent = "Not needed for your answers";
           $("[data-basis]").textContent = copy.what;
           $("[data-reason]").remove();
+          $("[data-tradeoff-wrap]").remove();
           $("[data-traits]").remove();
           $("[data-swap-wrap]").remove();
           list.append(node);
@@ -557,6 +881,7 @@ const total = questions.length;
         $("[data-tool]").textContent = t.tier ? `${t.name} (${t.tier})` : t.name;
         $("[data-basis]").textContent = `${copy.what} ${line.price.basis}.`;
         $("[data-reason]").textContent = reasons[line.layer] || t.why;
+        $("[data-tradeoff]").textContent = t.tradeoff;
 
         const traits = $("[data-traits]");
         for (const [key, on] of Object.entries(t.traits)) {
@@ -580,9 +905,10 @@ const total = questions.length;
         for (const alt of alternatives(line.layer, picks, answers)) {
           const opt = document.createElement("option");
           opt.value = alt.tool.id;
-          const cost = alt.price.notPublished ? "price not published" : moneyRange(alt.price.low, alt.price.high);
+          const isCurrent = alt.tool.id === t.id;
+          const cost = alt.price.notPublished ? "price not published" : isCurrent ? moneyRange(alt.price.low, alt.price.high) : deltaText(alt.deltaHigh);
           opt.textContent = `${alt.tool.name}${alt.tool.tier ? ` (${alt.tool.tier})` : ""}, ${cost}${alt.compatible ? "" : " (needs another pick)"}`;
-          opt.selected = alt.tool.id === t.id;
+          opt.selected = isCurrent;
           select.append(opt);
         }
         select.addEventListener("change", () => {
@@ -590,6 +916,7 @@ const total = questions.length;
           view.picks = { ...view.picks, [line.layer]: select.value };
           delete view.reasons[line.layer];
           if (!view.swapped.includes(line.layer)) view.swapped.push(line.layer);
+          track("layer_swapped", { layer: line.layer });
           render();
           list.querySelector<HTMLSelectElement>(`[data-swap][data-layer="${line.layer}"]`)?.focus();
         });
@@ -610,22 +937,242 @@ const total = questions.length;
         sources.append(li);
       }
 
-      const lines = stack.lines.map((l) => `${layerCopy[l.layer].name}: ${l.tool ? `${l.tool.name}${l.tool.tier ? ` (${l.tool.tier})` : ""}, ${costText(l)}` : "not needed"}`);
-      const body = [
-        "Here is the stack the planner suggested:",
-        "",
-        ...lines,
-        "",
-        `${result.totalLabel}: ${moneyRange(stack.low, stack.high)} a month`,
-        ...(mentionedLines.length ? ["", ...mentionedLines] : []),
-        "",
-        `My answers: ${location.origin}${location.pathname}?${toQuery(answers)}`
-      ].join("\n");
-      root!.querySelector<HTMLAnchorElement>("[data-email-link]")!.href =
-        `mailto:${email}?subject=${encodeURIComponent(result.emailSubject)}&body=${encodeURIComponent(body)}`;
+      // ---- the handoff ----
+      const md = stackToMarkdown(stack, answers, exportOpts(view));
+      const ask = `Here is a data warehouse stack a planner suggested for my business. Pressure test it: what would you change, what would you keep, and what would you ask me before deciding?\n\n${md}`;
+      root!.querySelector<HTMLAnchorElement>("[data-open-claude]")!.href = `https://claude.ai/new?q=${encodeURIComponent(ask)}`;
+      root!.querySelector<HTMLAnchorElement>("[data-offer-mailto]")!.href = mailtoHref(view);
     }
 
-    // Edit answers: back to question 1 with every pick held (the form was prefilled or filled by hand).
+    // Copy buttons read the current view at click time, so a swap is always in the copy.
+    for (const btn of root.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+      const label = btn.textContent ?? "";
+      btn.addEventListener("click", async () => {
+        if (!view) return;
+        const stack = priceStack(view.picks, view.answers);
+        const kind = btn.dataset.copy!;
+        const text =
+          kind === "link" ? `${pageUrl}?${toQuery(view.answers)}` : kind === "md" ? stackToMarkdown(stack, view.answers, exportOpts(view)) : stackToClaudeMd(stack, view.answers, exportOpts(view));
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.textContent = result.utilities.copied;
+          track(kind === "link" ? "copied_link" : kind === "md" ? "copied_md" : "copied_claude_md");
+          window.setTimeout(() => (btn.textContent = label), 2000);
+        } catch {
+          window.prompt(label, text);
+        }
+      });
+    }
+    root.querySelector("[data-open-claude]")?.addEventListener("click", () => track("opened_in_claude"));
+
+    // The card as a PNG: the SVG is redrawn with system fonts (nothing external loads inside an image), then rasterized at 2x.
+    root.querySelector<HTMLButtonElement>("[data-download-card]")?.addEventListener("click", () => {
+      if (!view) return;
+      const stack = priceStack(view.picks, view.answers);
+      const svg = stackCardSvg(stack, { names, url: pageUrl, answers: view.answers, fontSans: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontMono: "Menlo, Consolas, 'Courier New', monospace" });
+      const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 2400;
+        canvas.height = 1260;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        canvas.toBlob((png) => {
+          if (!png) return;
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(png);
+          a.download = "glf-stack-card.png";
+          a.click();
+          window.setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+          track("card_downloaded");
+        }, "image/png");
+      };
+      img.onerror = () => URL.revokeObjectURL(url);
+      img.src = url;
+    });
+
+    // ---------- the offer ----------
+
+    const OFFER_SESSION = "wh-offer";
+    const OFFER_QUIET = "wh-offer-quiet";
+    const QUIET_MS = 30 * 24 * 60 * 60 * 1000;
+    const offerForm = offerEl.querySelector<HTMLFormElement>("[data-offer-form]")!;
+    const offerDone = offerEl.querySelector<HTMLElement>("[data-offer-done]")!;
+    const offerStatus = offerEl.querySelector<HTMLElement>("[data-offer-status]")!;
+    const offerInput = offerEl.querySelector<HTMLInputElement>("#wh-offer-email")!;
+    const offerSend = offerEl.querySelector<HTMLButtonElement>("[data-offer-send]")!;
+    let leadId: string | null = null;
+    let offerShown = false;
+
+    const quiet = (): boolean => {
+      try {
+        if (sessionStorage.getItem(OFFER_SESSION)) return true;
+        const q = JSON.parse(localStorage.getItem(OFFER_QUIET) ?? "null") as { s?: string; t?: number } | null;
+        if (q && q.s === "sent") return true;
+        if (q && typeof q.t === "number" && Date.now() - q.t < QUIET_MS) return true;
+      } catch {}
+      return false;
+    };
+    const remember = (state: "shown" | "dismissed" | "sent") => {
+      try {
+        sessionStorage.setItem(OFFER_SESSION, state);
+        if (state !== "shown") localStorage.setItem(OFFER_QUIET, JSON.stringify({ s: state, t: Date.now() }));
+      } catch {}
+    };
+
+    function showOffer(how: "timer" | "link") {
+      if (offerShown) return;
+      offerShown = true;
+      offerForm.hidden = false;
+      offerDone.hidden = true;
+      offerEl.hidden = false;
+      window.requestAnimationFrame(() => offerEl.classList.add("is-in"));
+      remember("shown");
+      track("offer_shown", { how });
+    }
+
+    function hideOffer() {
+      offerEl.classList.remove("is-in");
+      window.setTimeout(() => (offerEl.hidden = true), reducedMotion ? 0 : 400);
+      offerShown = false;
+    }
+
+    // Ten seconds after the result, once a session, and only when the tab is on screen.
+    function scheduleOffer() {
+      if (quiet() || offerShown) return;
+      const fire = () => {
+        if (document.visibilityState !== "visible") {
+          const onVisible = () => {
+            document.removeEventListener("visibilitychange", onVisible);
+            window.setTimeout(() => !quiet() && showOffer("timer"), 1000);
+          };
+          document.addEventListener("visibilitychange", onVisible);
+          return;
+        }
+        if (!quiet()) showOffer("timer");
+      };
+      window.setTimeout(fire, 10_000);
+    }
+
+    offerEl.querySelectorAll("[data-offer-dismiss]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const wasDone = !offerDone.hidden;
+        if (!wasDone) {
+          remember("dismissed");
+          track("offer_dismissed");
+        }
+        hideOffer();
+      })
+    );
+    root.querySelector("[data-offer-open]")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      offerShown = false;
+      showOffer("link");
+      offerInput.focus();
+    });
+
+    async function sendReport(): Promise<void> {
+      if (!view) return;
+      const address = offerInput.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(address)) {
+        offerStatus.textContent = offer.badEmail;
+        offerStatus.hidden = false;
+        offerInput.focus();
+        return;
+      }
+      // An incompatible swap is dropped before posting so the emailed stack matches the screen.
+      const rules = recommendByRules(view.answers);
+      const stack = priceStack(view.picks, view.answers);
+      const picks = { ...view.picks };
+      for (const l of stack.lines) if (!l.compatible) picks[l.layer] = rules[l.layer];
+      const body = {
+        email: address,
+        answers: view.answers,
+        picks,
+        reasons: view.reasons,
+        summary: view.summary,
+        mentioned: view.mentioned,
+        source: view.source,
+        swapped: view.swapped.length,
+        notes: offerForm.querySelector<HTMLInputElement>('input[name="notes"]')!.checked,
+        website: offerForm.querySelector<HTMLInputElement>('input[name="website"]')!.value,
+        ref: ref(),
+        page: location.pathname
+      };
+      offerSend.disabled = true;
+      offerSend.querySelector("span")!.textContent = offer.sending;
+      offerStatus.hidden = true;
+      track("offer_submit");
+      let outcome: "sent" | "duplicate" | "off" | "rate" | "failed" | "email" = "failed";
+      try {
+        const ctrl = new AbortController();
+        const timer = window.setTimeout(() => ctrl.abort(), 15_000);
+        const res = await fetch("/api/warehouse-report", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
+        window.clearTimeout(timer);
+        const data = (await res.json().catch(() => null)) as { ok?: boolean; reason?: string; duplicate?: boolean; id?: string | null } | null;
+        if (res.ok && data?.ok) {
+          outcome = data.duplicate ? "duplicate" : "sent";
+          leadId = typeof data.id === "string" ? data.id : null;
+        } else if (res.status === 503) outcome = "off";
+        else if (res.status === 429) outcome = "rate";
+        else if (res.status === 400 && data?.reason === "email") outcome = "email";
+      } catch {}
+      offerSend.disabled = false;
+      offerSend.querySelector("span")!.textContent = offer.send;
+
+      if (outcome === "email") {
+        offerStatus.textContent = offer.badEmail;
+        offerStatus.hidden = false;
+        return;
+      }
+      if (outcome === "rate") {
+        offerStatus.textContent = offer.rate;
+        offerStatus.hidden = false;
+        return;
+      }
+      const doneText = offerEl.querySelector<HTMLElement>("[data-offer-done-text]")!;
+      const fallback = offerEl.querySelector<HTMLElement>("[data-offer-fallback]")!;
+      const purpose = offerEl.querySelector<HTMLElement>("[data-offer-purpose]")!;
+      offerForm.hidden = true;
+      offerDone.hidden = false;
+      if (outcome === "sent" || outcome === "duplicate") {
+        doneText.textContent = outcome === "sent" ? offer.sent : offer.sentDuplicate;
+        fallback.hidden = true;
+        purpose.hidden = false;
+        remember("sent");
+        track("report_sent", { optIn: body.notes });
+      } else {
+        // The route is off (no keys yet) or the send failed: the visitor's mail app carries the stack instead.
+        doneText.textContent = offer.failed;
+        fallback.hidden = false;
+        purpose.hidden = true;
+        track("report_fallback", { outcome });
+      }
+    }
+
+    offerForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      void sendReport();
+    });
+
+    offerEl.querySelectorAll<HTMLButtonElement>("[data-purpose]").forEach((b) =>
+      b.addEventListener("click", async () => {
+        const purpose = b.dataset.purpose!;
+        offerEl.querySelector<HTMLElement>("[data-offer-purpose]")!.hidden = true;
+        offerEl.querySelector<HTMLElement>("[data-offer-thanks]")!.hidden = false;
+        track("lead_purpose", { purpose });
+        if (!leadId) return;
+        try {
+          await fetch("/api/warehouse-report", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "purpose", id: leadId, purpose }) });
+        } catch {}
+      })
+    );
+
+    // Edit answers: back to question 1 with every pick held.
     root.querySelector("[data-edit]")?.addEventListener("click", () => {
       view = null;
       resultEl.hidden = true;
@@ -649,7 +1196,6 @@ const total = questions.length;
       show(0);
     });
 
-    // Re-measure when the width changes (a phone's URL bar only changes the height).
     let lastWidth = window.innerWidth;
     window.addEventListener("resize", () => {
       if (window.innerWidth === lastWidth) return;
@@ -660,12 +1206,12 @@ const total = questions.length;
     const fontsReady = document.fonts?.ready ?? Promise.resolve();
     fontsReady.then(measure);
 
-    // A shared or emailed link opens on the stack itself (S19); Edit answers reopens the questions with every pick held.
+    // A shared or emailed link opens on the stack itself; Edit answers reopens the questions with every pick held.
     const shared = fromQuery(location.search);
     const harness = import.meta.env.DEV ? new URLSearchParams(location.search).get("_state") : null;
     if (harness) {
       // Dev-only screenshot harness (stripped from production builds):
-      // _state=q1..q10 | measure | loading | result, with _swap=layer:id for a swapped result.
+      // _state=q1..q10 | measure | loading | reveal | result | offer | sent, with _swap=layer:id for a swapped result.
       const a = shared ?? parseAnswers({ readers: "6-15", size: "2-10", systems: "4-6", kinds: ["store", "ads"], runner: "ai", ecosystem: "neither", freshness: "daily", askAi: "few", budget: "100-500", notes: "" })!;
       prefill(a);
       if (/^q\d+$/.test(harness)) show(Number(harness.slice(1)) - 1, false);
@@ -686,13 +1232,20 @@ const total = questions.length;
         });
       }
       if (harness === "loading") {
-        loading.style.minHeight = `${form.offsetHeight}px`;
-        form.hidden = true;
-        loading.hidden = false;
+        openLoading();
         loadingNote.hidden = false;
-        bar.style.width = "55%";
+        const s = Number(new URLSearchParams(location.search).get("_slide") ?? 1) - 1;
+        setSeq(sequence.waitLabel, sequence.slides[s]?.title ?? sequence.slides[0].title, sequence.slides[s]?.text ?? sequence.slides[0].text);
+        bar.style.width = "35%";
       }
-      if (harness === "result") {
+      if (harness === "reveal") {
+        openLoading();
+        loadingNote.hidden = false;
+        bar.style.width = "70%";
+        const v = makeView(a, recommendByRules(a), {}, "", "ai");
+        reveal(v, Date.now() - 12_000);
+      }
+      if (harness === "result" || harness === "offer" || harness === "sent") {
         view = makeView(a, recommendByRules(a), {}, "", "rules");
         const swap = new URLSearchParams(location.search).get("_swap");
         if (swap) {
@@ -702,6 +1255,13 @@ const total = questions.length;
         card.hidden = true;
         render();
         resultEl.hidden = false;
+        if (harness === "offer") showOffer("link");
+        if (harness === "sent") {
+          showOffer("link");
+          offerForm.hidden = true;
+          offerDone.hidden = false;
+          offerEl.querySelector<HTMLElement>("[data-offer-done-text]")!.textContent = offer.sent;
+        }
       }
     } else if (shared) {
       prefill(shared);
@@ -710,7 +1270,8 @@ const total = questions.length;
       card.hidden = true;
       render();
       resultEl.hidden = false;
-      // Upgrade to the AI pick in the background, unless the reader has swapped something meanwhile.
+      track("result_shown", { source: "shared" });
+      scheduleOffer();
       suggest(shared).then((next) => {
         if (!view || view.answers !== shared) return;
         if (next.source === "ai" && !view.swapped.length) view = next;

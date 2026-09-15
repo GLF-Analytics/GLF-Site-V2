@@ -27,6 +27,9 @@ pnpm-debug.log*
 .vscode/
 .idea/
 
+# dry-run emails from /api/warehouse-report in dev (S23)
+.dry-run/
+
 # misc
 *.swp
 !.env.example

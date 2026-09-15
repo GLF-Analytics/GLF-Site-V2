@@ -6,7 +6,8 @@
   What it never does: price anything. The caller runs sanitizePicks() and
   priceStack() on whatever comes back.
 
-  Prompt status: REVALIDATE after S22 (9/15/26): the schema gained the "mentioned" list (tools the visitor
+  Prompt status: S23 (9/15/26) switched the voice to "we" (GLF Analytics); revalidate one live set.
+  Before: REVALIDATE after S22 (9/15/26): the schema gained the "mentioned" list (tools the visitor
   named in the note, matched to a catalog id or none) and the catalog widened. The S20 validation
   (three live sets: catalog-id picks, one-sentence first-person reasons, no dollar figures, no dashes;
   21 s cold, about 9 s warm on claude-opus-5 at low effort) stands for the picks and reasons.
@@ -17,6 +18,7 @@ import { z } from "zod/v4";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { catalog, LAYERS, type Layer } from "../data/warehouse-catalog";
 import { contextFor, layerNeeded, moneyRange, priceTool, VOLUME_LABELS, type Answers } from "./warehouseCalc";
+import { clean } from "./text";
 
 export const AI_MODEL_DEFAULT = "claude-opus-5";
 const REASON_MAX = 240;
@@ -27,13 +29,13 @@ export type AiRead = { picks: Partial<Record<Layer, string>>; reasons: Partial<R
 const MENTIONED_MAX = 5;
 const NAME_MAX = 40;
 
-const SYSTEM = `You help an owner or operations lead at a growing business choose the tools for a data warehouse and reporting suite. You write for a public web page on behalf of an independent data consultant.
+const SYSTEM = `You help an owner or operations lead at a growing business choose the tools for a data warehouse and reporting suite. You write for a public web page on behalf of GLF Analytics, a data agency that builds and runs stacks like these for clients. The agency speaks as "we".
 
 You receive the visitor's survey answers, an optional note they typed, and a catalog of tools grouped by layer. Each catalog line shows the tool id, what it costs this business per month at list price, its traits, its main tradeoff, and any tool it requires.
 
-Pick exactly one tool id per layer from the catalog. Use "none" only for a layer marked not needed. If the note names a tool the visitor already uses or pays for and that tool is in the catalog and sound for these answers, prefer it. Recommend what a careful consultant would: the simplest stack that answers the business's questions, that the people who run it after launch can run, that fits the software the team already works in, and that does not overspend for its size. The answers include a monthly tool budget ("unsure" means none was given): stay within it when a sound stack can, and when one cannot, pick the leanest sound stack and say in the summary that it runs above the budget. When the team will run it with AI coding tools or has an engineer, favor code-first tools that Claude Code or Codex can build and maintain. Only pick a tool whose required tool you also picked.
+Pick exactly one tool id per layer from the catalog. Use "none" only for a layer marked not needed. If the note names a tool the visitor already uses or pays for and that tool is in the catalog and sound for these answers, prefer it. Recommend what a careful agency would: the simplest stack that answers the business's questions, that the people who run it after launch can run, that fits the software the team already works in, and that does not overspend for its size. The answers include a monthly tool budget ("unsure" means none was given): stay within it when a sound stack can, and when one cannot, pick the leanest sound stack and say in the summary that it runs above the budget. When the team will run it with AI coding tools or has an engineer, favor code-first tools that Claude Code or Codex can build and maintain. Only pick a tool whose required tool you also picked.
 
-Write one sentence per layer on why that tool fits these answers, under 25 words. Then write a summary of two or three sentences on the shape of the stack and the main tradeoff. Writing rules: first person as the consultant, plain English, contractions are fine, no dollar figures or prices (the page adds costs from the catalog), no promises, no tool names outside the catalog in the reasons or the summary, no em dashes or en dashes.
+Write one sentence per layer on why that tool fits these answers, under 25 words. Then write a summary of two or three sentences on the shape of the stack and the main tradeoff. Writing rules: first person plural as the agency ("we picked", "we kept"), never "I", plain English, contractions are fine, no dollar figures or prices (the page adds costs from the catalog), no promises, no tool names outside the catalog in the reasons or the summary, no em dashes or en dashes.
 
 Also list every software tool the note names, in "mentioned": the name as the visitor wrote it (spelling corrected) and the catalog id it matches, or "none" when the catalog has no entry for it. The mentioned list is the one place a name from outside the catalog may appear. An empty note or a note with no tool names gives an empty list.
 
@@ -67,9 +69,6 @@ function catalogDigest(a: Answers): string {
     return `## ${layer}\n${rows.join("\n")}`;
   }).join("\n\n");
 }
-
-const clean = (s: string, max: number) =>
-  s.replace(/[\u2013\u2014]/g, ", ").replace(/\$\s?\d[\d,.]*/g, "").replace(/\s+/g, " ").trim().slice(0, max);
 
 // A mentioned name is visitor text: letters, digits, spaces, dots and plus signs only, short, deduplicated.
 function cleanMentioned(items: { name: string; id: string }[]): Mentioned[] {

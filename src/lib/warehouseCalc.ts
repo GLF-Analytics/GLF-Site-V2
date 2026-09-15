@@ -283,3 +283,144 @@ export function alternatives(layer: Layer, picks: Picks, a: Answers): Alternativ
 
 export const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 export const moneyRange = (lo: number, hi: number) => (Math.round(lo) === Math.round(hi) ? money(hi) : `${money(lo)} to ${money(hi)}`);
+
+// ---------- S23 (9/15/26): the finance read, the honesty lines, the handoff files ----------
+
+/** The swap list reads the change in words, never a minus sign (the site bans dash characters). */
+export function deltaText(n: number): string {
+  const r = Math.round(n);
+  if (r === 0) return "same cost";
+  return r > 0 ? `${money(r)} more a month` : `${money(-r)} less a month`;
+}
+
+/** The smallest business the questions can describe: a spreadsheet and one report may be enough. */
+export function smallStack(a: Answers): boolean {
+  return a.readers === "1-5" && a.systems === "1-3" && a.size === "1" && a.freshness === "daily";
+}
+
+export type FinanceRead = {
+  /** [low, high] a month billed per person (seat tiers). */
+  seats: [number, number];
+  /** [low, high] a month that grows with rows, refreshes, or sources. */
+  usage: [number, number];
+  /** [low, high] a month that does not move. */
+  flat: [number, number];
+  openSource: number;
+  layers: number;
+  upkeep: [number, number];
+};
+
+/** Splits the priced total by what it grows with; open source counts the layers that stay yours if you stop paying. */
+export function financeRead(stack: Stack, a: Answers): FinanceRead {
+  const seats: [number, number] = [0, 0];
+  const usage: [number, number] = [0, 0];
+  const flat: [number, number] = [0, 0];
+  let openSource = 0;
+  let layers = 0;
+  for (const l of stack.lines) {
+    if (!l.tool) continue;
+    layers += 1;
+    if (l.tool.traits.openSource) openSource += 1;
+    if (l.price.notPublished) continue;
+    const bucket = l.tool.price.kind === "seatTiers" ? seats : l.tool.price.kind === "volume" || l.tool.price.kind === "sources" ? usage : flat;
+    bucket[0] += l.price.low;
+    bucket[1] += l.price.high;
+  }
+  return { seats, usage, flat, openSource, layers, upkeep: upkeepEstimate(a, stack) };
+}
+
+/**
+ * Hours a week to keep the stack running once it is live: an estimate from the
+ * number of sources, the refresh, the data size, and how many layers live in
+ * code. Labeled "our estimate" wherever it shows. Not a quote for anything.
+ */
+export function upkeepEstimate(a: Answers, stack: Stack): [number, number] {
+  const ctx = contextFor(a);
+  let h = 1;
+  h += { "1-3": 0.5, "4-6": 1, "7-10": 2, "10+": 3 }[a.systems];
+  h += { daily: 0, hourly: 1, realtime: 2 }[a.freshness];
+  h += ctx.volume * 0.5;
+  h += stack.lines.filter((l) => l.tool?.traits.codeFirst).length * 0.25;
+  const low = Math.max(1, Math.round(h * 0.7));
+  const high = Math.max(low + 1, Math.round(h * 1.4));
+  return [low, high];
+}
+
+/** One line per layer, used by the Markdown file, the email, the notification, and the card. */
+export function stackLines(stack: Stack, names: Record<Layer, string>): string[] {
+  return stack.lines.map((l) => {
+    const name = names[l.layer];
+    if (!l.tool) return `${name}: not needed`;
+    const tier = l.tool.tier ? ` (${l.tool.tier})` : "";
+    const cost = l.price.notPublished ? "price not published" : `${moneyRange(l.price.low, l.price.high)} a month${l.price.estimate ? " (estimate)" : ""}`;
+    return `${name}: ${l.tool.name}${tier}, ${cost}`;
+  });
+}
+
+export type ExportOpts = { names: Record<Layer, string>; url: string; reasons?: Record<string, string>; summary?: string; date: string };
+
+/** The stack as a Markdown file a visitor can paste anywhere. */
+export function stackToMarkdown(stack: Stack, a: Answers, o: ExportOpts): string {
+  const rows = stack.lines.map((l) => {
+    const name = o.names[l.layer];
+    if (!l.tool) return `| ${name} | Not needed | | |`;
+    const tier = l.tool.tier ? ` (${l.tool.tier})` : "";
+    const cost = l.price.notPublished ? "not published" : `${moneyRange(l.price.low, l.price.high)}${l.price.estimate ? " est." : ""}`;
+    const why = (o.reasons?.[l.layer] || l.tool.why).replace(/\|/g, "/");
+    return `| ${name} | ${l.tool.name}${tier} | ${cost} | ${why} |`;
+  });
+  const ctx = contextFor(a);
+  const fin = financeRead(stack, a);
+  return [
+    "# Data warehouse stack",
+    "",
+    `Suggested by the GLF Analytics planner on ${o.date}. Estimated tool cost ${moneyRange(stack.low, stack.high)} a month at list price. Not a quote.`,
+    "",
+    ...(o.summary ? [o.summary, ""] : []),
+    "| Layer | Tool | Monthly | Why |",
+    "| --- | --- | --- | --- |",
+    ...rows,
+    "",
+    `Data users ${ctx.readers[0]} to ${ctx.readers[1]}. Sources ${ctx.sources[0]} to ${ctx.sources[1]}. Data size ${VOLUME_LABELS[ctx.volume]}. Refresh ${a.freshness}. Run after launch by ${a.runner === "ai" ? "an AI coding seat with a person reviewing" : a.runner === "none" ? "no technical team" : a.runner === "analyst" ? "a data analyst" : "a data engineer"}.`,
+    "",
+    `Grows with people ${moneyRange(fin.seats[0], fin.seats[1])}. Grows with data ${moneyRange(fin.usage[0], fin.usage[1])}. Flat ${moneyRange(fin.flat[0], fin.flat[1])}. Open source layers ${fin.openSource} of ${fin.layers}. Upkeep about ${fin.upkeep[0]} to ${fin.upkeep[1]} hours a week (an estimate).`,
+    "",
+    "Sources for every price:",
+    ...stack.lines.filter((l) => l.tool).map((l) => `- ${l.tool!.name}: ${l.tool!.source} (checked ${l.tool!.checked})`),
+    "",
+    `Edit the answers: ${o.url}`
+  ].join("\n");
+}
+
+/** A CLAUDE.md a team can drop into the repo that will build this stack. The working rules are the ones we build under. */
+export function stackToClaudeMd(stack: Stack, a: Answers, o: ExportOpts): string {
+  const ctx = contextFor(a);
+  const tools = stack.lines.filter((l) => l.tool).map((l) => `- ${o.names[l.layer]}: ${l.tool!.name}${l.tool!.tier ? ` (${l.tool!.tier})` : ""}. ${l.tool!.why}`);
+  return [
+    "# CLAUDE.md",
+    "",
+    "## What this repo is",
+    "",
+    `A data warehouse and reporting stack for a business with ${ctx.readers[0]} to ${ctx.readers[1]} data users and ${ctx.sources[0]} to ${ctx.sources[1]} data sources, refreshed ${a.freshness === "daily" ? "daily" : a.freshness === "hourly" ? "hourly" : "in real time"}. Planned with the GLF Analytics planner on ${o.date}: ${o.url}`,
+    "",
+    "## The stack",
+    "",
+    ...tools,
+    "",
+    "## Working rules",
+    "",
+    "- Read STATE.md at the start of every session and rewrite it at the end. History goes in SESSION_LOG.md.",
+    "- Every change is a pull request. Before a person reads it: the SQL compiles, the tests pass, a dry run completes, and the lineage still resolves. A failure goes back to the agent, not to the reviewer.",
+    "- Never write to production directly. Loads and models run on the scheduler from the main branch only.",
+    "- Metric definitions live in one file and a named person owns them. Fix a definition before building the dashboard that depends on it.",
+    "- Every model ships with tests: unique keys, not null, accepted values, and a row count against the source.",
+    "- Get the denominator right first. When a number looks better, check the count under it before celebrating.",
+    "- Archive before deleting. Never edit an archive folder.",
+    "- No secrets in the repo. Credentials live in the scheduler's secret store.",
+    "",
+    "## Prices",
+    "",
+    `Estimated tool cost ${moneyRange(stack.low, stack.high)} a month at list price when planned. Recheck the vendor pages before renewing.`,
+    ...stack.lines.filter((l) => l.tool).map((l) => `- ${l.tool!.name}: ${l.tool!.source}`)
+  ].join("\n");
+}
