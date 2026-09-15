@@ -233,8 +233,6 @@ const total = questions.length;
     const template = root.querySelector<HTMLTemplateElement>("#wh-line")!;
     const email = root.dataset.email ?? "";
     let current = 0;
-    let lastPointer = 0;
-    let advanceTimer = 0;
 
     type View = { answers: Answers; picks: Picks; reasons: Record<string, string>; summary: string; source: "ai" | "rules" };
     let view: View | null = null;
@@ -268,12 +266,12 @@ const total = questions.length;
     }
 
     function show(i: number, focus = true) {
-      window.clearTimeout(advanceTimer);
       current = i;
       stepsEls.forEach((el, n) => (el.hidden = n !== i));
       progress.textContent = ui.questionOf(i + 1, stepsEls.length);
       fill.style.width = `${((i + 1) / stepsEls.length) * 100}%`;
       refreshNext();
+      saveDraft();
       if (focus) {
         keepInView();
         stepsEls[i].querySelector<HTMLElement>(".wh-q__title")?.focus({ preventScroll: true });
@@ -303,19 +301,59 @@ const total = questions.length;
       form!.querySelectorAll<HTMLInputElement>('input[name="kinds"]').forEach((i) => (i.checked = a.kinds.includes(i.value as never)));
     }
 
-    // A tap on an answer moves on after a beat, so the pick shows first.
-    // Arrow keys also fire change, so only a recent pointer press advances.
-    form.addEventListener("pointerdown", () => (lastPointer = Date.now()));
-    form.addEventListener("change", (e) => {
+    // A refresh or the browser's Back button keeps the answers so far (this tab only).
+    const DRAFT_KEY = "wh-draft";
+    type Draft = { picks: Record<string, string>; kinds: string[]; notes: string; step: number };
+
+    function saveDraft() {
+      const draft: Draft = {
+        picks: {},
+        kinds: [...form!.querySelectorAll<HTMLInputElement>('input[name="kinds"]:checked')].map((i) => i.value),
+        notes: notes.value,
+        step: current
+      };
+      for (const q of questions) {
+        const v = q.type === "single" ? checked(q.key) : undefined;
+        if (v) draft.picks[q.key] = v;
+      }
+      try {
+        sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      } catch {}
+    }
+
+    function restoreDraft(): boolean {
+      let draft: Partial<Draft> | null = null;
+      try {
+        draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? "null");
+      } catch {}
+      if (!draft || typeof draft !== "object") return false;
+      for (const q of questions) {
+        if (q.type !== "single") continue;
+        const v = draft.picks?.[q.key];
+        if (typeof v !== "string" || !q.choices.some((c) => c.value === v)) continue;
+        const input = form!.querySelector<HTMLInputElement>(`input[name="${q.key}"][value="${v}"]`);
+        if (input) input.checked = true;
+      }
+      const kinds = Array.isArray(draft.kinds) ? draft.kinds : [];
+      form!.querySelectorAll<HTMLInputElement>('input[name="kinds"]').forEach((i) => (i.checked = kinds.includes(i.value)));
+      if (typeof draft.notes === "string") {
+        notes.value = draft.notes.slice(0, notes.maxLength);
+        count.textContent = `${notes.value.length} / ${notes.maxLength}`;
+      }
+      const step = Number.isInteger(draft.step) ? Math.min(Math.max(draft.step as number, 0), stepsEls.length - 1) : 0;
+      show(step, false);
+      return true;
+    }
+
+    // Picking an answer never moves the screen; Next does.
+    form.addEventListener("change", () => {
       refreshNext();
-      const input = e.target as HTMLInputElement;
-      const from = current;
-      if (input.type !== "radio" || questions[from]?.type !== "single" || Date.now() - lastPointer > 1500) return;
-      if (from >= stepsEls.length - 1) return;
-      window.clearTimeout(advanceTimer);
-      advanceTimer = window.setTimeout(() => current === from && show(from + 1), 260);
+      saveDraft();
     });
-    notes.addEventListener("input", () => (count.textContent = `${notes.value.length} / ${notes.maxLength}`));
+    notes.addEventListener("input", () => {
+      count.textContent = `${notes.value.length} / ${notes.maxLength}`;
+      saveDraft();
+    });
     form.querySelectorAll("[data-next]").forEach((b) => b.addEventListener("click", () => stepReady(current) && show(current + 1)));
     form.querySelectorAll("[data-back]").forEach((b) => b.addEventListener("click", () => show(Math.max(0, current - 1))));
 
@@ -584,7 +622,7 @@ const total = questions.length;
     } else if (shared) {
       prefill(shared);
       show(stepsEls.length - 1, false);
-    } else {
+    } else if (!restoreDraft()) {
       show(0, false);
     }
   }
