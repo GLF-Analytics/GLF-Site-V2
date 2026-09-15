@@ -12,7 +12,10 @@
     "map:dots": "node scripts/world-dots.mjs"
   },
   "dependencies": {
-    "astro": "^4.16.0"
+    "@anthropic-ai/sdk": "^0.125.0",
+    "@astrojs/vercel": "^7.8.2",
+    "astro": "^4.16.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.0",

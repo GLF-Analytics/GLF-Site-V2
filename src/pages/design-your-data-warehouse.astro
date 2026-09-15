@@ -1,0 +1,498 @@
+---
+/*
+  /design-your-data-warehouse (S15, 9/14/26): the tool planner. UNLISTED: not in
+  the nav, not on the homepage, noindex, filtered out of the sitemap in
+  astro.config.ts. Gabriel opens it by URL until he links it (and the
+  /app-hardening pass is owed before that).
+
+  Flow: four screens of two questions, one free-text screen, a loading state,
+  then the stack. The client script POSTs to /api/warehouse-suggest (AI picks
+  when switched on, rules otherwise) and prices every line locally with
+  src/lib/warehouseCalc.ts, so swaps recalculate without another call.
+
+  Copy: src/data/warehouse-survey.ts. Prices: src/data/warehouse-catalog.ts.
+  Build guards below: sources and dates on every price, three or more tools per
+  layer, no comma in a question title or heading, the three reference scenarios
+  priced by the engine must equal the hand totals in the catalog file.
+*/
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { catalog, LAYERS, scenarios } from "../data/warehouse-catalog";
+import { meta, steps, notesStep, ui, result, layerCopy } from "../data/warehouse-survey";
+import { NOTES_MAX, priceStack, recommendByRules } from "../lib/warehouseCalc";
+import { orgInfo } from "../config/site";
+
+// ---------- build guards ----------
+for (const t of catalog) {
+  if (!/^https:\/\//.test(t.source)) throw new Error(`[warehouse] ${t.id}: source must be an https URL`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(t.checked)) throw new Error(`[warehouse] ${t.id}: checked must be YYYY-MM-DD`);
+  if (!t.why.trim() || !t.tradeoff.trim()) throw new Error(`[warehouse] ${t.id}: why and tradeoff are required`);
+}
+for (const layer of LAYERS) {
+  const n = catalog.filter((t) => t.layer === layer).length;
+  if (n < 3) throw new Error(`[warehouse] layer ${layer} has ${n} tools; at least 3`);
+}
+const titles = [
+  meta.title,
+  result.heading,
+  result.movesHeading,
+  result.sourcesHeading,
+  notesStep.title,
+  ...steps.flatMap((s) => [...s.singles.map((q) => q.title), ...(s.kinds ? [s.kinds.title] : [])]),
+  ...Object.values(layerCopy).map((l) => l.name)
+];
+for (const t of titles) if (t.includes(",")) throw new Error(`[warehouse] comma in a title: "${t}"`);
+const dashes = JSON.stringify({ meta, steps, notesStep, ui, result, layerCopy, catalog: catalog.map((t) => [t.why, t.tradeoff, t.name, t.tier]) });
+if (/[\u2013\u2014]/.test(dashes)) throw new Error("[warehouse] em or en dash in the copy or catalog");
+
+const scenarioTotals = scenarios.map((s) => {
+  const stack = priceStack(recommendByRules(s.answers), s.answers);
+  if (Math.round(stack.low) !== s.low || Math.round(stack.high) !== s.high) {
+    const detail = stack.lines.map((l) => `${l.layer}=${l.tool?.id ?? "none"} ${l.price.low}-${l.price.high}`).join(", ");
+    throw new Error(`[warehouse] scenario "${s.name}" priced ${stack.low}-${stack.high}, expected ${s.low}-${s.high} (${detail})`);
+  }
+  return `${s.name} $${s.low}-$${s.high}`;
+});
+const priced = catalog.filter((t) => t.price.kind !== "notPublished").length;
+const oldest = catalog.map((t) => t.checked).sort()[0];
+console.log(
+  `[warehouse] ${catalog.length} tools, ${priced} priced, ${catalog.length - priced} not published, oldest check ${oldest}, scenarios ${scenarioTotals.join(" / ")}`
+);
+
+const totalSteps = steps.length + 1;
+---
+<BaseLayout title={meta.title} description={meta.description} noindex>
+  <section class="pt-32 pb-10 md:pt-40 md:pb-12 px-6 md:px-12 lg:px-16">
+    <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8">
+      <div class="lg:col-span-8">
+        <span class="label block mb-4">{meta.eyebrow}</span>
+        <h1 class="heading-display text-4xl md:text-5xl text-white">{meta.title}</h1>
+        <p class="mt-6 text-surface-400 text-base md:text-lg leading-relaxed max-w-xl">{meta.lede}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-6 md:px-12 lg:px-16 pb-16 md:pb-24 border-b border-white/[0.06]">
+    <div class="max-w-7xl mx-auto">
+      <div class="wh max-w-3xl" data-email={orgInfo.email}>
+        <noscript><p class="mb-8 text-sm text-surface-400">{ui.noScript}</p></noscript>
+
+        <form class="wh-form" novalidate>
+          <div class="flex items-center justify-between gap-4 mb-8">
+            <p class="font-mono text-[10px] tracking-[0.15em] text-gold-500" data-progress aria-live="polite">{ui.stepOf(1, totalSteps)}</p>
+            <ol class="wh-dots" aria-hidden="true">
+              {Array.from({ length: totalSteps }, (_, i) => <li data-dot={i} class={i === 0 ? "is-on" : ""}></li>)}
+            </ol>
+          </div>
+
+          {steps.map((step, i) => (
+            <fieldset class="wh-step" data-step={i} hidden={i !== 0}>
+              <legend class="sr-only">{ui.stepOf(i + 1, totalSteps)}</legend>
+              {step.singles.map((q) => (
+                <div class="wh-q" role="radiogroup" aria-labelledby={`q-${q.key}`}>
+                  <h2 id={`q-${q.key}`} class="wh-q__title">{q.title}</h2>
+                  {q.hint && <p class="wh-q__hint">{q.hint}</p>}
+                  <div class="wh-choices">
+                    {q.choices.map((c) => (
+                      <label class="wh-choice">
+                        <input type="radio" name={q.key} value={c.value} />
+                        <span>{c.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {step.kinds && (
+                <div class="wh-q" role="group" aria-labelledby="q-kinds">
+                  <h2 id="q-kinds" class="wh-q__title">{step.kinds.title}</h2>
+                  <p class="wh-q__hint">{step.kinds.hint}</p>
+                  <div class="wh-chips">
+                    {step.kinds.choices.map((c) => (
+                      <label class="wh-choice wh-choice--chip">
+                        <input type="checkbox" name="kinds" value={c.value} />
+                        <span>{c.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div class="wh-nav">
+                {i > 0 && <button type="button" class="btn-secondary" data-back>{ui.back}</button>}
+                <button type="button" class="btn-primary" data-next disabled><span>{ui.next}</span></button>
+              </div>
+            </fieldset>
+          ))}
+
+          <fieldset class="wh-step" data-step={steps.length} hidden>
+            <legend class="sr-only">{ui.stepOf(totalSteps, totalSteps)}</legend>
+            <div class="wh-q">
+              <h2 class="wh-q__title"><label for="wh-notes">{notesStep.title}</label></h2>
+              <p class="wh-q__hint" id="wh-notes-hint">{notesStep.hint}</p>
+              <textarea id="wh-notes" name="notes" rows="5" maxlength={NOTES_MAX} class="wh-notes" placeholder={notesStep.placeholder} aria-describedby="wh-notes-hint wh-notes-count"></textarea>
+              <p class="wh-q__hint text-right" id="wh-notes-count" data-count>0 / {NOTES_MAX}</p>
+            </div>
+            <div class="wh-nav">
+              <button type="button" class="btn-secondary" data-back>{ui.back}</button>
+              <button type="submit" class="btn-primary"><span>{ui.submit}</span></button>
+            </div>
+          </fieldset>
+        </form>
+
+        <div class="wh-loading" data-loading hidden aria-live="polite">
+          <p class="wh-loading__phrase" data-phrase>{ui.loading[0]}</p>
+          <div class="wh-loading__track" aria-hidden="true"><div class="wh-loading__bar"></div></div>
+        </div>
+
+        <section class="wh-result" data-result hidden aria-labelledby="wh-result-heading">
+          <h2 id="wh-result-heading" class="font-mono text-[10px] tracking-[0.15em] text-gold-500 mb-5">{result.heading}</h2>
+          <p class="text-xs text-surface-500" data-source></p>
+          <p class="mt-4 text-surface-200 leading-relaxed" data-summary hidden></p>
+
+          <div class="wh-total">
+            <span class="font-mono text-[10px] tracking-[0.15em] text-surface-400">{result.totalLabel}</span>
+            <p class="mt-2"><strong class="heading-display text-3xl md:text-4xl text-white" data-total></strong><span class="ml-2 text-surface-400">a month</span></p>
+            <p class="mt-2 text-xs text-surface-500" data-total-notes></p>
+          </div>
+
+          <ol class="wh-lines" data-lines></ol>
+
+          <h3 class="wh-sub">{result.movesHeading}</h3>
+          <ul class="wh-list">
+            {result.moves.map((m) => <li>{m}</li>)}
+          </ul>
+          <p class="mt-6 text-sm text-surface-400 leading-relaxed">{result.listPriceNote}</p>
+
+          <h3 class="wh-sub">{result.sourcesHeading}</h3>
+          <ul class="wh-sources" data-sources></ul>
+
+          <div class="wh-nav mt-10">
+            <a class="btn-primary" data-email-link href={`mailto:${orgInfo.email}`}><span>{result.emailLabel}</span></a>
+            <button type="button" class="btn-secondary" data-restart>{ui.restart}</button>
+          </div>
+        </section>
+
+        <template id="wh-line">
+          <li class="wh-line">
+            <div class="wh-line__head">
+              <span class="wh-line__layer" data-layer></span>
+              <span class="wh-line__cost" data-cost></span>
+            </div>
+            <p class="wh-line__tool" data-tool></p>
+            <p class="wh-line__basis" data-basis></p>
+            <p class="wh-line__reason" data-reason></p>
+            <ul class="wh-line__traits" data-traits></ul>
+            <p class="wh-line__warn" data-warn hidden></p>
+            <label class="wh-line__swap" data-swap-wrap>
+              <span>{result.swapLabel}</span>
+              <select data-swap></select>
+            </label>
+          </li>
+        </template>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-6 md:px-12 lg:px-16 py-16 md:py-20">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-6">
+      <p class="text-surface-400">{result.closing}</p>
+      <div class="flex flex-wrap gap-x-8 gap-y-3">
+        <a href="/#contact" class="group inline-flex items-center gap-2 text-sm text-white font-medium hover:text-gold-500 transition-colors">
+          <span>Email me</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
+        </a>
+        <a href="/" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Back to the homepage</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { LAYERS, type Layer } from "../data/warehouse-catalog";
+  import { steps, ui, result, layerCopy, traitLabels } from "../data/warehouse-survey";
+  import {
+    alternatives,
+    byId,
+    fromQuery,
+    moneyRange,
+    parseAnswers,
+    priceStack,
+    recommendByRules,
+    toQuery,
+    type Answers,
+    type Picks
+  } from "../lib/warehouseCalc";
+
+  const root = document.querySelector<HTMLElement>(".wh");
+  const form = root?.querySelector<HTMLFormElement>(".wh-form");
+  if (root && form) {
+    const stepsEls = [...form.querySelectorAll<HTMLFieldSetElement>(".wh-step")];
+    const dots = [...form.querySelectorAll<HTMLElement>("[data-dot]")];
+    const progress = form.querySelector<HTMLElement>("[data-progress]")!;
+    const loading = root.querySelector<HTMLElement>("[data-loading]")!;
+    const phrase = root.querySelector<HTMLElement>("[data-phrase]")!;
+    const resultEl = root.querySelector<HTMLElement>("[data-result]")!;
+    const notes = form.querySelector<HTMLTextAreaElement>("#wh-notes")!;
+    const count = form.querySelector<HTMLElement>("[data-count]")!;
+    const template = root.querySelector<HTMLTemplateElement>("#wh-line")!;
+    const email = root.dataset.email ?? "";
+    let current = 0;
+
+    type View = { answers: Answers; picks: Picks; reasons: Record<string, string>; summary: string; source: "ai" | "rules" };
+    let view: View | null = null;
+
+    const singleKeys = (i: number) => (steps[i]?.singles ?? []).map((q) => q.key);
+    const checked = (name: string) => form.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value;
+
+    function stepReady(i: number): boolean {
+      return singleKeys(i).every((k) => Boolean(checked(k)));
+    }
+
+    function show(i: number, focus = true) {
+      current = i;
+      stepsEls.forEach((el, n) => (el.hidden = n !== i));
+      dots.forEach((d, n) => d.classList.toggle("is-on", n <= i));
+      progress.textContent = ui.stepOf(i + 1, stepsEls.length);
+      refreshNext();
+      if (focus) {
+        form!.scrollIntoView({ block: "start", behavior: "smooth" });
+        stepsEls[i].querySelector<HTMLElement>("input, textarea")?.focus({ preventScroll: true });
+      }
+    }
+
+    function refreshNext() {
+      const next = stepsEls[current]?.querySelector<HTMLButtonElement>("[data-next]");
+      if (next) next.disabled = !stepReady(current);
+    }
+
+    function collect(): Answers | null {
+      const raw: Record<string, unknown> = {
+        kinds: [...form!.querySelectorAll<HTMLInputElement>('input[name="kinds"]:checked')].map((i) => i.value),
+        notes: notes.value.slice(0, notes.maxLength)
+      };
+      for (const s of steps) for (const q of s.singles) raw[q.key] = checked(q.key);
+      return parseAnswers(raw);
+    }
+
+    function prefill(a: Answers) {
+      for (const s of steps)
+        for (const q of s.singles) {
+          const input = form!.querySelector<HTMLInputElement>(`input[name="${q.key}"][value="${a[q.key]}"]`);
+          if (input) input.checked = true;
+        }
+      form!.querySelectorAll<HTMLInputElement>('input[name="kinds"]').forEach((i) => (i.checked = a.kinds.includes(i.value as never)));
+    }
+
+    form.addEventListener("change", refreshNext);
+    notes.addEventListener("input", () => (count.textContent = `${notes.value.length} / ${notes.maxLength}`));
+    form.querySelectorAll("[data-next]").forEach((b) => b.addEventListener("click", () => stepReady(current) && show(current + 1)));
+    form.querySelectorAll("[data-back]").forEach((b) => b.addEventListener("click", () => show(Math.max(0, current - 1))));
+
+    // Enter on a radio should move forward, not submit a half-filled form.
+    form.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
+        e.preventDefault();
+        if (current < stepsEls.length - 1 && stepReady(current)) show(current + 1);
+      }
+    });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const answers = collect();
+      if (!answers) {
+        const firstMissing = stepsEls.findIndex((_, i) => !stepReady(i));
+        show(firstMissing === -1 ? 0 : firstMissing);
+        return;
+      }
+      history.replaceState(null, "", `${location.pathname}?${toQuery(answers)}`);
+      form.hidden = true;
+      resultEl.hidden = true;
+      loading.hidden = false;
+      loading.scrollIntoView({ block: "center", behavior: "smooth" });
+
+      let n = 0;
+      const rotate = window.setInterval(() => {
+        n = (n + 1) % ui.loading.length;
+        phrase.textContent = ui.loading[n];
+      }, 1400);
+      const started = Date.now();
+
+      let next: View = { answers, picks: recommendByRules(answers), reasons: {}, summary: "", source: "rules" };
+      try {
+        const ctrl = new AbortController();
+        const timer = window.setTimeout(() => ctrl.abort(), 45_000);
+        const res = await fetch("/api/warehouse-suggest", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ answers }),
+          signal: ctrl.signal
+        });
+        window.clearTimeout(timer);
+        const data = await res.json();
+        if (data && data.picks && (data.source === "ai" || data.source === "rules")) {
+          next = { answers, picks: data.picks, reasons: data.reasons ?? {}, summary: data.summary ?? "", source: data.source };
+        }
+      } catch {
+        // Offline, timed out, or the route is missing: the rules pick stands.
+      }
+
+      const wait = Math.max(0, 1600 - (Date.now() - started));
+      window.setTimeout(() => {
+        window.clearInterval(rotate);
+        loading.hidden = true;
+        view = next;
+        render();
+        resultEl.hidden = false;
+        resultEl.scrollIntoView({ block: "start", behavior: "smooth" });
+        resultEl.querySelector<HTMLElement>("h2")?.focus?.();
+      }, wait);
+    });
+
+    function costText(line: ReturnType<typeof priceStack>["lines"][number]): string {
+      if (!line.tool) return "$0";
+      if (line.price.notPublished) return "Price not published";
+      return `${moneyRange(line.price.low, line.price.high)}${line.price.estimate ? " est." : ""}`;
+    }
+
+    function render() {
+      if (!view) return;
+      const { answers, picks, reasons, summary, source } = view;
+      const stack = priceStack(picks, answers);
+
+      root!.querySelector<HTMLElement>("[data-source]")!.textContent = source === "ai" ? result.sourceAi : result.sourceRules;
+      const summaryEl = root!.querySelector<HTMLElement>("[data-summary]")!;
+      summaryEl.textContent = summary;
+      summaryEl.hidden = !summary;
+
+      root!.querySelector<HTMLElement>("[data-total]")!.textContent = moneyRange(stack.low, stack.high);
+      const totalNotes = [stack.estimates ? result.estimateNote : "", stack.unpriced.length ? result.unpricedNote(stack.unpriced.join(" and ")) : ""];
+      root!.querySelector<HTMLElement>("[data-total-notes]")!.textContent = totalNotes.filter(Boolean).join(" ");
+
+      const list = root!.querySelector<HTMLOListElement>("[data-lines]")!;
+      list.replaceChildren();
+      for (const line of stack.lines) {
+        const node = template.content.firstElementChild!.cloneNode(true) as HTMLLIElement;
+        const $ = (sel: string) => node.querySelector<HTMLElement>(sel)!;
+        const copy = layerCopy[line.layer];
+        $("[data-layer]").textContent = copy.name;
+        $("[data-cost]").textContent = costText(line);
+
+        if (!line.tool) {
+          $("[data-tool]").textContent = "Not needed for your answers";
+          $("[data-basis]").textContent = copy.what;
+          $("[data-reason]").remove();
+          $("[data-traits]").remove();
+          $("[data-swap-wrap]").remove();
+          list.append(node);
+          continue;
+        }
+
+        const t = line.tool;
+        $("[data-tool]").textContent = t.tier ? `${t.name} (${t.tier})` : t.name;
+        $("[data-basis]").textContent = `${copy.what} ${line.price.basis}.`;
+        $("[data-reason]").textContent = reasons[line.layer] || t.why;
+
+        const traits = $("[data-traits]");
+        for (const [key, on] of Object.entries(t.traits)) {
+          if (!on) continue;
+          const li = document.createElement("li");
+          li.textContent = traitLabels[key as keyof typeof traitLabels];
+          traits.append(li);
+        }
+        if (!traits.childElementCount) traits.remove();
+
+        if (!line.compatible && t.requires) {
+          const warn = $("[data-warn]");
+          const needs = t.requires.ids.map((id) => byId.get(id)?.name ?? id).join(" or ");
+          warn.textContent = `Works with ${needs} only. Swap that layer or pick another tool here.`;
+          warn.hidden = false;
+        }
+
+        const select = node.querySelector<HTMLSelectElement>("[data-swap]")!;
+        select.setAttribute("aria-label", `${result.swapLabel} ${copy.name}`);
+        for (const alt of alternatives(line.layer, picks, answers)) {
+          const opt = document.createElement("option");
+          opt.value = alt.tool.id;
+          const cost = alt.price.notPublished ? "price not published" : moneyRange(alt.price.low, alt.price.high);
+          opt.textContent = `${alt.tool.name}${alt.tool.tier ? ` (${alt.tool.tier})` : ""}: ${cost}${alt.compatible ? "" : ". Needs another pick"}`;
+          opt.selected = alt.tool.id === t.id;
+          select.append(opt);
+        }
+        select.addEventListener("change", () => {
+          if (!view) return;
+          view.picks = { ...view.picks, [line.layer]: select.value };
+          delete view.reasons[line.layer];
+          render();
+          list.querySelectorAll<HTMLSelectElement>("[data-swap]")[LAYERS.indexOf(line.layer as Layer)]?.focus();
+        });
+        list.append(node);
+      }
+
+      const sources = root!.querySelector<HTMLUListElement>("[data-sources]")!;
+      sources.replaceChildren();
+      for (const line of stack.lines) {
+        if (!line.tool) continue;
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = line.tool.source;
+        a.target = "_blank";
+        a.rel = "noreferrer";
+        a.textContent = line.tool.name;
+        li.append(a, document.createTextNode(` checked ${line.tool.checked}${line.tool.secondary ? " (secondary source)" : ""}`));
+        sources.append(li);
+      }
+
+      const lines = stack.lines.map((l) => `${layerCopy[l.layer].name}: ${l.tool ? l.tool.name + (l.tool.tier ? ` (${l.tool.tier})` : "") : "not needed"}, ${costText(l)}`);
+      const body = [
+        "Here is the stack the planner suggested:",
+        "",
+        ...lines,
+        "",
+        `${result.totalLabel}: ${moneyRange(stack.low, stack.high)} a month`,
+        "",
+        `My answers: ${location.origin}${location.pathname}?${toQuery(answers)}`
+      ].join("\n");
+      root!.querySelector<HTMLAnchorElement>("[data-email-link]")!.href =
+        `mailto:${email}?subject=${encodeURIComponent(result.emailSubject)}&body=${encodeURIComponent(body)}`;
+    }
+
+    root.querySelector("[data-restart]")?.addEventListener("click", () => {
+      view = null;
+      form.reset();
+      count.textContent = `0 / ${notes.maxLength}`;
+      history.replaceState(null, "", location.pathname);
+      resultEl.hidden = true;
+      form.hidden = false;
+      show(0);
+    });
+
+    // A shared link restores the choices and lands on the last screen.
+    const shared = fromQuery(location.search);
+    const harness = import.meta.env.DEV ? new URLSearchParams(location.search).get("_state") : null;
+    if (harness) {
+      // Dev-only screenshot harness (stripped from production builds):
+      // _state=step2 | loading | result, with _swap=layer:id for a swapped result.
+      const a = shared ?? parseAnswers({ readers: "6-15", size: "2-10", systems: "4-6", kinds: ["store", "ads"], runner: "ai", ecosystem: "neither", freshness: "daily", askAi: "few", notes: "" })!;
+      prefill(a);
+      if (harness.startsWith("step")) show(Number(harness.slice(4)), false);
+      if (harness === "loading") {
+        form.hidden = true;
+        loading.hidden = false;
+      }
+      if (harness === "result") {
+        view = { answers: a, picks: recommendByRules(a), reasons: {}, summary: "", source: "rules" };
+        const swap = new URLSearchParams(location.search).get("_swap");
+        if (swap) {
+          const [layer, id] = swap.split(":");
+          view.picks = { ...view.picks, [layer]: id };
+        }
+        form.hidden = true;
+        render();
+        resultEl.hidden = false;
+      }
+    } else if (shared) {
+      prefill(shared);
+      show(stepsEls.length - 1, false);
+    } else {
+      show(0, false);
+    }
+  }
+</script>
