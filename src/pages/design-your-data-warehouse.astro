@@ -153,6 +153,7 @@ const total = questions.length;
             <ol class="wh-summary__rows" data-rows></ol>
             <p class="wh-summary__meta" data-total-notes></p>
             <p class="wh-summary__meta" data-source></p>
+            <ul class="wh-summary__mentioned" data-mentioned hidden></ul>
           </div>
 
           <h3 class="wh-sub wh-sub--details">{result.detailsHeading}</h3>
@@ -213,6 +214,7 @@ const total = questions.length;
 <script>
   import { type Layer } from "../data/warehouse-catalog";
   import { questions, ui, result, layerCopy, traitLabels } from "../data/warehouse-survey";
+  type Mentioned = { name: string; id: string | null };
   import {
     alternatives,
     budgetFit,
@@ -246,9 +248,17 @@ const total = questions.length;
     const email = root.dataset.email ?? "";
     let current = 0;
 
-    type View = { answers: Answers; picks: Picks; reasons: Record<string, string>; summary: string; source: "ai" | "rules"; swapped: Layer[]; pending?: boolean };
+    type View = { answers: Answers; picks: Picks; reasons: Record<string, string>; summary: string; source: "ai" | "rules"; swapped: Layer[]; pending?: boolean; mentioned: Mentioned[] };
     let view: View | null = null;
-    const makeView = (answers: Answers, picks: Picks, reasons: Record<string, string>, summary: string, source: "ai" | "rules"): View => ({ answers, picks, reasons, summary, source, swapped: [] });
+    const makeView = (answers: Answers, picks: Picks, reasons: Record<string, string>, summary: string, source: "ai" | "rules", mentioned: Mentioned[] = []): View => ({ answers, picks, reasons, summary, source, swapped: [], mentioned });
+    // The route already cleans these; the page still treats them as text and keeps only well-formed items.
+    const readMentioned = (raw: unknown): Mentioned[] =>
+      Array.isArray(raw)
+        ? raw
+            .filter((m) => m && typeof m.name === "string" && (m.id === null || typeof m.id === "string"))
+            .map((m) => ({ name: String(m.name).slice(0, 40), id: typeof m.id === "string" && byId.has(m.id) ? m.id : null }))
+            .slice(0, 5)
+        : [];
 
     const checked = (name: string) => form.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value;
 
@@ -454,7 +464,7 @@ const total = questions.length;
         window.clearTimeout(timer);
         const data = await res.json();
         if (data && data.picks && (data.source === "ai" || data.source === "rules")) {
-          next = makeView(answers, data.picks, data.reasons ?? {}, data.summary ?? "", data.source);
+          next = makeView(answers, data.picks, data.reasons ?? {}, data.summary ?? "", data.source, readMentioned(data.mentioned));
         }
       } catch {
         // Offline, timed out, or the route is missing: the rules pick stands.
@@ -470,7 +480,7 @@ const total = questions.length;
 
     function render() {
       if (!view) return;
-      const { answers, picks, reasons, summary, source, swapped } = view;
+      const { answers, picks, reasons, summary, source, swapped, mentioned } = view;
       const stack = priceStack(picks, answers);
 
       // ---- the summary card ----
@@ -505,6 +515,19 @@ const total = questions.length;
       notesEl.hidden = !notesEl.textContent;
       const sourceLine = view.pending ? result.sourcePending : source === "ai" ? result.sourceAi : result.sourceRules;
       root!.querySelector<HTMLElement>("[data-source]")!.textContent = swapped.length ? `${sourceLine} ${result.swapped(swapped.length)}` : sourceLine;
+
+      // Tools the visitor named in the note: in the stack, priced differently, or not in the catalog.
+      const mentionedLines = mentioned.map((m) => {
+        const tool = m.id ? byId.get(m.id) : undefined;
+        if (!tool) return result.mentioned.missing(m.name);
+        if (picks[tool.layer] === tool.id) return result.mentioned.kept(m.name);
+        const pickedId = picks[tool.layer];
+        const picked = pickedId ? byId.get(pickedId) : undefined;
+        return picked ? result.mentioned.swappedOut(m.name, picked.name) : result.mentioned.missing(m.name);
+      });
+      const mentionedEl = root!.querySelector<HTMLUListElement>("[data-mentioned]")!;
+      mentionedEl.replaceChildren(...mentionedLines.map((text) => { const li = document.createElement("li"); li.textContent = text; return li; }));
+      mentionedEl.hidden = !mentionedLines.length;
 
       // ---- the details ----
       const summaryEl = root!.querySelector<HTMLElement>("[data-summary]")!;
@@ -594,6 +617,7 @@ const total = questions.length;
         ...lines,
         "",
         `${result.totalLabel}: ${moneyRange(stack.low, stack.high)} a month`,
+        ...(mentionedLines.length ? ["", ...mentionedLines] : []),
         "",
         `My answers: ${location.origin}${location.pathname}?${toQuery(answers)}`
       ].join("\n");

@@ -14,7 +14,7 @@
 */
 import type { APIRoute } from "astro";
 import { parseAnswers, priceStack, recommendByRules, sanitizePicks, type Answers, type Picks } from "../../lib/warehouseCalc";
-import { readWithAI } from "../../lib/warehouseAI";
+import { readWithAI, type Mentioned } from "../../lib/warehouseAI";
 
 export const prerender = false;
 
@@ -37,8 +37,8 @@ const json = (body: unknown, status = 200) =>
     headers: { "content-type": "application/json", "cache-control": "no-store", "x-robots-tag": "noindex" }
   });
 
-function payload(source: "ai" | "rules", a: Answers, picks: Picks, reasons: Record<string, string> = {}, summary = "") {
-  return { source, picks, reasons, summary, stack: priceStack(picks, a) };
+function payload(source: "ai" | "rules", a: Answers, picks: Picks, reasons: Record<string, string> = {}, summary = "", mentioned: Mentioned[] = []) {
+  return { source, picks, reasons, summary, mentioned, stack: priceStack(picks, a) };
 }
 
 export const POST: APIRoute = async ({ request, clientAddress }) => {
@@ -68,7 +68,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     const read = await readWithAI(answers, { apiKey, model: process.env.WAREHOUSE_AI_MODEL });
     const { picks, replaced } = sanitizePicks(read.picks, answers);
     const reasons = Object.fromEntries(Object.entries(read.reasons).filter(([layer, r]) => r && !replaced.includes(layer as never)));
-    return json(payload("ai", answers, picks, reasons, read.summary));
+    return json(payload("ai", answers, picks, reasons, read.summary, read.mentioned));
   } catch (err) {
     // Log the class of failure only: never the key, never the visitor's note.
     console.error("[warehouse-suggest] AI read failed, rules used:", err instanceof Error ? err.name + " " + err.message.slice(0, 80) : "unknown");

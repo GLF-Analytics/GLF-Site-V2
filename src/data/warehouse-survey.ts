@@ -175,6 +175,11 @@ export const result = {
   sourcePending: "Picked by rules for now. The AI read is on its way, usually about 30 seconds.",
   swapped: (n: number) => (n === 1 ? "You swapped one layer." : `You swapped ${n} layers.`),
   swapLabel: "Swap",
+  mentioned: {
+    missing: (name: string) => `You mentioned ${name}. It is not in my catalog yet, so I priced the closest option. Email me and I will run the numbers with ${name}.`,
+    kept: (name: string) => `You mentioned ${name}, so I kept it in the stack.`,
+    swappedOut: (name: string, picked: string) => `You mentioned ${name}. I priced ${picked} instead. Swap it back in the details if you would rather.`
+  },
   unpricedNote: (names: string) => `Not in the total because the vendor does not publish a price: ${names}.`,
   estimateNote: "Lines marked est. are usage based and depend on how much data you move.",
   movesHeading: "What moves this number",

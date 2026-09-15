@@ -98,11 +98,10 @@ export const catalog: Tool[] = [
     price: {
       kind: "volume",
       monthly: [[30, 60], [60, 120], [120, 360], [360, 1200]],
-      note: "About $2 per credit on Standard (secondary). X-Small uses 1 credit an hour and Small 2 (vendor docs). Estimates run 15 to 60 warehouse hours a month for small and up to about 300 Small hours for very large."
+      note: "$2 per credit on Standard in AWS US East (Snowflake consumption table, September 2026). X-Small uses 1 credit an hour and Small 2 (vendor docs). Estimates run 15 to 60 warehouse hours a month for small and up to about 300 Small hours for very large."
     },
-    source: "https://docs.snowflake.com/en/user-guide/warehouses-overview",
-    checked: "2026-09-14",
-    secondary: true,
+    source: "https://www.snowflake.com/legal-files/CreditConsumptionTable.pdf",
+    checked: "2026-09-15",
     why: "Built for big data volumes and many teams querying at once.",
     tradeoff: "Usage billing adds up with every hour a warehouse runs, and it is more than a small team needs.",
     traits: { mcp: true, codeFirst: true },
@@ -158,6 +157,76 @@ export const catalog: Tool[] = [
     tradeoff: "It is a transactional database, so heavy reporting needs a bigger tier.",
     traits: { rowSecurity: true, codeFirst: true },
     fit: { ecosystem: ["microsoft"], volume: [0, 1], runner: ["analyst", "ai"], freshness: ["daily", "hourly"] }
+  },
+  {
+    id: "redshift",
+    layer: "warehouse",
+    name: "Amazon Redshift",
+    tier: "Serverless",
+    price: {
+      kind: "volume",
+      monthly: [[22, 60], [60, 180], [360, 900], [2190, 4380]],
+      note: "$0.375 per RPU hour with a 4 RPU floor in US East, so $1.50 an hour while queries run. Estimates run 15 to 40 hours a month for small, up to 120 for medium, 8 RPU for 120 to 300 hours for large, and 8 to 16 RPU always on for very large. Storage is $0.024 per GB on top."
+    },
+    source: "https://aws.amazon.com/redshift/pricing/",
+    checked: "2026-09-15",
+    why: "The AWS warehouse that scales to zero, for a team that already lives in AWS.",
+    tradeoff: "A 60 second minimum and a 4 RPU floor make small bursty queries cost more than they look, and someone has to run it.",
+    traits: { mcp: true, rowSecurity: true },
+    fit: { ecosystem: ["neither"], volume: [2, 3], runner: ["engineer"], freshness: ["daily", "hourly", "realtime"] }
+  },
+  {
+    id: "databricks",
+    layer: "warehouse",
+    name: "Databricks SQL",
+    tier: "Serverless warehouse",
+    price: {
+      kind: "volume",
+      monthly: [[42, 112], [112, 336], [1008, 2520], [6132, 12264]],
+      note: "About $0.70 per DBU on AWS Premium (secondary; the vendor page hides its numbers). A 2X-Small serverless warehouse uses about 4 DBU an hour, so $2.80 an hour, and a Small about 12. Estimates run 15 to 40 hours a month for small, up to 120 for medium, a Small warehouse 120 to 300 hours for large, and always on for very large."
+    },
+    source: "https://www.databricks.com/product/pricing/databricks-sql",
+    checked: "2026-09-15",
+    secondary: true,
+    why: "The warehouse and the machine learning platform in one place, for a business that expects data science later.",
+    tradeoff: "The most expensive per hour in this list, it needs an engineer, and the pricing page will not show a number without its calculator.",
+    traits: { mcp: true, rowSecurity: true, codeFirst: true },
+    fit: { ecosystem: ["neither"], volume: [2, 3], runner: ["engineer", "ai"], freshness: ["daily", "hourly", "realtime"] }
+  },
+  {
+    id: "neon",
+    layer: "warehouse",
+    name: "Neon Postgres",
+    tier: "Launch",
+    price: {
+      kind: "volume",
+      monthly: [[5, 15], [15, 40], [40, 120], [120, 300]],
+      note: "$0.106 per compute unit hour and $0.35 per GB of storage with no monthly minimum. Estimates run a quarter to one compute unit for 100 to 300 hours a month for small and up to two units always on for very large."
+    },
+    source: "https://neon.com/pricing",
+    checked: "2026-09-15",
+    why: "Plain Postgres that scales to zero, so a small business pays cents until it grows.",
+    tradeoff: "A transactional database, not an analytics warehouse, so wide scans over big tables get slow and pricey.",
+    traits: { openSource: true, mcp: true, browserEdit: true, rowSecurity: true },
+    fit: { ecosystem: ["neither"], volume: [0, 1], runner: ["analyst", "engineer", "ai"], freshness: ["daily", "hourly", "realtime"] }
+  },
+  {
+    id: "clickhouse",
+    layer: "warehouse",
+    name: "ClickHouse Cloud",
+    tier: "Basic then Scale",
+    price: {
+      kind: "volume",
+      monthly: [[22, 65], [65, 160], [318, 500], [500, 900]],
+      note: "About $0.22 per compute unit hour on Basic and $0.30 on Scale (secondary; the rates sit inside the vendor calculator) plus $25.30 per TB of storage, no monthly minimum. Estimates run one unit 100 to 300 hours a month for small, always on for medium, two units always on for large, and Scale for very large."
+    },
+    source: "https://clickhouse.com/pricing",
+    checked: "2026-09-15",
+    secondary: true,
+    why: "The fastest and cheapest per query for dashboards over event or log data.",
+    tradeoff: "Not Postgres and not a spreadsheet, so joins and updates take engineering habits, and there is no permanent free tier.",
+    traits: { openSource: true, mcp: true, rowSecurity: true },
+    fit: { ecosystem: ["neither"], volume: [2, 3], runner: ["engineer"], freshness: ["hourly", "realtime"] }
   },
 
   // ---------------- ingestion ----------------
@@ -228,6 +297,53 @@ export const catalog: Tool[] = [
     traits: {},
     fit: { volume: [1, 2, 3], runner: ["none"], freshness: ["daily"] }
   },
+  {
+    id: "stitch",
+    layer: "ingestion",
+    name: "Stitch",
+    tier: "Standard then Advanced",
+    price: { kind: "sources", tiers: [{ maxSources: 10, monthly: 100 }, { maxSources: 99, monthly: 1500 }] },
+    source: "https://www.stitchdata.com/pricing/",
+    checked: "2026-09-15",
+    why: "The cheapest published entry price for a managed pipeline, with a known monthly bill.",
+    tradeoff: "$100 covers 5 million rows and 10 sources; higher row stops sit behind a slider and more sources mean the $1,500 Advanced plan.",
+    traits: {  },
+    fit: { volume: [0, 1], runner: ["none", "analyst"], freshness: ["daily"] }
+  },
+  {
+    id: "hevo",
+    layer: "ingestion",
+    name: "Hevo Data",
+    tier: "Free then Starter",
+    price: {
+      kind: "volume",
+      monthly: [[0, 299], [299, 299], [299, 849], [849, 849]],
+      note: "Free up to 1 million events a month, then Starter $299 a month at 5 million events ($265 billed annually) and Professional $849 at 20 million. Higher slider stops are not in the page."
+    },
+    source: "https://hevodata.com/pricing/",
+    checked: "2026-09-15",
+    why: "A no code pipeline tool with a real free tier and more than 150 connectors that an ops person can run.",
+    tradeoff: "Events based billing means a busy CRM can blow through a tier fast.",
+    traits: {  },
+    fit: { volume: [0, 1, 2], runner: ["none"], freshness: ["daily", "hourly"] }
+  },
+  {
+    id: "estuary",
+    layer: "ingestion",
+    name: "Estuary Flow",
+    tier: "Cloud",
+    price: {
+      kind: "volume",
+      monthly: [[0, 300], [300, 550], [550, 900], [900, 1500]],
+      note: "$0.50 per GB moved plus $100 per connector a month, with 10 GB and two connectors free. Estimates run two to three connectors for small and up to twelve connectors and a terabyte for very large."
+    },
+    source: "https://estuary.dev/pricing/",
+    checked: "2026-09-15",
+    why: "Real time change data capture priced by data moved, the one loader here that answers the real time question.",
+    tradeoff: "Connector fees add up fast at $100 each, and the product is younger than Fivetran or Stitch.",
+    traits: { openSource: true, codeFirst: true },
+    fit: { volume: [1, 2, 3], runner: ["analyst", "engineer", "ai"], freshness: ["realtime", "hourly"] }
+  },
 
   // ---------------- modeling ----------------
   {
@@ -295,6 +411,32 @@ export const catalog: Tool[] = [
     tradeoff: "A second modeling language next to your SQL.",
     traits: { openSource: true, rowSecurity: true, codeFirst: true },
     fit: { volume: [2, 3], runner: ["engineer"] }
+  },
+  {
+    id: "coalesce",
+    layer: "modeling",
+    name: "Coalesce",
+    tier: "Starter",
+    price: { kind: "seatTiers", basis: "builders", tiers: [{ maxSeats: 4, perSeat: 150 }] },
+    source: "https://coalesce.io/pricing/",
+    checked: "2026-09-15",
+    why: "Modeled pipelines from a column aware visual builder that still writes real SQL into git.",
+    tradeoff: "Snowflake first, $150 a seat, and the Starter tier stops at four users, so growth means a sales call.",
+    traits: { mcp: true, browserEdit: true, codeFirst: true },
+    fit: { volume: [2, 3], runner: ["analyst", "engineer"] }
+  },
+  {
+    id: "matillion",
+    layer: "modeling",
+    name: "Matillion",
+    tier: "Data Productivity Cloud",
+    price: { kind: "notPublished" },
+    source: "https://www.matillion.com/pricing",
+    checked: "2026-09-15",
+    why: "A drag and drop canvas for loading and transforming data that a team without engineers can run.",
+    tradeoff: "Credits are hard to forecast and the vendor publishes no dollar figure for its current tiers.",
+    traits: { browserEdit: true },
+    fit: { volume: [1, 2, 3], runner: ["none", "analyst"] }
   },
 
   // ---------------- bi ----------------
@@ -396,6 +538,84 @@ export const catalog: Tool[] = [
     traits: { openSource: true, mcp: true, rowSecurity: true },
     fit: { volume: [0, 1], runner: ["analyst", "ai"] }
   },
+  {
+    id: "sigma",
+    layer: "bi",
+    name: "Sigma",
+    tier: "Essential",
+    price: { kind: "notPublished" },
+    source: "https://www.sigmacomputing.com/pricing",
+    checked: "2026-09-15",
+    why: "A spreadsheet interface on the warehouse, so finance and ops people build live reports without learning a BI tool.",
+    tradeoff: "No published price, and contract data puts the median deal well above a starter budget.",
+    traits: { mcp: true, browserEdit: true, rowSecurity: true },
+    fit: { volume: [2, 3], runner: ["none", "analyst"] }
+  },
+  {
+    id: "hex",
+    layer: "bi",
+    name: "Hex",
+    tier: "Professional",
+    price: { kind: "seatTiers", basis: "builders", tiers: [{ perSeat: 36 }] },
+    source: "https://hex.tech/pricing/",
+    checked: "2026-09-15",
+    why: "One editor seat publishes data apps to unlimited free viewers, the cheapest published seat model in this list.",
+    tradeoff: "A notebook at heart, so someone needs SQL or Python to build the real work.",
+    traits: { mcp: true, browserEdit: true, codeFirst: true },
+    fit: { volume: ALL_VOLUMES, runner: ["analyst", "engineer", "ai"] }
+  },
+  {
+    id: "omni",
+    layer: "bi",
+    name: "Omni",
+    tier: "all plans",
+    price: { kind: "notPublished" },
+    source: "https://omni.co/",
+    checked: "2026-09-15",
+    why: "Governed metrics like Looker with a spreadsheet friendly front end, in one product.",
+    tradeoff: "Nothing is published on price and every plan starts with a sales demo.",
+    traits: { mcp: true, browserEdit: true, rowSecurity: true, codeFirst: true },
+    fit: { volume: [2, 3], runner: ["analyst", "engineer"] }
+  },
+  {
+    id: "thoughtspot",
+    layer: "bi",
+    name: "ThoughtSpot",
+    tier: "Essentials then Pro",
+    price: { kind: "seatTiers", basis: "readers", tiers: [{ maxSeats: 50, perSeat: 25, minSeats: 5 }, { maxSeats: 1000, perSeat: 50 }] },
+    source: "https://www.thoughtspot.com/pricing",
+    checked: "2026-09-15",
+    why: "Search and plain English questions over your data, with Spotter, its AI analyst, in the seat.",
+    tradeoff: "Prices read starting as low as, Essentials has a five user minimum and stops at 50 users, and Spotter is capped at 25 questions a person a month.",
+    traits: { mcp: true, browserEdit: true, rowSecurity: true },
+    fit: { volume: [1, 2, 3], runner: ["none", "analyst"] }
+  },
+  {
+    id: "looker",
+    layer: "bi",
+    name: "Looker",
+    tier: "Standard",
+    price: { kind: "notPublished" },
+    source: "https://cloud.google.com/looker/pricing",
+    checked: "2026-09-15",
+    why: "A governed semantic layer on BigQuery with strong embedding, for a business already on Google Cloud.",
+    tradeoff: "Every edition is call sales on an annual commitment, and it needs a LookML developer.",
+    traits: { mcp: true, rowSecurity: true, codeFirst: true },
+    fit: { ecosystem: ["google"], volume: [2, 3], runner: ["engineer"] }
+  },
+  {
+    id: "qlik",
+    layer: "bi",
+    name: "Qlik Cloud Analytics",
+    tier: "Standard",
+    price: { kind: "flat", monthly: 825 },
+    source: "https://www.qlik.com/us/pricing",
+    checked: "2026-09-15",
+    why: "One flat bill covers unlimited users on 25 GB, the simplest published price for a company with many readers.",
+    tradeoff: "Pricing scales on data volume, and the load script takes real learning before a non engineer is productive.",
+    traits: { mcp: true, browserEdit: true, rowSecurity: true },
+    fit: { volume: [1, 2, 3], runner: ["none", "analyst"] }
+  },
 
   // ---------------- observability ----------------
   {
@@ -462,6 +682,58 @@ export const catalog: Tool[] = [
     tradeoff: "Credit based pricing on request, sized for large data teams.",
     traits: {},
     fit: { volume: [3], runner: ["none"] }
+  },
+  {
+    id: "gxcloud",
+    layer: "observability",
+    name: "Great Expectations",
+    tier: "GX Cloud Developer",
+    price: { kind: "free" },
+    source: "https://greatexpectations.io/pricing",
+    checked: "2026-09-15",
+    why: "The most widely used open test framework, so tests written today survive a tool change.",
+    tradeoff: "The free plan covers five data assets and three users; paid tiers are priced per asset with no public number.",
+    traits: { openSource: true, codeFirst: true },
+    fit: { volume: [0, 1], runner: ["analyst", "engineer", "ai"] }
+  },
+  {
+    id: "bigeye",
+    layer: "observability",
+    name: "Bigeye",
+    tier: "Enterprise",
+    price: { kind: "notPublished" },
+    source: "https://www.bigeye.com/",
+    checked: "2026-09-15",
+    why: "Automated anomaly detection and lineage across a large warehouse, with an enterprise support model.",
+    tradeoff: "Sales led with no published price and no free tier, out of reach for a small team.",
+    traits: { mcp: true },
+    fit: { volume: [3], runner: ["engineer"] }
+  },
+  {
+    id: "datafold",
+    layer: "observability",
+    name: "Datafold",
+    tier: "Cloud",
+    price: { kind: "notPublished" },
+    source: "https://www.datafold.com/",
+    checked: "2026-09-15",
+    why: "Diffs the data in every pull request, the cheapest place to catch a breaking change.",
+    tradeoff: "Pays off only for a team already working in git with dbt, and the price is a sales conversation.",
+    traits: { codeFirst: true },
+    fit: { volume: [2, 3], runner: ["engineer", "ai"] }
+  },
+  {
+    id: "anomalo",
+    layer: "observability",
+    name: "Anomalo",
+    tier: "Platform",
+    price: { kind: "notPublished" },
+    source: "https://www.anomalo.com/",
+    checked: "2026-09-15",
+    why: "Unsupervised monitoring finds problems nobody wrote a rule for, with little setup per table.",
+    tradeoff: "Custom enterprise contracts with no public rate and no general free plan.",
+    traits: { mcp: true },
+    fit: { volume: [3], runner: ["none", "analyst"] }
   },
 
   // ---------------- orchestration ----------------
@@ -541,6 +813,53 @@ export const catalog: Tool[] = [
     traits: { openSource: true, mcp: true, codeFirst: true },
     fit: { volume: [3], runner: ["engineer"], freshness: ["hourly", "realtime"] }
   },
+  {
+    id: "kestra",
+    layer: "orchestration",
+    name: "Kestra",
+    tier: "Open source",
+    price: { kind: "free" },
+    source: "https://kestra.io/pricing",
+    checked: "2026-09-15",
+    why: "Free self hosted orchestration with a real UI, unlimited runs, and hundreds of plugins.",
+    tradeoff: "Someone still has to host and patch it, and the cloud and enterprise prices are quote only.",
+    traits: { openSource: true, mcp: true, browserEdit: true, codeFirst: true },
+    fit: { volume: [1, 2, 3], runner: ["engineer", "ai"] }
+  },
+  {
+    id: "windmill",
+    layer: "orchestration",
+    name: "Windmill",
+    tier: "Cloud",
+    price: {
+      kind: "volume",
+      monthly: [[0, 120], [120, 170], [170, 270], [270, 470]],
+      note: "Free self hosted. The cloud plan starts at $120 a month with $20 per developer, $10 per operator, and $50 per worker; the vendor's example setup is $170. Estimates add developers and workers with size."
+    },
+    source: "https://www.windmill.dev/pricing",
+    checked: "2026-09-15",
+    why: "Scripts, flows, and small internal apps in one tool with a transparent public price.",
+    tradeoff: "A developer tool first; operators can run things but not build them.",
+    traits: { openSource: true, mcp: true, browserEdit: true, codeFirst: true },
+    fit: { volume: [1, 2, 3], runner: ["engineer", "ai"] }
+  },
+  {
+    id: "mwaa",
+    layer: "orchestration",
+    name: "Amazon MWAA",
+    tier: "Managed Airflow small",
+    price: {
+      kind: "volume",
+      monthly: [[358, 358], [358, 358], [358, 540], [723, 1445]],
+      note: "$0.49 an hour for a small environment in US East (AWS price list), about $358 a month always on; medium is $0.74 and large $0.99 an hour. Extra workers are $0.055 an hour."
+    },
+    source: "https://aws.amazon.com/managed-workflows-for-apache-airflow/pricing/",
+    checked: "2026-09-15",
+    why: "Standard Airflow with AWS running the servers and patches, for a team already on AWS.",
+    tradeoff: "It bills every hour whether or not anything runs, and every workflow needs a Python engineer.",
+    traits: { openSource: true, codeFirst: true },
+    fit: { ecosystem: ["neither"], volume: [2, 3], runner: ["engineer"] }
+  },
 
   // ---------------- ai ----------------
   {
@@ -615,6 +934,52 @@ export const catalog: Tool[] = [
     fit: { ecosystem: ["microsoft"], volume: ALL_VOLUMES, runner: ["none", "analyst"] },
     requires: { layer: "warehouse", ids: ["fabric"] }
   },
+  {
+    id: "cortexanalyst",
+    layer: "ai",
+    name: "Snowflake Cortex Analyst",
+    tier: "API",
+    price: {
+      kind: "volume",
+      monthly: [[27, 134], [67, 268], [134, 402], [268, 670]],
+      note: "67 credits per 1,000 messages on Snowflake's consumption table, about $0.13 a message on Standard before the warehouse time the answers use. Estimates run 200 to 1,000 messages a month for small and up to 5,000 for very large."
+    },
+    source: "https://www.snowflake.com/legal-files/CreditConsumptionTable.pdf",
+    checked: "2026-09-15",
+    why: "Plain English questions answered inside the warehouse you already pay for, priced per message with no seats.",
+    tradeoff: "No business user screen out of the box, so the first month is engineering time on a front end.",
+    traits: { mcp: true, rowSecurity: true, codeFirst: true },
+    fit: { volume: [2, 3], runner: ["engineer", "ai"] },
+    requires: { layer: "warehouse", ids: ["snowflake"] }
+  },
+  {
+    id: "genie",
+    layer: "ai",
+    name: "Databricks Genie",
+    tier: "AI/BI",
+    price: { kind: "included", with: "Databricks SQL (free through January 31 2027; the SQL it runs bills warehouse time)" },
+    source: "https://www.databricks.com/product/pricing/genie",
+    checked: "2026-09-15",
+    why: "Chat with your governed tables inside Databricks with no license fee.",
+    tradeoff: "Only works on data governed in Unity Catalog, and the free use has an end date.",
+    traits: { mcp: true, browserEdit: true, rowSecurity: true },
+    fit: { volume: [2, 3], runner: ["analyst", "engineer", "ai"] },
+    requires: { layer: "warehouse", ids: ["databricks"] }
+  },
+  {
+    id: "spotter",
+    layer: "ai",
+    name: "ThoughtSpot Spotter",
+    tier: "In the seat",
+    price: { kind: "included", with: "ThoughtSpot (25 questions per person a month)" },
+    source: "https://www.thoughtspot.com/pricing",
+    checked: "2026-09-15",
+    why: "The AI analyst that comes with the ThoughtSpot seat, so anyone can ask in plain English from day one.",
+    tradeoff: "Capped at 25 questions a person a month on Essentials and Pro; more means Enterprise pricing.",
+    traits: { mcp: true, browserEdit: true, rowSecurity: true },
+    fit: { volume: [1, 2, 3], runner: ["none", "analyst"] },
+    requires: { layer: "bi", ids: ["thoughtspot"] }
+  },
 
   // ---------------- build ----------------
   {
@@ -677,6 +1042,46 @@ export const catalog: Tool[] = [
     tradeoff: "From $100 per person a month.",
     traits: {},
     fit: { volume: [2, 3], runner: ["engineer", "ai"] }
+  },
+  {
+    id: "cursor",
+    layer: "build",
+    name: "Cursor",
+    tier: "Pro",
+    price: { kind: "seatTiers", basis: "builders", tiers: [{ perSeat: 20 }] },
+    source: "https://cursor.com/pricing",
+    checked: "2026-09-15",
+    why: "The editor most builders reach for, with an agent that writes and runs the SQL and scripts.",
+    tradeoff: "Usage is capped per seat and heavy agent use spills into usage billing.",
+    traits: { codeFirst: true },
+    fit: { volume: ALL_VOLUMES }
+  },
+  {
+    id: "ghcopilot",
+    layer: "build",
+    name: "GitHub Copilot",
+    tier: "Business",
+    price: { kind: "seatTiers", basis: "builders", tiers: [{ perSeat: 19 }] },
+    source: "https://docs.github.com/en/copilot/get-started/plans",
+    checked: "2026-09-15",
+    why: "Already inside GitHub where the code and pull requests live, with admin controls.",
+    tradeoff: "Every plan is metered in AI credits now, so the seat price understates heavy agent work.",
+    traits: { mcp: true, codeFirst: true },
+    fit: { volume: ALL_VOLUMES }
+  },
+  {
+    id: "geminicode",
+    layer: "build",
+    name: "Gemini Code Assist",
+    tier: "Standard",
+    price: { kind: "seatTiers", basis: "builders", tiers: [{ perSeat: 19 }] },
+    source: "https://cloud.google.com/products/gemini/pricing",
+    checked: "2026-09-15",
+    secondary: true,
+    why: "The natural seat for a shop that already runs on Google Cloud and BigQuery.",
+    tradeoff: "The free individual tier stopped in June 2026 and Google's pricing page hides its numbers, so the seat price is secondary.",
+    traits: { codeFirst: true },
+    fit: { volume: ALL_VOLUMES }
   }
 ];
 
