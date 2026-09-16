@@ -1,9 +1,38 @@
 ---
-import MoreLinks from "./MoreLinks.astro";
+/*
+  S26 (9/15/26), Gabriel's call: the homepage ends on his photo and one small
+  module of links, nothing else. No paragraph, no Now line, no ask block. The
+  section keeps id="contact" (other pages link to /#contact) and the photo
+  keeps id="about". The links are one array: add or drop a row here. The
+  site-wide Footer (copyright + icons) still renders under this.
+*/
+import { orgInfo, socialLinks } from "../config/site";
+
+const mailto = `mailto:${orgInfo.email}?subject=${encodeURIComponent("Working together")}`;
+
+type Row = { label: string; href: string; external?: boolean; primary?: boolean };
+const groups: { label: string; rows: Row[] }[] = [
+  {
+    label: "Reach",
+    rows: [
+      { label: "Email me", href: mailto, primary: true },
+      { label: "LinkedIn", href: socialLinks.linkedin, external: true }
+    ]
+  },
+  {
+    label: "More",
+    rows: [
+      { label: "The long list", href: "/everything" },
+      { label: "The newsletter", href: socialLinks.substack, external: true },
+      { label: "Using data to build with AI", href: "/using-data-to-build-with-ai" },
+      { label: "Recognized by The Starters", href: "https://www.hirethestarters.com/", external: true }
+    ]
+  }
+];
 ---
-<section id="about" class="py-20 md:py-28 px-6 md:px-12 lg:px-16 border-t border-b border-white/[0.06]">
-  <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-10 lg:gap-8 items-start">
-    <div class="lg:col-span-3 flex lg:block items-center gap-5" data-reveal>
+<section id="contact" class="py-16 md:py-20 px-6 md:px-12 lg:px-16 border-t border-b border-white/[0.06]">
+  <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+    <div id="about" class="lg:col-span-3" data-reveal>
       <img
         src="/images/gabriel-freeman.webp"
         alt="Gabriel Freeman"
@@ -11,19 +40,37 @@ import MoreLinks from "./MoreLinks.astro";
         height="427"
         loading="lazy"
         decoding="async"
-        class="w-20 h-20 md:w-28 md:h-28 lg:w-36 lg:h-36 rounded-full border border-white/[0.08] flex-shrink-0"
+        class="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full border border-white/[0.08]"
       />
-      <span class="label block lg:mt-6">About</span>
     </div>
 
-    <div class="lg:col-span-9 max-w-2xl" data-reveal>
-      <p class="text-lg md:text-xl text-white leading-relaxed">
-        I'm Gabriel Freeman. I run GLF Analytics from Los Angeles and work directly with every client. I build the numbers, use them to set the strategy, and the result is growth and less waste. AI works on every project with me, and a person decides what ships.
-      </p>
-      <p class="mt-5 text-surface-400 leading-relaxed">
-        Now: delivery analytics for a 34-market restaurant group and an AI rollout at a construction management firm.
-      </p>
-      <MoreLinks />
+    <div class="lg:col-span-9" data-reveal>
+      <nav aria-label="Contact and more" class="max-w-xl border border-white/[0.08] bg-white/[0.02] p-5 md:p-6 grid grid-cols-2 gap-x-6 gap-y-5">
+        {groups.map((g) => (
+          <div>
+            <span class="label block mb-1">{g.label}</span>
+            <ul>
+              {g.rows.map((r) => (
+                <li>
+                  <a
+                    href={r.href}
+                    target={r.external ? "_blank" : undefined}
+                    rel={r.external ? "noreferrer" : undefined}
+                    class={`group inline-flex items-center gap-2 py-2.5 text-base transition-colors hover:text-gold-500 ${r.primary ? "text-white" : "text-surface-300"}`}
+                  >
+                    <span>{r.label}</span>
+                    {r.primary ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
+                    ) : r.external ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 opacity-60" aria-hidden="true"><path d="M15 3h6v6m-11 5L21 3m-3 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>
+                    ) : null}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
     </div>
   </div>
 </section>
