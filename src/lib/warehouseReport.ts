@@ -10,7 +10,7 @@
   Nothing here names a client, a lead, or a vertical.
 */
 import { LAYERS, type Layer } from "../data/warehouse-catalog";
-import { layerCopy, questions, result } from "../data/warehouse-survey";
+import { layerCopy, questions, report, result } from "../data/warehouse-survey";
 import {
   budgetFit,
   byId,
@@ -95,11 +95,11 @@ export function buildReport(i: ReportInput): Report {
     return inStack ? result.mentioned.swappedOut(m.name, inStack.name) : result.mentioned.missing(m.name);
   });
   const financeLines = [
-    result.finance.seats(moneyRange(fin.seats[0], fin.seats[1])),
-    result.finance.usage(moneyRange(fin.usage[0], fin.usage[1])),
-    result.finance.flat(moneyRange(fin.flat[0], fin.flat[1])),
-    result.finance.openSource(fin.openSource, fin.layers),
-    result.finance.upkeep(fin.upkeep[0], fin.upkeep[1])
+    report.finance.seats(moneyRange(fin.seats[0], fin.seats[1])),
+    report.finance.usage(moneyRange(fin.usage[0], fin.usage[1])),
+    report.finance.flat(moneyRange(fin.flat[0], fin.flat[1])),
+    report.finance.openSource(fin.openSource, fin.layers),
+    report.finance.upkeep(fin.upkeep[0], fin.upkeep[1])
   ];
   const notes = [stack.estimates ? result.estimateNote : "", stack.unpriced.length ? result.unpricedNote(stack.unpriced.join(" and ")) : ""].filter(Boolean);
   const subject = `Your data warehouse stack: ${total} a month`;
@@ -110,7 +110,7 @@ export function buildReport(i: ReportInput): Report {
   // ---- plain text ----
   const text = [
     "Your data warehouse stack",
-    `Sent ${i.sentOn} by GLF Analytics. ${result.totalLabel}: ${total} a month at list price.`,
+    `Sent ${i.sentOn} by GLF Analytics. ${report.totalLabel}: ${total} a month at list price.`,
     fit === "unsure" ? "" : result.budget[fit],
     smallStack(a) ? result.smallStack : "",
     "",
@@ -121,14 +121,14 @@ export function buildReport(i: ReportInput): Report {
     "",
     runsLine(a),
     "",
-    result.financeHeading.toUpperCase(),
+    report.financeHeading.toUpperCase(),
     ...financeLines,
     "",
     "TRADEOFFS",
     ...tradeoffs.map((t) => `${t.layer} (${t.tool}): ${t.text}`),
     "",
-    result.movesHeading.toUpperCase(),
-    ...result.moves,
+    report.movesHeading.toUpperCase(),
+    ...report.moves,
     "",
     "WHAT TO BUILD FIRST",
     ...phases.flatMap((p) => [p.title, ...p.lines.map((l) => `- ${l}`), ""]),
@@ -137,7 +137,7 @@ export function buildReport(i: ReportInput): Report {
     "",
     `Edit the answers or swap a layer: ${i.answersUrl}`,
     "",
-    result.listPriceNote,
+    report.listPriceNote,
     ...stack.lines.filter((l) => l.tool).map((l) => `${l.tool!.name}: ${l.tool!.source} (checked ${l.tool!.checked})`),
     "",
     footerNote,
@@ -182,19 +182,19 @@ ${notes.map((n) => p(n, "font-size:13px;color:#666")).join("")}
 ${summary ? p(summary) : ""}
 ${mentionedLines.map((m) => p(m)).join("")}
 ${p(runsLine(a))}
-${label(result.financeHeading)}
+${label(report.financeHeading)}
 ${list(financeLines)}
 ${label("Tradeoffs")}
 ${list(tradeoffs.map((t) => `${t.layer}, ${t.tool}: ${t.text}`))}
-${label(result.movesHeading)}
-${list(result.moves)}
+${label(report.movesHeading)}
+${list(report.moves)}
 ${label("What to build first")}
 ${phases.map((ph) => `<p style="margin:14px 0 6px;font-size:15px;font-weight:600;color:#111">${h(ph.title)}</p>${list(ph.lines)}`).join("")}
 ${label("How GLF Analytics would build and run it")}
 ${GLF_BLOCK.map((s) => p(s)).join("")}
 <p style="margin:22px 0 0"><a href="${h(i.answersUrl)}" style="display:inline-block;padding:12px 18px;background:#D4A853;color:#050505;font-size:14px;font-weight:600;text-decoration:none">Edit the answers or swap a layer</a></p>
 ${label("Where the prices come from")}
-${p(result.listPriceNote, "font-size:13px;color:#666")}
+${p(report.listPriceNote, "font-size:13px;color:#666")}
 <ul style="margin:0;padding-left:18px">${stack.lines.filter((l) => l.tool).map((l) => `<li style="margin:0 0 6px;font-size:13px;color:#666"><a href="${h(l.tool!.source)}" style="color:#444">${h(l.tool!.name)}</a> checked ${h(l.tool!.checked)}</li>`).join("")}</ul>
 </td></tr></table>
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px"><tr><td style="padding:18px 28px 0">

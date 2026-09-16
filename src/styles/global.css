@@ -1125,7 +1125,7 @@ summary {
 
 .wh-q__title {
   color: var(--color-text-primary);
-  font-size: 1.375rem;
+  font-size: 1.5rem;
   font-weight: 500;
   letter-spacing: -0.01em;
   line-height: 1.3;
@@ -1133,7 +1133,7 @@ summary {
 
 @media (min-width: 768px) {
   .wh-q__title {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
 }
 
@@ -1141,8 +1141,8 @@ summary {
   margin-top: 0.5rem;
   max-width: 36rem;
   color: var(--color-text-primary);
-  opacity: 0.68;
-  font-size: 0.9375rem;
+  opacity: 0.72;
+  font-size: 1rem;
   line-height: 1.55;
 }
 
@@ -1183,7 +1183,7 @@ summary {
   padding: 0.875rem 1rem;
   border: 1px solid var(--color-border);
   color: var(--color-text-primary);
-  font-size: 1rem;
+  font-size: 1.0625rem;
   line-height: 1.35;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -1337,12 +1337,6 @@ summary {
   justify-content: center;
 }
 
-.wh-summary__label {
-  margin-top: 0.75rem;
-  font-size: 0.9375rem;
-  color: var(--color-text-secondary);
-}
-
 .wh-summary__total {
   margin-top: 0.25rem;
 }
@@ -1358,55 +1352,10 @@ summary {
   color: var(--color-gold);
 }
 
-.wh-summary__rows {
-  margin-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.wh-summary__row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.2rem 1rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--color-border);
-  align-items: baseline;
-}
-
-.wh-summary__layer {
-  grid-column: 1 / -1;
-  font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  color: var(--color-text-secondary);
-}
-
-.wh-summary__tool {
-  color: var(--color-text-primary);
-  font-size: 0.9375rem;
-}
-
-.wh-summary__cost {
-  color: var(--color-text-primary);
-  font-size: 0.9375rem;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  white-space: nowrap;
-}
-
-@media (min-width: 640px) {
-  .wh-summary__row {
-    grid-template-columns: 12rem minmax(0, 1fr) auto;
-  }
-
-  .wh-summary__layer {
-    grid-column: auto;
-  }
-}
-
 .wh-summary__meta {
   margin-top: 1rem;
   color: var(--color-text-secondary);
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   line-height: 1.55;
 }
 
@@ -1424,12 +1373,8 @@ summary {
 .wh-summary__mentioned li {
   margin-top: 0.4rem;
   color: var(--color-text-primary);
-  font-size: 0.9375rem;
+  font-size: 1rem;
   line-height: 1.5;
-}
-
-.wh-sub--details {
-  margin-top: 3rem;
 }
 
 .wh-loading__phrase {
@@ -1459,113 +1404,6 @@ summary {
   font-size: 0.875rem;
 }
 
-.wh-total {
-  margin-top: 2rem;
-  padding: 1.5rem 0;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.wh-lines {
-  margin-top: 0.5rem;
-}
-
-.wh-line {
-  padding: 1.25rem 0;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.wh-line__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.wh-line__layer {
-  font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.15em;
-  color: var(--color-gold);
-}
-
-.wh-line__cost {
-  color: var(--color-text-primary);
-  font-size: 0.9375rem;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-.wh-line__tool {
-  margin-top: 0.4rem;
-  color: var(--color-text-primary);
-  font-weight: 500;
-}
-
-.wh-line__basis,
-.wh-line__reason {
-  margin-top: 0.3rem;
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-  line-height: 1.55;
-}
-
-.wh-line__reason {
-  color: var(--color-text-primary);
-  opacity: 0.85;
-}
-
-.wh-line__traits {
-  margin-top: 0.6rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-}
-
-.wh-line__traits li {
-  border: 1px solid var(--color-border);
-  padding: 0.15rem 0.5rem;
-  font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  color: var(--color-text-secondary);
-}
-
-.wh-line__warn {
-  margin-top: 0.5rem;
-  color: var(--color-gold);
-  font-size: 0.8125rem;
-}
-
-.wh-line__swap {
-  margin-top: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-family: 'Geist Mono', ui-monospace, monospace;
-  font-size: 11px;
-  letter-spacing: 0.15em;
-  color: var(--color-text-secondary);
-}
-
-.wh-line__swap select {
-  flex: 1;
-  min-width: 0;
-  max-width: 100%;
-  min-height: 2.75rem;
-  padding: 0.5rem 0.75rem;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-primary);
-  font-family: 'Geist', sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0;
-}
-
-.wh-line__swap select:focus {
-  border-color: var(--color-gold);
-}
-
 .wh-sub {
   margin-top: 2.5rem;
   font-family: 'Geist Mono', ui-monospace, monospace;
@@ -1574,15 +1412,10 @@ summary {
   color: var(--color-gold);
 }
 
-.wh-list {
-  margin-top: 0.75rem;
-}
-
-.wh-list li,
 .wh-sources li {
-  margin-top: 0.4rem;
+  margin-top: 0.5rem;
   color: var(--color-text-secondary);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   line-height: 1.55;
 }
 
@@ -1613,44 +1446,17 @@ summary {
 }
 
 /* ============================================
-   WAREHOUSE PLANNER, S23 (9/15/26): the example card, the reveal, the stack
-   card, the finance read, the tradeoff line, the utilities, the offer, the
-   sections under the tool. Flat, hairlines, gold as the accent only.
+   WAREHOUSE PLANNER, S23 (9/15/26), simplified S25 (9/15/26): the wait, the
+   offer, the sections under the tool. The dashboard tiles are the S25 block
+   at the end of this file. Flat, hairlines, gold as the accent only.
    ============================================ */
 
-/* The example card beside the lede: the promise made visible. */
-.wh-example {
-  border: 1px solid var(--color-border);
-  padding: 1rem;
-}
-
-.wh-example__label,
 .wh-loading__label,
-.wh-line__tradeoff > span:first-child,
 .wh-offer__label {
   font-family: 'Geist Mono', ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 0.15em;
   color: var(--color-gold);
-}
-
-.wh-example__card {
-  margin-top: 0.75rem;
-  border: 1px solid var(--color-border);
-}
-
-.wh-example__card svg,
-.wh-card-svg svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.wh-example__note {
-  margin-top: 0.75rem;
-  color: var(--color-text-secondary);
-  font-size: 0.8125rem;
-  line-height: 1.5;
 }
 
 /* The reveal */
@@ -1715,46 +1521,17 @@ summary {
   color: var(--color-gold);
 }
 
-/* The summary additions */
+/* The one paragraph under the total: the AI summary, or the who-runs-it line. */
 .wh-summary__small,
-.wh-summary__runs {
-  margin-top: 0.75rem;
+.wh-summary__read {
+  margin-top: 1rem;
+  max-width: 40rem;
   color: var(--color-text-primary);
   opacity: 0.85;
-  font-size: 0.9375rem;
-  line-height: 1.5;
-}
-
-.wh-summary__runs {
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--color-border);
-}
-
-/* The stack card on the results page */
-.wh-card-svg {
-  margin-top: 1rem;
-  border: 1px solid var(--color-border);
-}
-
-/* The tradeoff line on every layer */
-.wh-line__tradeoff {
-  margin-top: 0.4rem;
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
+  font-size: 1rem;
   line-height: 1.55;
 }
 
-.wh-line__tradeoff > span:first-child {
-  margin-right: 0.35rem;
-}
-
-/* The utilities row: no call to action, six small tools. */
-.wh-utilities .btn-secondary {
-  padding: 0.6rem 0.95rem;
-  min-height: 2.75rem;
-  font-size: 0.8125rem;
-}
 
 .wh-report-link {
   color: var(--color-text-secondary);
@@ -2008,4 +1785,221 @@ summary {
     transition: none;
     animation: none;
   }
+}
+
+/* ============================================
+   WAREHOUSE PLANNER, S25 (9/15/26): the result as one dashboard. The total,
+   one paragraph, eight tiles (the tool name is the swap: a transparent
+   select sits over the tile), one note line, the actions, the text links,
+   the sources in a closed disclosure. Flat, hairlines, gold as the accent.
+   ============================================ */
+
+.wh-summary__total {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+}
+
+.wh-summary__per {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+}
+
+.wh-summary__budget {
+  font-size: 1rem;
+}
+
+.wh-tiles {
+  margin-top: 1.75rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+
+@media (min-width: 768px) {
+  .wh-tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+.wh-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 8.5rem;
+  padding: 0.875rem 0.875rem 0.75rem;
+  border: 1px solid var(--color-gold);
+  background: rgba(255, 255, 255, 0.02);
+  transition: background-color var(--transition-base);
+}
+
+.wh-tile--off {
+  border-color: var(--color-border);
+}
+
+.wh-tile__layer {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.wh-tile--off .wh-tile__layer {
+  color: var(--color-text-secondary);
+}
+
+.wh-tile__tool {
+  margin-top: 0.5rem;
+  color: var(--color-text-primary);
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .wh-tile__tool {
+    font-size: 1.25rem;
+  }
+}
+
+.wh-tile--off .wh-tile__tool {
+  color: var(--color-text-secondary);
+}
+
+.wh-tile__cost {
+  margin-top: auto;
+  padding: 0.75rem 1.5rem 0 0;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.wh-tile__warn {
+  margin-top: 0.35rem;
+  color: var(--color-gold);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+/* The chevron: the tile says it can change. Drawn in gold, bottom right. */
+.wh-tile:has(.wh-tile__select)::after {
+  content: "";
+  position: absolute;
+  right: 0.875rem;
+  bottom: 1rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 1.5px solid var(--color-gold);
+  border-bottom: 1.5px solid var(--color-gold);
+  transform: rotate(45deg);
+  opacity: 0.8;
+}
+
+/* The swap control: the native select, invisible, over the whole tile. */
+.wh-tile__select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.wh-tile:has(.wh-tile__select:hover) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.wh-tile:has(.wh-tile__select:focus-visible) {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.wh-summary__hint {
+  margin-top: 0.875rem;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+}
+
+/* The text links under the action buttons. */
+.wh-links {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+}
+
+.wh-links button,
+.wh-links a {
+  min-height: 2.75rem;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  text-decoration: underline;
+  text-decoration-color: var(--color-border-hover);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.wh-links button:hover,
+.wh-links a:hover {
+  color: var(--color-gold);
+}
+
+/* The sources: one closed line, the list on open. */
+.wh-details {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.wh-details summary {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  list-style: none;
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  cursor: pointer;
+}
+
+.wh-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.wh-details summary::after {
+  content: "";
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.25rem;
+  border-right: 1.5px solid var(--color-gold);
+  border-bottom: 1.5px solid var(--color-gold);
+  transform: rotate(45deg);
+  transition: transform var(--transition-base);
+}
+
+.wh-details[open] summary::after {
+  transform: rotate(225deg);
+}
+
+.wh-details summary:hover {
+  color: var(--color-gold);
+}
+
+.wh-details .wh-sources {
+  margin: 0 0 1rem;
 }

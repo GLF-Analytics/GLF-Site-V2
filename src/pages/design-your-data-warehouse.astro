@@ -4,23 +4,27 @@
   lead generator. Indexable, linked from Gabriel's posts. Voice on this page =
   GLF Analytics "we" (his call 9/15; POSITIONING records the exception).
 
-  The visitor's path:
-  1. The questions first (ten screens of one question in a bordered card that
-     holds one measured height, S17). No sign-up, no ad above them; an example
-     stack card sits beside the lede so the promise is visible.
-  2. The reveal (S23): while the AI reads, one slide every five seconds says
-     what is being assembled; when the picks land, the same block shows each
-     layer in turn with its tool and reason (a skip button on screen the whole
-     time), then the summary. The rules path (AI off) is instant, as before.
-  3. The result: the summary card, the stack card (an SVG a person can download
-     as a PNG), the finance read (what grows with people, with data, what stays
-     yours, upkeep), the details with a tradeoff on every layer and swaps that
-     say the change in words, the sources, and a utilities row (copy link,
-     Markdown, a CLAUDE.md, open in Claude). No call to action here.
+  The visitor's path (S25, 9/15/26, Gabriel's read: quick, easy, simpler):
+  1. The first question is in the hero, beside the title (no example card, no
+     independence paragraph). Ten screens of one question in a bordered card
+     that holds one measured height (S17). No sign-up.
+  2. The wait: while the AI reads, one slide every six seconds (four slides)
+     says what is being assembled; when the picks land, one sentence about GLF
+     Analytics for 2.5 s, then the result. The layer-by-layer preview of S23 is
+     gone: the result is the reveal. Skip is on screen once the picks are in
+     hand. The rules path (AI off) is instant, as before.
+  3. The result: one dashboard. The total, one paragraph (the AI summary or
+     the who-runs-it line), eight tiles where the tool name is the swap (a
+     transparent select over the tile), one note line, three actions (download
+     the card, copy link, edit answers), the text links (Markdown, CLAUDE.md,
+     open in Claude, start over), the sources in a closed disclosure. The card
+     is download only (src/lib/warehouseCard.ts, simplified). The finance read,
+     tradeoffs and reasons still travel in the Markdown, the CLAUDE.md and the
+     report email; they are off the page.
   4. Ten seconds after the result, once a session: the offer, a small fixed
      card asking for an email in exchange for the report. It posts to
      /api/warehouse-report and falls back to a mailto when that route is off.
-  5. Under the tool: how a stack like this runs, who we are, the FAQ.
+  5. Under the tool: how a stack like this runs (three lines), who we are, three FAQ.
 
   Copy: src/data/warehouse-survey.ts. Prices: src/data/warehouse-catalog.ts.
   Engine: src/lib/warehouseCalc.ts (isomorphic). Card: src/lib/warehouseCard.ts.
@@ -28,14 +32,13 @@
   Build guards below: sources and dates on every price, three or more tools per
   layer, no comma in a heading, no dash or exclamation point in the copy, the
   three reference scenarios priced by the engine must equal the hand totals,
-  and the report email for those scenarios carries no dash and no dollar
-  figure inside the GLF block.
+  the report email for those scenarios carries no dash and no dollar figure
+  inside the GLF block, and the page copy stays under the word cap (S25).
 */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { catalog, LAYERS, scenarios, type Layer } from "../data/warehouse-catalog";
 import { meta, questions, ui, result, layerCopy, sequence, offer, learn, who, faq } from "../data/warehouse-survey";
 import { NOTES_MAX, priceStack, recommendByRules } from "../lib/warehouseCalc";
-import { stackCardSvg } from "../lib/warehouseCard";
 import { buildReport } from "../lib/warehouseReport";
 import { orgInfo, siteUrl } from "../config/site";
 
@@ -51,12 +54,10 @@ for (const layer of LAYERS) {
 }
 const titles = [
   meta.title,
-  result.summaryHeading,
-  result.detailsHeading,
-  result.movesHeading,
+  result.heading,
   result.sourcesHeading,
-  result.cardHeading,
-  result.financeHeading,
+  ...sequence.slides.map((sl) => sl.title),
+  sequence.closing.title,
   offer.label,
   learn.heading,
   who.heading,
@@ -68,6 +69,12 @@ for (const t of titles) if (t.includes(",")) throw new Error(`[warehouse] comma 
 const copyText = JSON.stringify({ meta, questions, ui, result, layerCopy, sequence, offer, learn, who, faq, catalog: catalog.map((t) => [t.why, t.tradeoff, t.name, t.tier]) });
 if (/[–—]/.test(copyText)) throw new Error("[warehouse] em or en dash in the copy or catalog");
 if (/!/.test(JSON.stringify({ meta, ui, result, sequence, offer, learn, who, faq }))) throw new Error("[warehouse] exclamation point in the page copy");
+// S25: the page copy word count (every string in the objects the page renders; functions are not counted). The cap keeps the cut.
+const words = (v: unknown): number =>
+  typeof v === "string" ? v.trim().split(/\s+/).filter(Boolean).length : Array.isArray(v) ? v.reduce((n: number, x) => n + words(x), 0) : v && typeof v === "object" ? Object.values(v).reduce((n: number, x) => n + words(x), 0) : 0;
+const pageWords = words({ meta: [meta.eyebrow, meta.title, meta.lede, meta.promise], questions, ui, sequence, result, offer, learn, who, faq });
+const WORD_CAP = 1100;
+if (pageWords > WORD_CAP) throw new Error(`[warehouse] ${pageWords} words of page copy, cap ${WORD_CAP}`);
 
 const names = Object.fromEntries(LAYERS.map((l) => [l, layerCopy[l].name])) as Record<Layer, string>;
 const pageUrl = `${siteUrl}/${meta.slug}`;
@@ -88,12 +95,10 @@ const scenarioTotals = scenarios.map((s) => {
 const priced = catalog.filter((t) => t.price.kind !== "notPublished").length;
 const oldest = catalog.map((t) => t.checked).sort()[0];
 console.log(
-  `[warehouse] ${catalog.length} tools, ${priced} priced, ${catalog.length - priced} not published, oldest check ${oldest}, scenarios ${scenarioTotals.join(" / ")}, ${questions.length} questions, ${sequence.slides.length} slides, ${faq.length} faq`
+  `[warehouse] ${catalog.length} tools, ${priced} priced, ${catalog.length - priced} not published, oldest check ${oldest}, scenarios ${scenarioTotals.join(" / ")}, ${questions.length} questions, ${sequence.slides.length} slides, ${faq.length} faq, ${pageWords} words of page copy (cap ${WORD_CAP})`
 );
 
 const total = questions.length;
-const example = scenarios[1];
-const exampleSvg = stackCardSvg(priceStack(recommendByRules(example.answers), example.answers), { names, url: pageUrl, answers: example.answers, example: true });
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -121,158 +126,129 @@ const jsonLd = {
 <BaseLayout title={meta.title} description={meta.description} ogImage={`${siteUrl}/images/og-warehouse.png`}>
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
-  <section class="pt-24 pb-10 md:pt-40 md:pb-12 px-6 md:px-12 lg:px-16">
-    <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-      <div class="lg:col-span-7">
-        <span class="label block mb-4">{meta.eyebrow}</span>
-        <h1 class="heading-display text-4xl md:text-5xl text-white">{meta.title}</h1>
-        <p class="mt-6 text-surface-400 text-base md:text-lg leading-relaxed max-w-xl">{meta.lede}</p>
-        <p class="mt-4 text-white text-sm md:text-base">{meta.promise}</p>
-        <p class="mt-3 text-surface-500 text-sm leading-relaxed max-w-xl">{meta.independence}</p>
-      </div>
-      <div class="lg:col-span-5 wh-example" aria-labelledby="wh-example-label">
-        <p id="wh-example-label" class="wh-example__label">{meta.exampleLabel}</p>
-        <div class="wh-example__card" set:html={exampleSvg} />
-        <p class="wh-example__note">{meta.exampleNote}</p>
-      </div>
-    </div>
-  </section>
+  <div class="wh" data-email={orgInfo.email} data-url={pageUrl}>
+    <section class="pt-24 pb-12 md:pt-28 md:pb-16 px-6 md:px-12 lg:px-16">
+      <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+        <div class="lg:col-span-5 lg:pt-4">
+          <span class="label block mb-4">{meta.eyebrow}</span>
+          <h1 class="heading-display text-4xl md:text-5xl text-white">{meta.title}</h1>
+          <p class="mt-6 text-surface-300 text-lg leading-relaxed max-w-xl">{meta.lede}</p>
+          <p class="mt-4 text-white text-base">{meta.promise}</p>
+        </div>
 
-  <section class="px-6 md:px-12 lg:px-16 pb-16 md:pb-24 border-b border-white/[0.06]">
-    <div class="max-w-7xl mx-auto">
-      <div class="wh max-w-3xl" data-email={orgInfo.email} data-url={pageUrl}>
-        <noscript><p class="mb-8 text-sm text-surface-400">{ui.noScript}</p></noscript>
+        <div class="lg:col-span-7">
+          <noscript><p class="mb-6 text-sm text-surface-400">{ui.noScript}</p></noscript>
+          <div class="wh-card" data-card>
+            <form class="wh-form" novalidate>
+              <div class="wh-progress">
+                <p class="wh-progress__label" data-progress aria-live="polite">{ui.questionOf(1, total)}</p>
+                <div class="wh-progress__track" aria-hidden="true"><div class="wh-progress__fill" data-fill></div></div>
+              </div>
 
-        <div class="wh-card" data-card>
-          <form class="wh-form" novalidate>
-            <div class="wh-progress">
-              <p class="wh-progress__label" data-progress aria-live="polite">{ui.questionOf(1, total)}</p>
-              <div class="wh-progress__track" aria-hidden="true"><div class="wh-progress__fill" data-fill></div></div>
-            </div>
-
-            <div class="wh-stage" data-stage>
-              {questions.map((q, i) => (
-                <fieldset class="wh-step" data-step={i} data-type={q.type} hidden={i !== 0}>
-                  <legend class="sr-only">{ui.questionOf(i + 1, total)}</legend>
-                  <div class="wh-step__inner">
-                    {q.type === "notes" ? (
-                      <div class="wh-q">
-                        <h2 class="wh-q__title" tabindex="-1"><label for="wh-notes">{q.title}</label></h2>
-                        <p class="wh-q__hint" id="wh-notes-hint">{q.hint}</p>
-                        <textarea id="wh-notes" name="notes" rows="5" maxlength={NOTES_MAX} class="wh-notes" placeholder={q.placeholder} aria-describedby="wh-notes-hint wh-notes-count"></textarea>
-                        <p class="wh-q__count" id="wh-notes-count" data-count>0 / {NOTES_MAX}</p>
-                      </div>
-                    ) : (
-                      <div class="wh-q" role={q.type === "single" ? "radiogroup" : "group"} aria-labelledby={`q-${q.key}`}>
-                        <h2 id={`q-${q.key}`} class="wh-q__title" tabindex="-1">{q.title}</h2>
-                        {q.hint && <p class="wh-q__hint">{q.hint}</p>}
-                        <div class={q.type === "single" ? "wh-choices" : "wh-chips"}>
-                          {q.choices.map((c) => (
-                            <label class={q.type === "single" ? "wh-choice" : "wh-choice wh-choice--chip"}>
-                              <input type={q.type === "single" ? "radio" : "checkbox"} name={q.key} value={c.value} />
-                              <span>{c.label}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    <div class="wh-nav">
-                      <p class="wh-nav__hint" id={`wh-hint-${i}`} data-next-hint data-off={q.type !== "single" ? "" : undefined}>{ui.pickToContinue}</p>
-                      {i > 0 && <button type="button" class="btn-secondary" data-back>{ui.back}</button>}
+              <div class="wh-stage" data-stage>
+                {questions.map((q, i) => (
+                  <fieldset class="wh-step" data-step={i} data-type={q.type} hidden={i !== 0}>
+                    <legend class="sr-only">{ui.questionOf(i + 1, total)}</legend>
+                    <div class="wh-step__inner">
                       {q.type === "notes" ? (
-                        <button type="submit" class="btn-primary"><span>{ui.submit}</span></button>
+                        <div class="wh-q">
+                          <h2 class="wh-q__title" tabindex="-1"><label for="wh-notes">{q.title}</label></h2>
+                          <p class="wh-q__hint" id="wh-notes-hint">{q.hint}</p>
+                          <textarea id="wh-notes" name="notes" rows="5" maxlength={NOTES_MAX} class="wh-notes" placeholder={q.placeholder} aria-describedby="wh-notes-hint wh-notes-count"></textarea>
+                          <p class="wh-q__count" id="wh-notes-count" data-count>0 / {NOTES_MAX}</p>
+                        </div>
                       ) : (
-                        <button type="button" class="btn-primary" data-next disabled={q.type === "single"} aria-describedby={q.type === "single" ? `wh-hint-${i}` : undefined}><span>{ui.next}</span></button>
+                        <div class="wh-q" role={q.type === "single" ? "radiogroup" : "group"} aria-labelledby={`q-${q.key}`}>
+                          <h2 id={`q-${q.key}`} class="wh-q__title" tabindex="-1">{q.title}</h2>
+                          {q.hint && <p class="wh-q__hint">{q.hint}</p>}
+                          <div class={q.type === "single" ? "wh-choices" : "wh-chips"}>
+                            {q.choices.map((c) => (
+                              <label class={q.type === "single" ? "wh-choice" : "wh-choice wh-choice--chip"}>
+                                <input type={q.type === "single" ? "radio" : "checkbox"} name={q.key} value={c.value} />
+                                <span>{c.label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
                       )}
+                      <div class="wh-nav">
+                        <p class="wh-nav__hint" id={`wh-hint-${i}`} data-next-hint data-off={q.type !== "single" ? "" : undefined}>{ui.pickToContinue}</p>
+                        {i > 0 && <button type="button" class="btn-secondary" data-back>{ui.back}</button>}
+                        {q.type === "notes" ? (
+                          <button type="submit" class="btn-primary"><span>{ui.submit}</span></button>
+                        ) : (
+                          <button type="button" class="btn-primary" data-next disabled={q.type === "single"} aria-describedby={q.type === "single" ? `wh-hint-${i}` : undefined}><span>{ui.next}</span></button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </fieldset>
-              ))}
-            </div>
-          </form>
+                  </fieldset>
+                ))}
+              </div>
+            </form>
 
-          <div class="wh-loading" data-loading hidden aria-live="polite">
-            <p class="wh-loading__label" data-seq-label></p>
-            <p class="wh-loading__phrase" data-phrase>{ui.loading[0]}</p>
-            <p class="wh-loading__text" data-seq-text></p>
-            <div class="wh-loading__track" aria-hidden="true"><div class="wh-loading__bar" data-bar></div></div>
-            <p class="wh-loading__note" data-loading-note hidden>{ui.loadingNote}</p>
-            <div class="wh-loading__foot">
-              <p class="wh-loading__credit">{ui.credit}</p>
-              <button type="button" class="wh-loading__skip" data-skip hidden>{ui.skip}</button>
+            <div class="wh-loading" data-loading hidden aria-live="polite">
+              <p class="wh-loading__label" data-seq-label></p>
+              <p class="wh-loading__phrase" data-phrase>{ui.loading}</p>
+              <p class="wh-loading__text" data-seq-text></p>
+              <div class="wh-loading__track" aria-hidden="true"><div class="wh-loading__bar" data-bar></div></div>
+              <p class="wh-loading__note" data-loading-note hidden>{ui.loadingNote}</p>
+              <div class="wh-loading__foot">
+                <p class="wh-loading__credit">{ui.credit}</p>
+                <button type="button" class="wh-loading__skip" data-skip hidden>{ui.skip}</button>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <section class="wh-result" data-result hidden aria-labelledby="wh-summary-heading">
-          <div class="wh-summary">
-            <h2 id="wh-summary-heading" class="wh-eyebrow" tabindex="-1">{result.summaryHeading}</h2>
-            <p class="wh-summary__label">{result.totalLabel}</p>
-            <p class="wh-summary__total" aria-live="polite">
-              <strong class="heading-display text-3xl md:text-4xl text-white" data-total></strong>
-              <span class="ml-2 text-surface-400">{result.perMonth}</span>
-            </p>
-            <p class="wh-summary__budget" data-budget hidden></p>
-            <p class="wh-summary__small" data-small hidden>{result.smallStack}</p>
-            <ol class="wh-summary__rows" data-rows></ol>
-            <p class="wh-summary__meta" data-total-notes></p>
-            <p class="wh-summary__meta" data-source></p>
-            <p class="wh-summary__runs" data-runs></p>
-            <ul class="wh-summary__mentioned" data-mentioned hidden></ul>
-          </div>
-
-          <h3 class="wh-sub wh-sub--details">{result.cardHeading}</h3>
-          <p class="mt-3 text-sm text-surface-400">{result.cardNote}</p>
-          <div class="wh-card-svg" data-card-svg></div>
-          <div class="wh-actions mt-4">
-            <button type="button" class="btn-secondary" data-download-card>{result.downloadCard}</button>
-          </div>
-
-          <h3 class="wh-sub">{result.financeHeading}</h3>
-          <ul class="wh-list" data-finance></ul>
-
-          <h3 class="wh-sub">{result.detailsHeading}</h3>
-          <p class="mt-4 text-surface-200 leading-relaxed" data-summary hidden></p>
-          <ol class="wh-lines" data-lines></ol>
-
-          <h3 class="wh-sub">{result.movesHeading}</h3>
-          <ul class="wh-list">
-            {result.moves.map((m) => <li>{m}</li>)}
-          </ul>
-          <p class="mt-6 text-sm text-surface-400 leading-relaxed">{result.listPriceNote}</p>
-
-          <h3 class="wh-sub">{result.sourcesHeading}</h3>
-          <ul class="wh-sources" data-sources></ul>
-
-          <div class="wh-actions wh-utilities mt-10">
-            <button type="button" class="btn-secondary" data-copy="link">{result.utilities.copyLink}</button>
-            <button type="button" class="btn-secondary" data-copy="md">{result.utilities.copyMd}</button>
-            <button type="button" class="btn-secondary" data-copy="claude">{result.utilities.copyClaude}</button>
-            <a class="btn-secondary" data-open-claude href="https://claude.ai/new" target="_blank" rel="noopener">{result.utilities.openClaude}</a>
-            <button type="button" class="btn-secondary" data-edit>{ui.edit}</button>
-            <button type="button" class="btn-secondary" data-restart>{ui.restart}</button>
-          </div>
-          <p class="mt-6 text-sm"><a href="#" class="wh-report-link" data-offer-open>{result.reportLink}</a></p>
-        </section>
-
-        <template id="wh-line">
-          <li class="wh-line">
-            <div class="wh-line__head">
-              <span class="wh-line__layer" data-layer></span>
-              <span class="wh-line__cost" data-cost></span>
+    <section class="px-6 md:px-12 lg:px-16 pb-16 md:pb-24 border-b border-white/[0.06]">
+      <div class="max-w-7xl mx-auto">
+        <div class="max-w-4xl">
+          <section class="wh-result" data-result hidden aria-labelledby="wh-heading">
+            <div class="wh-summary">
+              <h2 id="wh-heading" class="wh-eyebrow" tabindex="-1">{result.heading}</h2>
+              <p class="wh-summary__total" aria-live="polite">
+                <strong class="heading-display text-4xl md:text-5xl text-white" data-total></strong>
+                <span class="wh-summary__per">{result.perMonth}</span>
+              </p>
+              <p class="wh-summary__budget" data-budget hidden></p>
+              <p class="wh-summary__small" data-small hidden>{result.smallStack}</p>
+              <p class="wh-summary__read" data-read></p>
+              <ul class="wh-summary__mentioned" data-mentioned hidden></ul>
+              <ol class="wh-tiles" data-tiles></ol>
+              <p class="wh-summary__hint">{result.swapHint}</p>
+              <p class="wh-summary__meta" data-note></p>
             </div>
-            <p class="wh-line__tool" data-tool></p>
-            <p class="wh-line__basis" data-basis></p>
-            <p class="wh-line__reason" data-reason></p>
-            <p class="wh-line__tradeoff" data-tradeoff-wrap><span>{result.tradeoffLabel}</span> <span data-tradeoff></span></p>
-            <ul class="wh-line__traits" data-traits></ul>
-            <p class="wh-line__warn" data-warn hidden></p>
-            <label class="wh-line__swap" data-swap-wrap>
-              <span>{result.swapLabel}</span>
-              <select data-swap></select>
-            </label>
-          </li>
-        </template>
+
+            <div class="wh-actions mt-8">
+              <button type="button" class="btn-primary" data-download-card><span>{result.downloadCard}</span></button>
+              <button type="button" class="btn-secondary" data-copy="link">{result.utilities.copyLink}</button>
+              <button type="button" class="btn-secondary" data-edit>{ui.edit}</button>
+            </div>
+            <ul class="wh-links">
+              <li><button type="button" data-copy="md">{result.utilities.copyMd}</button></li>
+              <li><button type="button" data-copy="claude">{result.utilities.copyClaude}</button></li>
+              <li><a data-open-claude href="https://claude.ai/new" target="_blank" rel="noopener">{result.utilities.openClaude}</a></li>
+              <li><button type="button" data-restart>{ui.restart}</button></li>
+            </ul>
+
+            <details class="wh-details">
+              <summary>{result.sourcesHeading}</summary>
+              <ul class="wh-sources" data-sources></ul>
+            </details>
+            <p class="mt-6 text-sm"><a href="#" class="wh-report-link" data-offer-open>{result.reportLink}</a></p>
+          </section>
+
+          <template id="wh-tile">
+            <li class="wh-tile">
+              <span class="wh-tile__layer" data-layer></span>
+              <p class="wh-tile__tool" data-tool></p>
+              <p class="wh-tile__cost" data-cost></p>
+              <p class="wh-tile__warn" data-warn hidden></p>
+              <select class="wh-tile__select" data-swap></select>
+            </li>
+          </template>
 
         <div class="wh-offer" data-offer hidden role="region" aria-labelledby="wh-offer-label">
           <form class="wh-offer__form" data-offer-form novalidate>
@@ -315,6 +291,7 @@ const jsonLd = {
       </div>
     </div>
   </section>
+  </div>
 
   <section class="px-6 md:px-12 lg:px-16 py-16 md:py-24 border-b border-white/[0.06]">
     <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-10 lg:gap-8">
@@ -366,7 +343,7 @@ const jsonLd = {
 
 <script>
   import { LAYERS, type Layer } from "../data/warehouse-catalog";
-  import { questions, ui, result, layerCopy, traitLabels, sequence, offer } from "../data/warehouse-survey";
+  import { questions, ui, result, layerCopy, sequence, offer } from "../data/warehouse-survey";
   import { stackCardSvg } from "../lib/warehouseCard";
   type Mentioned = { name: string; id: string | null };
   import {
@@ -374,7 +351,6 @@ const jsonLd = {
     budgetFit,
     byId,
     deltaText,
-    financeRead,
     fromQuery,
     moneyRange,
     parseAnswers,
@@ -413,7 +389,7 @@ const jsonLd = {
     const resultEl = root.querySelector<HTMLElement>("[data-result]")!;
     const notes = form.querySelector<HTMLTextAreaElement>("#wh-notes")!;
     const count = form.querySelector<HTMLElement>("[data-count]")!;
-    const template = root.querySelector<HTMLTemplateElement>("#wh-line")!;
+    const template = root.querySelector<HTMLTemplateElement>("#wh-tile")!;
     const offerEl = root.querySelector<HTMLElement>("[data-offer]")!;
     const email = root.dataset.email ?? "";
     const pageUrl = root.dataset.url ?? `${location.origin}${location.pathname}`;
@@ -584,10 +560,11 @@ const jsonLd = {
       }
     });
 
-    // ---------- the reveal ----------
+    // ---------- the wait ----------
 
     const REVEAL_TARGET_MS = 30_000;
-    const SLIDE_MS = 5_000;
+    const SLIDE_MS = 6_000;
+    const CLOSING_MS = 2_500;
     let timers: number[] = [];
     const clearTimers = () => {
       for (const t of timers) {
@@ -640,32 +617,12 @@ const jsonLd = {
       scheduleOffer();
     }
 
-    /** The picks are in hand: show each layer in turn, the skip button on screen throughout. */
-    function reveal(next: View, started: number) {
-      const stack = priceStack(next.picks, next.answers);
-      const elapsed = Date.now() - started;
-      const totalMs = Math.min(24_000, Math.max(10_000, REVEAL_TARGET_MS - elapsed));
-      const per = totalMs / stack.lines.length;
+    /** The picks are in hand (S25): one sentence about GLF Analytics, then the result. Skip is on screen. */
+    function closing(next: View) {
       skip.hidden = false;
-      const showLayer = (i: number) => {
-        const line = stack.lines[i];
-        const name = layerCopy[line.layer].name;
-        if (!line.tool) {
-          setSeq(sequence.revealLabel(i + 1, stack.lines.length), `${name}: ${sequence.notNeeded}`, layerCopy[line.layer].what);
-          return;
-        }
-        const cost = costText(line);
-        setSeq(sequence.revealLabel(i + 1, stack.lines.length), `${name}: ${line.tool.name}`, `${next.reasons[line.layer] || line.tool.why}${cost ? ` ${cost} a month.` : ""}`);
-      };
-      let i = 0;
-      showLayer(0);
-      timers.push(
-        window.setInterval(() => {
-          i += 1;
-          if (i >= stack.lines.length) finish(next);
-          else showLayer(i);
-        }, per)
-      );
+      loadingNote.hidden = true;
+      setSeq(sequence.closingLabel, sequence.closing.title, sequence.closing.text);
+      timers.push(window.setTimeout(() => finish(next), CLOSING_MS));
     }
 
     async function run(answers: Answers) {
@@ -673,7 +630,7 @@ const jsonLd = {
       const started = Date.now();
       // One honest line first. The slides, the note, and the meter only start if the route
       // is still working after 400 ms (the rules path answers before that).
-      setSeq("", ui.loading[ui.loading.length - 1], "");
+      setSeq("", ui.loading, "");
       loadingNote.hidden = true;
       let slideIdx = 0;
       timers.push(
@@ -710,13 +667,8 @@ const jsonLd = {
         finish(next);
       };
       skip.addEventListener("click", onSkip);
-      timers.push(
-        window.setInterval(() => {
-          const t = (Date.now() - started) / REVEAL_TARGET_MS;
-          bar.style.width = `${Math.min(98, t * 100).toFixed(1)}%`;
-        }, 200)
-      );
-      reveal(next, started);
+      bar.style.width = "98%";
+      closing(next);
     }
 
     form.addEventListener("submit", (e) => {
@@ -782,10 +734,10 @@ const jsonLd = {
 
     function render() {
       if (!view) return;
-      const { answers, picks, reasons, summary, source, swapped, mentioned } = view;
+      const { answers, picks, summary, source, swapped, mentioned } = view;
       const stack = priceStack(picks, answers);
 
-      // ---- the summary card ----
+      // ---- the total and the one paragraph ----
       root!.querySelector<HTMLElement>("[data-total]")!.textContent = moneyRange(stack.low, stack.high);
       const fit = budgetFit(stack, answers);
       const budgetEl = root!.querySelector<HTMLElement>("[data-budget]")!;
@@ -793,32 +745,7 @@ const jsonLd = {
       budgetEl.textContent = fit === "unsure" ? "" : result.budget[fit];
       budgetEl.hidden = fit === "unsure";
       root!.querySelector<HTMLElement>("[data-small]")!.hidden = !smallStack(answers);
-
-      const rows = root!.querySelector<HTMLOListElement>("[data-rows]")!;
-      rows.replaceChildren();
-      for (const line of stack.lines) {
-        const li = document.createElement("li");
-        li.className = "wh-summary__row";
-        const cells: [string, string][] = [
-          ["wh-summary__layer", layerCopy[line.layer].name],
-          ["wh-summary__tool", line.tool ? line.tool.name : result.notNeeded],
-          ["wh-summary__cost", costText(line)]
-        ];
-        for (const [cls, text] of cells) {
-          const span = document.createElement("span");
-          span.className = cls;
-          span.textContent = text;
-          li.append(span);
-        }
-        rows.append(li);
-      }
-      const totalNotes = [stack.estimates ? result.estimateNote : "", stack.unpriced.length ? result.unpricedNote(stack.unpriced.join(" and ")) : ""];
-      const notesEl = root!.querySelector<HTMLElement>("[data-total-notes]")!;
-      notesEl.textContent = totalNotes.filter(Boolean).join(" ");
-      notesEl.hidden = !notesEl.textContent;
-      const sourceLine = view.pending ? result.sourcePending : source === "ai" ? result.sourceAi : result.sourceRules;
-      root!.querySelector<HTMLElement>("[data-source]")!.textContent = swapped.length ? `${sourceLine} ${result.swapped(swapped.length)}` : sourceLine;
-      root!.querySelector<HTMLElement>("[data-runs]")!.textContent = result.runs[answers.runner];
+      root!.querySelector<HTMLElement>("[data-read]")!.textContent = summary || result.runs[answers.runner];
 
       const mentionedLines = mentioned.map((m) => {
         const tool = m.id ? byId.get(m.id) : undefined;
@@ -832,76 +759,37 @@ const jsonLd = {
       mentionedEl.replaceChildren(...mentionedLines.map((text) => { const li = document.createElement("li"); li.textContent = text; return li; }));
       mentionedEl.hidden = !mentionedLines.length;
 
-      // ---- the stack card ----
-      root!.querySelector<HTMLElement>("[data-card-svg]")!.innerHTML = stackCardSvg(stack, { names, url: pageUrl, answers });
-
-      // ---- the finance read ----
-      const fin = financeRead(stack, answers);
-      const finEl = root!.querySelector<HTMLUListElement>("[data-finance]")!;
-      finEl.replaceChildren(
-        ...[
-          result.finance.seats(moneyRange(fin.seats[0], fin.seats[1])),
-          result.finance.usage(moneyRange(fin.usage[0], fin.usage[1])),
-          result.finance.flat(moneyRange(fin.flat[0], fin.flat[1])),
-          result.finance.openSource(fin.openSource, fin.layers),
-          result.finance.upkeep(fin.upkeep[0], fin.upkeep[1])
-        ].map((text) => {
-          const li = document.createElement("li");
-          li.textContent = text;
-          return li;
-        })
-      );
-
-      // ---- the details ----
-      const summaryEl = root!.querySelector<HTMLElement>("[data-summary]")!;
-      summaryEl.textContent = summary;
-      summaryEl.hidden = !summary;
-
-      const list = root!.querySelector<HTMLOListElement>("[data-lines]")!;
-      list.replaceChildren();
+      // ---- the tiles: one per layer, the tool name is the swap ----
+      const tiles = root!.querySelector<HTMLOListElement>("[data-tiles]")!;
+      tiles.replaceChildren();
       for (const line of stack.lines) {
         const node = template.content.firstElementChild!.cloneNode(true) as HTMLLIElement;
         const $ = (sel: string) => node.querySelector<HTMLElement>(sel)!;
         const copy = layerCopy[line.layer];
-        $("[data-layer]").textContent = copy.name;
-        $("[data-cost]").textContent = costText(line);
+        const select = node.querySelector<HTMLSelectElement>("[data-swap]")!;
+        $("[data-layer]").textContent = copy.short ?? copy.name;
 
         if (!line.tool) {
-          $("[data-tool]").textContent = "Not needed for your answers";
-          $("[data-basis]").textContent = copy.what;
-          $("[data-reason]").remove();
-          $("[data-tradeoff-wrap]").remove();
-          $("[data-traits]").remove();
-          $("[data-swap-wrap]").remove();
-          list.append(node);
+          node.classList.add("wh-tile--off");
+          $("[data-tool]").textContent = result.notNeeded;
+          $("[data-cost]").remove();
+          $("[data-warn]").remove();
+          select.remove();
+          tiles.append(node);
           continue;
         }
 
         const t = line.tool;
-        $("[data-tool]").textContent = t.tier ? `${t.name} (${t.tier})` : t.name;
-        $("[data-basis]").textContent = `${copy.what} ${line.price.basis}.`;
-        $("[data-reason]").textContent = reasons[line.layer] || t.why;
-        $("[data-tradeoff]").textContent = t.tradeoff;
-
-        const traits = $("[data-traits]");
-        for (const [key, on] of Object.entries(t.traits)) {
-          if (!on) continue;
-          const li = document.createElement("li");
-          li.textContent = traitLabels[key as keyof typeof traitLabels];
-          traits.append(li);
-        }
-        if (!traits.childElementCount) traits.remove();
-
+        $("[data-tool]").textContent = t.name;
+        $("[data-cost]").textContent = costText(line);
         if (!line.compatible && t.requires) {
           const warn = $("[data-warn]");
-          const needs = t.requires.ids.map((id) => byId.get(id)?.name ?? id).join(" or ");
-          warn.textContent = `Works with ${needs} only. Swap that layer or pick another tool here.`;
+          warn.textContent = result.needsPick;
           warn.hidden = false;
         }
 
-        const select = node.querySelector<HTMLSelectElement>("[data-swap]")!;
         select.dataset.layer = line.layer;
-        select.setAttribute("aria-label", `${result.swapLabel} ${copy.name}`);
+        select.setAttribute("aria-label", `${result.swapLabel} ${copy.name}: ${t.name}`);
         for (const alt of alternatives(line.layer, picks, answers)) {
           const opt = document.createElement("option");
           opt.value = alt.tool.id;
@@ -918,11 +806,22 @@ const jsonLd = {
           if (!view.swapped.includes(line.layer)) view.swapped.push(line.layer);
           track("layer_swapped", { layer: line.layer });
           render();
-          list.querySelector<HTMLSelectElement>(`[data-swap][data-layer="${line.layer}"]`)?.focus();
+          tiles.querySelector<HTMLSelectElement>(`[data-swap][data-layer="${line.layer}"]`)?.focus({ preventScroll: true });
         });
-        list.append(node);
+        tiles.append(node);
       }
 
+      // ---- one note line ----
+      const noteLine = view.pending ? result.notePending : source === "ai" ? result.noteAi : result.noteRules;
+      const notes = [
+        noteLine,
+        swapped.length ? result.swapped(swapped.length) : "",
+        stack.estimates ? result.estimateNote : "",
+        stack.unpriced.length ? result.unpricedNote(stack.unpriced.join(" and ")) : ""
+      ];
+      root!.querySelector<HTMLElement>("[data-note]")!.textContent = notes.filter(Boolean).join(" ");
+
+      // ---- the sources (closed by default) ----
       const sources = root!.querySelector<HTMLUListElement>("[data-sources]")!;
       sources.replaceChildren();
       for (const line of stack.lines) {
@@ -969,7 +868,7 @@ const jsonLd = {
     root.querySelector<HTMLButtonElement>("[data-download-card]")?.addEventListener("click", () => {
       if (!view) return;
       const stack = priceStack(view.picks, view.answers);
-      const svg = stackCardSvg(stack, { names, url: pageUrl, answers: view.answers, fontSans: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontMono: "Menlo, Consolas, 'Courier New', monospace" });
+      const svg = stackCardSvg(stack, { names, url: pageUrl, fontSans: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontMono: "Menlo, Consolas, 'Courier New', monospace" });
       const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const img = new Image();
@@ -1211,7 +1110,8 @@ const jsonLd = {
     const harness = import.meta.env.DEV ? new URLSearchParams(location.search).get("_state") : null;
     if (harness) {
       // Dev-only screenshot harness (stripped from production builds):
-      // _state=q1..q10 | measure | loading | reveal | result | offer | sent, with _swap=layer:id for a swapped result.
+      // _state=q1..q10 | measure | loading (&_slide=n) | closing | result | offer | sent | card, with _swap=layer:id for a swapped result.
+      // `card` paints the stack card at 1200x630 in the corner for the social image screenshot.
       const a = shared ?? parseAnswers({ readers: "6-15", size: "2-10", systems: "4-6", kinds: ["store", "ads"], runner: "ai", ecosystem: "neither", freshness: "daily", askAi: "few", budget: "100-500", notes: "" })!;
       prefill(a);
       if (/^q\d+$/.test(harness)) show(Number(harness.slice(1)) - 1, false);
@@ -1238,12 +1138,19 @@ const jsonLd = {
         setSeq(sequence.waitLabel, sequence.slides[s]?.title ?? sequence.slides[0].title, sequence.slides[s]?.text ?? sequence.slides[0].text);
         bar.style.width = "35%";
       }
-      if (harness === "reveal") {
+      if (harness === "closing") {
         openLoading();
-        loadingNote.hidden = false;
-        bar.style.width = "70%";
-        const v = makeView(a, recommendByRules(a), {}, "", "ai");
-        reveal(v, Date.now() - 12_000);
+        bar.style.width = "98%";
+        skip.hidden = false;
+        setSeq(sequence.closingLabel, sequence.closing.title, sequence.closing.text);
+      }
+      if (harness === "card") {
+        const stack = priceStack(recommendByRules(a), a);
+        const box = document.createElement("div");
+        box.id = "wh-card-render";
+        box.style.cssText = "position:fixed;left:0;top:0;width:1200px;height:630px;z-index:99999;background:#050505";
+        box.innerHTML = stackCardSvg(stack, { names, url: pageUrl, example: true });
+        document.body.append(box);
       }
       if (harness === "result" || harness === "offer" || harness === "sent") {
         view = makeView(a, recommendByRules(a), {}, "", "rules");
