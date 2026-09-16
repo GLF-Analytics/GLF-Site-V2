@@ -27,6 +27,6 @@ export const bcStatsSource = {
   productUrl: "https://www.birthday-cards.ai",
   launchMonth: "March 2026",
   // Indexable search landing pages on the product, counted at each glf website
-  // session from the birthday-cards repo (13 = the zodiac page, pushed 9/13/26).
-  seoPages: "Thirteen"
+  // session from the birthday-cards repo (14 = the card aisle hub /ai-birthday-card-ideas, pushed 9/14/26; 13 = zodiac, 9/13).
+  seoPages: "Fourteen"
 };

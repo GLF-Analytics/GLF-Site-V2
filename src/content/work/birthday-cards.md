@@ -23,7 +23,7 @@ showLiveStats: true
   <h2>What I built</h2>
   <ul>
     <li>The card generator on Next.js and Vercel, with OpenAI and Gemini behind it, plus email and PDF delivery and a gift flow.</li>
-    <li>Thirteen search landing pages and the tracking that tells a delivered card from a click.</li>
+    <li>Fourteen search landing pages and the tracking that tells a delivered card from a click.</li>
     <li>Rate limits, spend caps, and alerts, so a traffic spike cannot run up the bill.</li>
     <li>A white-label sibling, custom-cards.ai, from the same code.</li>
   </ul>
