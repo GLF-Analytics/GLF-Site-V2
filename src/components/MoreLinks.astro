@@ -1,0 +1,66 @@
+---
+/*
+  S24 (9/15/26): the index. The four "learn more" destinations that used to be
+  spread across the long-list row, the newsletter band, and the three mono links
+  under About, now one stacked list under the Now line. A row is one object
+  below: add or drop a row here, nothing else changes. LinkedIn is not a row;
+  it stays a contact channel in the ask.
+*/
+import { socialLinks } from "../config/site";
+
+const rows = [
+  {
+    title: "The long list",
+    line: "Everything I have done since 2017 in one place.",
+    href: "/everything",
+    external: false
+  },
+  {
+    title: "The newsletter",
+    line: "What worked, what did not, and what it cost. On Substack.",
+    href: socialLinks.substack,
+    external: true
+  },
+  {
+    title: "Using data to build with AI",
+    line: "How birthday-cards.ai runs on its own numbers.",
+    href: "/using-data-to-build-with-ai",
+    external: false
+  },
+  {
+    title: "Recognized by The Starters",
+    line: "Listed on hirethestarters.com.",
+    href: "https://www.hirethestarters.com/",
+    external: true
+  }
+];
+
+for (const row of rows) {
+  if (row.title.includes(",")) throw new Error(`MoreLinks title with a comma: "${row.title}"`);
+}
+---
+<div class="mt-10 md:mt-12" data-reveal>
+  <span class="label block mb-2">More</span>
+  <ul class="border-t border-white/[0.06]">
+    {rows.map((row) => (
+      <li class="border-b border-white/[0.06]">
+        <a
+          href={row.href}
+          target={row.external ? "_blank" : undefined}
+          rel={row.external ? "noreferrer" : undefined}
+          class="group block py-5 md:py-6"
+        >
+          <span class="heading-display text-2xl md:text-3xl text-white group-hover:text-gold-500 transition-colors inline-flex items-center gap-3">
+            <span>{row.title}</span>
+            {row.external ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" aria-hidden="true"><path d="M15 3h6v6m-11 5L21 3m-3 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 opacity-60 group-hover:opacity-100 transition-all group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
+            )}
+          </span>
+          <span class="block mt-1.5 text-surface-400 leading-relaxed">{row.line}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</div>
