@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S28 systems loop concepts</title>
+<style>
+  :root { color-scheme: dark; --bg: #050505; --card: #0a0a0a; --gold: #D4A853; --t1: #FAFAFA; --t2: #A3A3A3; --t3: #525252; --hair: rgba(255,255,255,0.08); --hair2: rgba(255,255,255,0.14); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--t1); font: 15px/1.4 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: 24px 16px 64px; }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--t3); }
+  h1 { font-size: 20px; font-weight: 500; margin: 0 0 6px; }
+  .tabs { display: flex; gap: 8px; margin: 18px 0 28px; flex-wrap: wrap; }
+  .tabs a { border: 1px solid var(--hair2); color: var(--t2); padding: 8px 12px; text-decoration: none; font-size: 13px; }
+  .tabs a[aria-current] { border-color: var(--gold); color: var(--t1); }
+  section { display: none; max-width: 980px; margin: 0 auto; }
+  section:target, section.on { display: block; }
+  .note { color: var(--t2); font-size: 13px; margin: 0 0 18px; max-width: 640px; }
+  .node { border: 1px solid var(--hair); background: var(--card); padding: 12px 14px; }
+  .node .role { display: block; margin-bottom: 4px; }
+  .node.person { border-color: rgba(212,168,83,0.7); } .node.person .role { color: var(--gold); }
+  .sub { color: var(--t2); font-size: 13px; margin-top: 6px; }
+  /* B: vertical spine, sources fan in */
+  .b { display: grid; grid-template-columns: 1fr; gap: 14px; max-width: 520px; }
+  .b .fan { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .b .fan .node { padding: 10px 12px; }
+  .b .join { display: flex; align-items: center; gap: 10px; color: var(--t3); }
+  .b .join::before, .b .join::after { content: ""; flex: 1; height: 1px; background: var(--hair2); }
+  .b .step { position: relative; }
+  .b .step + .step::before { content: ""; position: absolute; left: 50%; top: -14px; width: 1px; height: 14px; background: var(--hair2); }
+  /* C: ring, desktop */
+  .c svg { width: 100%; height: auto; display: block; }
+  .c text { font-family: ui-sans-serif, system-ui, sans-serif; fill: var(--t1); font-size: 13px; }
+  .c text.role { font-family: ui-monospace, monospace; font-size: 9px; letter-spacing: 0.12em; fill: var(--t3); }
+  .c .box { fill: var(--card); stroke: var(--hair2); }
+  .c .box.person { stroke: var(--gold); }
+  .c .edge { fill: none; stroke: var(--hair2); }
+  @media (max-width: 767px) { .c .desk-only { display: none; } }
+</style>
+</head>
+<body>
+<p class="mono">S28 concepts, 9/17/26</p>
+<h1>The systems loop, three ways</h1>
+<p class="note">Variant A is the one built into the page (three lanes, arrows between the lane labels, a return line). B and C are here to flip through on the phone before deciding. Copy identical across the three.</p>
+<nav class="tabs"><a href="#a">A three lanes (built)</a><a href="#b">B vertical spine</a><a href="#c">C ring (desktop)</a></nav>
+
+<section id="a" class="on">
+  <p class="note">A is the page itself. Open <code>/using-data-to-build-with-ai#loop</code> on the local build; its phone and desktop shots sit beside this file as <code>a_m.png</code> and <code>a_d.png</code>.</p>
+</section>
+
+<section id="b">
+  <p class="note">B: one spine. The product node on top, the four sources fan in two by two, then the read, the person, the build, the release. Same on every width, so the phone and desktop never differ.</p>
+  <div class="b">
+    <div class="node step"><span class="role mono">The product</span>The app sends an event for every step a person takes</div>
+    <div class="fan">
+      <div class="node"><span class="role mono">Source</span>Vercel Web Analytics</div>
+      <div class="node"><span class="role mono">Source</span>Google Search Console</div>
+      <div class="node"><span class="role mono">Source</span>Bing Webmaster</div>
+      <div class="node"><span class="role mono">Source</span>Airtable holds the leads</div>
+    </div>
+    <div class="join mono">read</div>
+    <div class="node step"><span class="role mono">Claude Code</span>Reads each source through MCP and its API</div>
+    <div class="node step"><span class="role mono">One dashboard</span>Every number reconciles before the page builds<div class="sub">Four checks run on each refresh. A mismatch stops the build.</div></div>
+    <div class="node step"><span class="role mono">Weekly read</span>What moved since last week in plain words<div class="sub">Was any of this me? Nothing under twenty arrivals counts.</div></div>
+    <div class="join mono">decide and build</div>
+    <div class="node step person"><span class="role mono">A person</span>I decide what changes and what waits</div>
+    <div class="node step"><span class="role mono">Claude Code</span>Builds what was picked</div>
+    <div class="node step"><span class="role mono">Gates</span>Types lint tests and the build<div class="sub">Screenshots at phone and desktop widths</div></div>
+    <div class="node step"><span class="role mono">Release</span>I review and push from GitHub Desktop</div>
+    <div class="node step"><span class="role mono">Live</span>The next event starts the loop again</div>
+    <p class="mono" style="margin-top:8px">back to the first event</p>
+  </div>
+</section>
+
+<section id="c" class="c">
+  <p class="note">C: the loop drawn as a loop. Thirteen boxes on a ring, the person at three o'clock, sources across the top. Desktop only; on the phone this falls back to B.</p>
+  <svg class="desk-only" viewBox="0 0 980 560" role="img" aria-label="The loop as a ring of thirteen nodes">
+    <ellipse class="edge" cx="490" cy="280" rx="400" ry="200" />
+    <g id="ring"></g>
+  </svg>
+  <script>
+    const nodes = [
+      ["The product", "App events"], ["Source", "Vercel Web Analytics"], ["Source", "Google Search Console"], ["Source", "Bing Webmaster"], ["Source", "Airtable leads"],
+      ["Claude Code", "Reads each source"], ["One dashboard", "Four checks reconcile"], ["Weekly read", "What moved"],
+      ["A person", "I decide", true], ["Claude Code", "Builds what was picked"], ["Gates", "Types lint tests build"], ["Release", "Push from GitHub Desktop"], ["Live", "Next event"]
+    ];
+    const g = document.getElementById("ring"); const cx = 490, cy = 280, rx = 400, ry = 200, w = 150, h = 46;
+    nodes.forEach((n, i) => {
+      const a = -Math.PI / 2 + (i / nodes.length) * Math.PI * 2; const x = cx + rx * Math.cos(a), y = cy + ry * Math.sin(a);
+      const box = document.createElementNS("http://www.w3.org/2000/svg", "rect"); box.setAttribute("x", x - w / 2); box.setAttribute("y", y - h / 2); box.setAttribute("width", w); box.setAttribute("height", h); box.setAttribute("class", "box" + (n[2] ? " person" : "")); g.appendChild(box);
+      const r = document.createElementNS("http://www.w3.org/2000/svg", "text"); r.setAttribute("x", x - w / 2 + 10); r.setAttribute("y", y - 6); r.setAttribute("class", "role"); r.textContent = n[0].toUpperCase(); g.appendChild(r);
+      const t = document.createElementNS("http://www.w3.org/2000/svg", "text"); t.setAttribute("x", x - w / 2 + 10); t.setAttribute("y", y + 12); t.textContent = n[1]; g.appendChild(t);
+    });
+  </script>
+  <div class="b" style="margin-top:16px"><p class="note">Ring caveat: labels shrink to fit the boxes, so the two sub-lines (the four checks, the self-traffic question) do not fit. That is the cost of the circle.</p></div>
+</section>
+<script>
+  const tabs = document.querySelectorAll(".tabs a"); const secs = document.querySelectorAll("section");
+  function show() { const id = (location.hash || "#a").slice(1); secs.forEach((s) => s.classList.toggle("on", s.id === id)); tabs.forEach((t) => t.toggleAttribute("aria-current", t.getAttribute("href") === "#" + id)); }
+  addEventListener("hashchange", show); show();
+</script>
+</body>
+</html>

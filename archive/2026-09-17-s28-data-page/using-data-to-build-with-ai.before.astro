@@ -19,10 +19,7 @@ import MonthlyCards from "../components/MonthlyCards.astro";
 import CountryMap from "../components/CountryMap.astro";
 import { getBcStats } from "../lib/bcStats";
 import { bcStatsSource, siteUrl } from "../config/site";
-import SystemsLoop from "../components/SystemsLoop.astro";
-import MethodDots from "../components/MethodDots.astro";
-import SearchGrowth from "../components/SearchGrowth.astro";
-import { meta, sources, beats, systems, methodCase, decisions, growthMarkers, takeaways, faq, namedTokens, type Paragraph } from "../data/how-data";
+import { meta, sources, sections, faq, namedTokens, type Paragraph } from "../data/how-data";
 
 const s = await getBcStats();
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -36,57 +33,25 @@ const hasStrayNumeral = (t: string) => {
   return /\d/.test(stripped);
 };
 
-// S28 guard: every rendered text field is checked. Numerals pass only inside a
-// dated-fact field with a source; headings carry no commas; the word band is
-// 380 to 480 (the redesign's target, POSITIONING.md), a throw above 500.
-const guardText = (where: string, p: Paragraph) => {
-  const flagged = typeof p !== "string" && p.numerals === "dated-fact" && p.source.trim().length > 0;
-  if (hasStrayNumeral(text(p)) && !flagged) {
-    throw new Error(`[how-data] numeral in prose without a dated-fact source (${where}): "${text(p).slice(0, 60)}"`);
+for (const sec of sections) {
+  if (sec.heading.includes(",")) throw new Error(`[how-data] heading with a comma: "${sec.heading}"`);
+  for (const p of sec.paragraphs) {
+    const flagged = typeof p !== "string" && p.numerals === "dated-fact" && p.source.trim().length > 0;
+    if (hasStrayNumeral(text(p)) && !flagged) {
+      throw new Error(`[how-data] numeral in prose without a dated-fact source (${sec.id}): "${text(p).slice(0, 60)}"`);
+    }
   }
-};
-for (const b of beats) {
-  if (b.heading.includes(",")) throw new Error(`[how-data] heading with a comma: "${b.heading}"`);
-  for (const p of b.sentences) guardText(b.id, p);
 }
-for (const n of systems) {
-  guardText(`systems/${n.id}`, n.role);
-  guardText(`systems/${n.id}`, n.label);
-  for (const s of n.sub ?? []) guardText(`systems/${n.id}`, s);
-}
-for (const t of takeaways) { guardText("takeaways", t.label); guardText("takeaways", t.line); }
-for (const g of growthMarkers) {
-  if (!g.source.trim()) throw new Error(`[how-data] growth marker without a source: ${g.month}`);
-  guardText(`growthMarkers/${g.month}`, g.when);
-  guardText(`growthMarkers/${g.month}`, g.label);
-}
-guardText("methodCase", methodCase.question);
-guardText("methodCase", methodCase.caption);
-if (!methodCase.source.trim()) throw new Error("[how-data] methodCase without a source");
-for (const d of decisions) { guardText("decisions", d.label); guardText("decisions", d.text); }
 for (const f of faq) {
   if (hasStrayNumeral(f.a) || hasStrayNumeral(f.q)) throw new Error(`[how-data] numeral in the FAQ: "${f.q}"`);
 }
 
 const searchLine = `In the last ${s.window_days} days ${fmt(s.search_visitors_30d)} of ${fmt(s.visitors_30d)} visitors came from a search engine.`;
 
-// Prose only, as the S13 count was: sentences and captions, not eyebrows,
-// headings or the mono role labels.
-const prose = [
-  meta.lede,
-  ...beats.flatMap((b) => b.sentences.map(text)),
-  ...systems.flatMap((n) => [n.label, ...(n.sub ?? [])]),
-  methodCase.caption,
-  ...decisions.map((d) => text(d.text)),
-  ...growthMarkers.map((g) => g.label),
-  ...takeaways.map((t) => t.line),
-  searchLine,
-  ...faq.flatMap((f) => [f.q, f.a])
-].join(" ");
+const prose = [meta.lede, ...sections.flatMap((sec) => sec.paragraphs.map(text)), searchLine, ...faq.flatMap((f) => [f.q, f.a])].join(" ");
 const wordCount = prose.split(/\s+/).filter(Boolean).length;
-const datedFacts = decisions.filter((d) => typeof d.text !== "string").length;
-if (wordCount > 500) throw new Error(`[how-data] ${wordCount} words is above the 500 cap`);
-console.log(`[how-data] ${wordCount} words (target 380 to 480), ${beats.length} beats, ${systems.length} system nodes, ${faq.length} FAQ, ${datedFacts} dated facts`);
+const datedFacts = sections.flatMap((sec) => sec.paragraphs.filter((p) => typeof p !== "string")).length;
+console.log(`[how-data] ${wordCount} words, ${sections.length} sections, ${faq.length} FAQ, ${datedFacts} dated facts`);
 
 const url = `${siteUrl}/using-data-to-build-with-ai/`;
 const ld = [
@@ -99,7 +64,7 @@ const ld = [
     url,
     mainEntityOfPage: url,
     datePublished: meta.published,
-    dateModified: meta.modified,
+    dateModified: meta.published,
     inLanguage: "en",
     wordCount,
     author: { "@id": `${siteUrl}/#person` },
@@ -157,51 +122,28 @@ const ld = [
 
   <section class="px-6 md:px-12 lg:px-16 py-16 md:py-24 border-b border-white/[0.06]">
     <div class="max-w-7xl mx-auto">
-      <div class="max-w-3xl">
-        {beats.map((b, i) => (
-          <section id={b.id} class={i === 0 ? "" : "mt-14 pt-10 border-t border-white/[0.06]"} aria-labelledby={`${b.id}-heading`} data-reveal>
-            <p class="font-mono text-[11px] tracking-[0.2em] uppercase text-gold-500">{b.eyebrow}</p>
-            <h2 id={`${b.id}-heading`} class="heading-display mt-3 text-2xl md:text-3xl text-white">{b.heading}</h2>
-            {b.sentences.map((p) => (
-              <p class="mt-4 text-surface-200 leading-relaxed max-w-2xl">{text(p)}</p>
+      <div class="max-w-2xl">
+        {sections.map((sec, i) => (
+          <section id={sec.id} class={i === 0 ? "" : "mt-10 pt-8 border-t border-white/[0.06]"} aria-labelledby={`${sec.id}-heading`}>
+            <h2 id={`${sec.id}-heading`} class="font-mono text-[11px] tracking-[0.15em] text-gold-500 mb-5">{sec.heading}</h2>
+            {sec.paragraphs.map((p) => (
+              <p class="mt-4 text-surface-200 leading-relaxed">{text(p)}</p>
             ))}
-            {b.id === "loop" && (
-              <>
-                <p class="mt-4 text-surface-200 leading-relaxed max-w-2xl">{searchLine}</p>
-                <SystemsLoop />
-              </>
-            )}
-            {b.id === "decisions" && (
-              <>
-                <MethodDots />
-                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-px bg-white/[0.06]">
-                  {decisions.map((d) => (
-                    <div class="bg-surface-950 p-5 md:p-6">
-                      <span class="block font-mono text-[11px] tracking-[0.15em] uppercase text-gold-500">{d.label}</span>
-                      <p class="mt-3 text-[15px] leading-relaxed text-surface-200">{text(d.text)}</p>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-            {b.id === "start" && <SearchGrowth />}
-            {b.id === "for-a-business" && (
-              <div class="mt-6 grid grid-cols-2 gap-px bg-white/[0.06]">
-                {takeaways.map((t) => (
-                  <div class="bg-surface-950 p-5 md:p-6">
-                    <span class="block font-mono text-[11px] tracking-[0.15em] uppercase text-surface-500">{t.label}</span>
-                    <p class="mt-2 text-[15px] leading-snug text-white">{t.line}</p>
-                  </div>
+            {sec.id === "loop" &&<p class="mt-4 text-surface-200 leading-relaxed">{searchLine}</p>}
+            {sec.chips && (
+              <ul class="mt-5 flex flex-wrap gap-1.5">
+                {sec.chips.map((chip) => (
+                  <li class="border border-white/[0.08] px-2 py-1 font-mono text-[11px] tracking-[0.05em] text-surface-400">{chip}</li>
                 ))}
-              </div>
+              </ul>
             )}
           </section>
         ))}
 
-        <section id="faq" class="mt-14 pt-10 border-t border-white/[0.06]" aria-labelledby="faq-heading">
+        <section id="faq" class="mt-10 pt-8 border-t border-white/[0.06]" aria-labelledby="faq-heading">
           <h2 id="faq-heading" class="font-mono text-[11px] tracking-[0.15em] text-gold-500 mb-5">Questions</h2>
           {faq.map((f) => (
-            <div class="mt-5 max-w-2xl">
+            <div class="mt-5">
               <h3 class="text-white font-medium">{f.q}</h3>
               <p class="mt-2 text-surface-300 leading-relaxed">{f.a}</p>
             </div>

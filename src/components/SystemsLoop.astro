@@ -1,0 +1,39 @@
+---
+/**
+ * The systems loop on /using-data-to-build-with-ai (S28, 9/17/26). An ordered
+ * list in three lanes (sources, read, decide and build): HTML nodes with CSS
+ * hairline connectors, not SVG, so every label wraps at phone width and the
+ * numeral guard reads the text from how-data.ts. One column on phones, three
+ * lanes from md. The person's node is the only gold border. No animation
+ * beyond the page's data-reveal; readable with CSS off as a plain list.
+ */
+import { systemLanes, systems, type SystemNode } from "../data/how-data";
+
+const byLane = (lane: SystemNode["lane"]) => systems.filter((n) => n.lane === lane);
+---
+<figure class="sys mt-6" aria-labelledby="sys-caption">
+  <figcaption id="sys-caption" class="sr-only">The loop from the product's events through the sources, the read, the decision, the build and back to the next event.</figcaption>
+  <ol class="sys__lanes">
+    {systemLanes.map((lane, li) => (
+      <li class="sys__lane" data-lane={lane.id} data-last={li === systemLanes.length - 1 ? "true" : undefined}>
+        <span class="sys__lane-label font-mono text-[11px] tracking-[0.2em] uppercase text-surface-500">{lane.label}</span>
+        <ol class="sys__nodes">
+          {byLane(lane.id).map((n) => (
+            <li class:list={["sys__node", { "sys__node--person": n.person }]}>
+              <span class:list={["sys__role font-mono text-[11px] tracking-[0.15em] uppercase", n.person ? "text-gold-500" : "text-surface-500"]}>{n.role}</span>
+              <span class="sys__label block mt-1 text-[15px] leading-snug text-white">{n.label}</span>
+              {n.sub && (
+                <ul class="sys__sub mt-2">
+                  {n.sub.map((s) => (
+                    <li class="text-[13px] leading-snug text-surface-300">{s}</li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ol>
+      </li>
+    ))}
+  </ol>
+  <p class="sys__return mt-4 font-mono text-[11px] tracking-[0.15em] uppercase text-surface-500" aria-hidden="true">back to the first event</p>
+</figure>

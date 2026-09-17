@@ -2003,3 +2003,79 @@ summary {
 .wh-details .wh-sources {
   margin: 0 0 1rem;
 }
+
+/* ============================================
+   DATA PAGE SECOND HALF (S28, Sep 17 2026)
+   /using-data-to-build-with-ai: the systems loop,
+   the method dot rows, the search growth line.
+   Flat: hairline borders, gold as the one accent,
+   no gradients, no motion beyond data-reveal.
+   ============================================ */
+.sys__lanes { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 28px; }
+@media (min-width: 768px) { .sys__lanes { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; } }
+.sys__lane { position: relative; min-width: 0; }
+.sys__lane-label { display: block; margin-bottom: 10px; }
+.sys__nodes { list-style: none; margin: 0; padding: 0; }
+.sys__node { position: relative; border: 1px solid rgba(255, 255, 255, 0.08); background: #0a0a0a; padding: 12px 14px; }
+.sys__node + .sys__node { margin-top: 22px; }
+.sys__node + .sys__node::before {
+  content: ""; position: absolute; left: 50%; top: -22px; width: 1px; height: 22px;
+  background: rgba(255, 255, 255, 0.14);
+}
+.sys__node + .sys__node::after {
+  content: ""; position: absolute; left: calc(50% - 3px); top: -7px; width: 5px; height: 5px;
+  border-right: 1px solid rgba(255, 255, 255, 0.35); border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  transform: rotate(45deg);
+}
+.sys__node--person { border-color: rgba(212, 168, 83, 0.7); }
+.sys__sub { list-style: none; margin: 0; padding: 0; }
+.sys__sub li + li { margin-top: 2px; }
+/* lane to lane: a hairline with a chevron at the lane label's height (md+),
+   and the return line under the last lane */
+@media (min-width: 768px) {
+  .sys__lane:not([data-last])::after {
+    content: ""; position: absolute; top: 6px; right: -26px; width: 20px; height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+  }
+  .sys__lane:not([data-last]) .sys__lane-label::after {
+    content: ""; position: absolute; top: 3px; right: -11px; width: 5px; height: 5px;
+    border-right: 1px solid rgba(255, 255, 255, 0.35); border-top: 1px solid rgba(255, 255, 255, 0.35);
+    transform: rotate(45deg);
+  }
+  .sys__lane-label { position: relative; }
+}
+.sys__return { border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 10px; }
+@media (max-width: 767px) {
+  .sys__lane + .sys__lane { padding-top: 6px; }
+  /* phones: the four sources sit two by two under the product node so the
+     loop is not thirteen boxes tall; connectors drop inside the grid */
+  .sys__lane[data-lane="sources"] .sys__nodes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sys__lane[data-lane="sources"] .sys__node:first-child { grid-column: 1 / -1; }
+  .sys__lane[data-lane="sources"] .sys__node + .sys__node { margin-top: 0; }
+  .sys__lane[data-lane="sources"] .sys__node + .sys__node::before,
+  .sys__lane[data-lane="sources"] .sys__node + .sys__node::after { display: none; }
+  .sys__lane[data-lane="sources"] .sys__node:first-child { margin-bottom: 12px; }
+}
+
+.dots__rows { list-style: none; margin: 0; padding: 0; }
+.dots__row { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "method count" "cells cells" "cards cards"; gap: 4px 12px; align-items: center; padding: 10px 0; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.dots__row:first-child { border-top: 0; padding-top: 0; }
+.dots__method { grid-area: method; }
+.dots__count { grid-area: count; text-align: right; }
+.dots__cells { grid-area: cells; display: flex; flex-wrap: wrap; gap: 5px; padding: 4px 0 2px; }
+.dots__cards { grid-area: cards; }
+.dots__dot { width: 11px; height: 11px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.35); background: transparent; display: inline-block; }
+.dots__dot--on { background: #D4A853; border-color: #D4A853; }
+@media (min-width: 768px) {
+  .dots__row { grid-template-columns: 170px 1fr auto auto; grid-template-areas: "method cells count cards"; gap: 0 16px; padding: 12px 0; }
+  .dots__cells { padding: 0; }
+}
+
+.sg__value, .sg__month, .sg__marker-n { font-family: 'Geist Mono', ui-monospace, monospace; }
+.sg__value { font-size: 15px; fill: var(--color-text-primary); }
+.sg__month { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; fill: var(--color-text-secondary); }
+.sg__marker-n { font-size: 11px; fill: #D4A853; }
+.sg__key { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+@media (min-width: 768px) { .sg__key { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
+.sg__key-item { display: flex; gap: 10px; align-items: flex-start; }
+.sg__key-mark { flex: 0 0 auto; width: 18px; height: 18px; border: 1px solid #D4A853; color: #D4A853; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }

@@ -203,14 +203,16 @@ export async function getBcCountries(): Promise<BcCountries> {
 
 /**
  * Cards made per month since launch (the chart on /using-data-to-build-with-ai).
- * One events/aggregate query by month, beta surfaces excluded. Months only
- * accrue: a shorter live series, a missing month, or any month lower than the
- * committed snapshot is a query problem, not a real drop, so the snapshot wins.
- * The current month is partial by construction; the component labels it.
+ * One events/aggregate query by month, beta surfaces excluded, joined (S28,
+ * 9/17/26) with a visits/aggregate query by month filtered to the search hosts
+ * for search_visitors (the growth line). Months only accrue: a shorter live
+ * series, a missing month, or any month lower than the committed snapshot on
+ * cards or search_visitors is a query problem, not a real drop, so the snapshot
+ * wins. The current month is partial by construction; the components label it.
  */
 import monthlySnapshot from "../data/bc-monthly.json";
 
-export type BcMonth = { month: string; cards: number; visitors: number };
+export type BcMonth = { month: string; cards: number; visitors: number; search_visitors: number };
 export type BcMonthly = {
   fetched_at: string;
   since: string;
@@ -247,17 +249,33 @@ export async function getBcMonthly(): Promise<BcMonthly> {
       teamId,
       projectId
     );
+    const searchFilter = [...SEARCH_HOSTS].map((h) => `referrerHostname eq '${h}'`).join(" or ");
+    const searchRes = await query(
+      "visits/aggregate",
+      { since: LAUNCH, until, filter: `${NOT_BETA_VISITS} and (${searchFilter} or endswith(referrerHostname, '.search.yahoo.com'))`, by: "month", limit: "100" },
+      token,
+      teamId,
+      projectId
+    );
+    const monthKey = (r: Record<string, unknown>) =>
+      typeof r.month === "string" ? r.month : typeof r.timestamp === "string" ? r.timestamp.slice(0, 7) : "";
+    const searchByMonth = new Map<string, number>();
+    for (const r of Array.isArray(searchRes.data) ? searchRes.data : []) searchByMonth.set(monthKey(r), Number(r.visitors ?? 0));
+
     const rows = Array.isArray(res.data) ? res.data : [];
     const months: BcMonth[] = rows
       .map((r) => {
-        const key = typeof r.month === "string" ? r.month : typeof r.timestamp === "string" ? r.timestamp.slice(0, 7) : "";
-        return { month: key, cards: Number(r.count ?? r.events ?? 0), visitors: Number(r.visitors ?? 0) };
+        const key = monthKey(r);
+        return { month: key, cards: Number(r.count ?? r.events ?? 0), visitors: Number(r.visitors ?? 0), search_visitors: searchByMonth.get(key) ?? 0 };
       })
       .filter((m) => /^\d{4}-\d{2}$/.test(m.month) && m.month >= LAUNCH.slice(0, 7))
       .sort((a, b) => a.month.localeCompare(b.month));
 
-    const byMonth = new Map(months.map((m) => [m.month, m.cards]));
-    const regressed = monthlySnapshot.months.some((m) => (byMonth.get(m.month) ?? -1) < m.cards);
+    const byMonth = new Map(months.map((m) => [m.month, m]));
+    const regressed = monthlySnapshot.months.some((m) => {
+      const live = byMonth.get(m.month);
+      return !live || live.cards < m.cards || live.search_visitors < m.search_visitors;
+    });
     if (months.length < monthlySnapshot.months.length || regressed) {
       console.warn("[bcStats] live monthly series shorter or lower than the snapshot; using snapshot instead", months.length);
       return monthlyFromSnapshot();

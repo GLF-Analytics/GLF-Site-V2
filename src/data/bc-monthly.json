@@ -1,15 +1,15 @@
 {
-  "fetched_at": "2026-09-16",
+  "fetched_at": "2026-09-17",
   "since": "2026-03-01",
-  "until": "2026-09-16",
-  "source": "Vercel Web Analytics, birthday-card-app project, card_generated events by month, beta surfaces excluded",
+  "until": "2026-09-17",
+  "source": "Vercel Web Analytics, birthday-card-app project, card_generated events by month (cards, visitors = makers) and visits by month from the search hosts in bcStats.ts SEARCH_HOSTS (search_visitors), beta surfaces excluded",
   "months": [
-    { "month": "2026-03", "cards": 47, "visitors": 13 },
-    { "month": "2026-04", "cards": 57, "visitors": 21 },
-    { "month": "2026-05", "cards": 63, "visitors": 24 },
-    { "month": "2026-06", "cards": 139, "visitors": 56 },
-    { "month": "2026-07", "cards": 159, "visitors": 64 },
-    { "month": "2026-08", "cards": 277, "visitors": 102 },
-    { "month": "2026-09", "cards": 196, "visitors": 79 }
+    { "month": "2026-03", "cards": 47, "visitors": 13, "search_visitors": 0 },
+    { "month": "2026-04", "cards": 57, "visitors": 21, "search_visitors": 10 },
+    { "month": "2026-05", "cards": 63, "visitors": 24, "search_visitors": 7 },
+    { "month": "2026-06", "cards": 139, "visitors": 56, "search_visitors": 15 },
+    { "month": "2026-07", "cards": 159, "visitors": 64, "search_visitors": 17 },
+    { "month": "2026-08", "cards": 277, "visitors": 102, "search_visitors": 55 },
+    { "month": "2026-09", "cards": 238, "visitors": 90, "search_visitors": 67 }
   ]
 }
