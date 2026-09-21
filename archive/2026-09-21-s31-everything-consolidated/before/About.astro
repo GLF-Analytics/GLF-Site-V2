@@ -10,8 +10,7 @@ import { orgInfo, socialLinks } from "../config/site";
 
 const mailto = `mailto:${orgInfo.email}?subject=${encodeURIComponent("Working together")}`;
 
-// newTab (S31): an internal page that opens in a new tab so the homepage stays open; no external icon.
-type Row = { label: string; href: string; external?: boolean; newTab?: boolean; primary?: boolean };
+type Row = { label: string; href: string; external?: boolean; primary?: boolean };
 const groups: { label: string; rows: Row[] }[] = [
   {
     label: "Reach",
@@ -25,7 +24,7 @@ const groups: { label: string; rows: Row[] }[] = [
     rows: [
       { label: "The long list", href: "/everything" },
       { label: "The newsletter", href: socialLinks.substack, external: true },
-      { label: "Using data to build with AI", href: "/using-data-to-build-with-ai", newTab: true },
+      { label: "Using data to build with AI", href: "/using-data-to-build-with-ai" },
       { label: "Recognized by The Starters", href: "https://www.hirethestarters.com/", external: true }
     ]
   }
@@ -55,8 +54,8 @@ const groups: { label: string; rows: Row[] }[] = [
                 <li>
                   <a
                     href={r.href}
-                    target={r.external || r.newTab ? "_blank" : undefined}
-                    rel={r.external ? "noreferrer" : r.newTab ? "noopener" : undefined}
+                    target={r.external ? "_blank" : undefined}
+                    rel={r.external ? "noreferrer" : undefined}
                     class={`group inline-flex items-center gap-2 py-2.5 text-base transition-colors hover:text-gold-500 ${r.primary ? "text-white" : "text-surface-300"}`}
                   >
                     <span>{r.label}</span>

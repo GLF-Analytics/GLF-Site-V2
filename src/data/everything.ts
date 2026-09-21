@@ -2,14 +2,19 @@
   /everything: the long list. Everything Gabriel has done since 2017, in
   order (Mindshare first, this month last; the page never says it is
   chronological). S20 (9/15/26): consolidated from forty bullets to fewer,
-  longer ones (bartaco five, birthday-cards.ai three) with no fact dropped. Each bullet names its project; consecutive bullets with the
-  same project render under one mono heading on the page, so a run of bartaco
-  bullets reads as one block. Each bullet is one or two plain sentences plus
-  the tools it used. The word cloud on the page is COMPUTED from this text at build time,
-  so editing a bullet re-sizes the cloud. Rules that govern this file:
-  first person implied, no prices, no client performance numbers unless they
-  are already on this site or in the resume, the construction client is
-  always "a construction management firm in LA", no em or en dashes.
+  longer ones. S31 (9/21/26), his brief: shorter and weighted to what a
+  homepage visitor came for (growing revenue, running leaner, building data
+  systems, AI inside an organization). Every project keeps its run; sibling
+  bullets merged, chips capped at five, no fact added. The bullets and facts
+  that came out are listed in archive/2026-09-21-s31-everything-consolidated.
+  Each bullet names its project; consecutive bullets with the same project
+  render under one mono heading on the page. The word cloud is CURATED since
+  S31: each term carries a weight from 1 to 5 that sets its size (his call:
+  the words that sell him best, not a count). The one guard left: a term that
+  no longer appears in any bullet or chip throws at build. Rules that govern
+  this file: first person implied, no prices, no client performance numbers
+  unless they are already on this site or in the resume, the construction
+  client is always "a construction management firm in LA", no em or en dashes.
 */
 
 export type Bullet = { project: string; text: string; tools: string[] };
@@ -23,27 +28,22 @@ export const intro = {
 export const bullets: Bullet[] = [
   {
     project: "Mindshare",
-    text: "Ran brand lift studies for Facebook at Mindshare, measuring whether live campaigns moved anything, and presented the reads to the client. Supported media optimization across programmatic, display, video, paid social, and search.",
-    tools: ["marketing research", "paid social", "paid search", "programmatic"]
-  },
-  {
-    project: "Mindshare",
-    text: "Built the ETL and the database behind that client's reporting, with Tableau dashboards on top.",
-    tools: ["SQL", "ETL", "Tableau"]
+    text: "Ran brand lift studies for Facebook at Mindshare and presented the reads to the client. Built the ETL and the database behind that client's reporting, with Tableau dashboards on top.",
+    tools: ["marketing research", "paid social", "SQL", "ETL", "Tableau"]
   },
   {
     project: "Your Super",
-    text: "Joined Your Super as its first data hire and built the data warehouse and the reporting the business ran on as revenue passed $60 million. The SQL tables carried the business logic, so every report used the same definition of an order, a subscriber, and a refund.",
+    text: "First data hire at Your Super. Built the data warehouse and the reporting the business ran on as revenue passed $60 million, with one definition of an order, a subscriber, and a refund in every report.",
     tools: ["SQL", "data warehouse", "reporting", "data modeling"]
   },
   {
     project: "Your Super",
-    text: "Built the forecasting models operations used day to day, inventory projections and demand for new products, and the retention reporting behind a growing subscription program.",
+    text: "Built the forecasting models operations used day to day, from inventory projections to demand for new products, and the retention reporting behind a growing subscription program.",
     tools: ["forecasting", "Excel", "SQL", "analytics"]
   },
   {
     project: "GLF Analytics",
-    text: "Started GLF Analytics in 2021, set up the business, hired and managed six US-based contractors, and built a sales process that has run on referrals since.",
+    text: "Started GLF Analytics in 2021, hired and managed six US-based contractors, and built a sales process that has run on referrals since.",
     tools: ["business operations", "sales"]
   },
   {
@@ -63,23 +63,18 @@ export const bullets: Bullet[] = [
   },
   {
     project: "UCAN",
-    text: "Stayed on at UCAN as digital strategist for a year and a half, growing paid social, influencer, podcast, and sampling channels and bringing acquisition costs down.",
+    text: "Brought UCAN's acquisition costs down over a year and a half as digital strategist, growing the paid social, influencer, podcast, and sampling channels.",
     tools: ["paid social", "influencer marketing", "growth strategy"]
   },
   {
     project: "Gotham Goods",
-    text: "Tech lead for Gotham through the launch of its first retail store in the Bowery, managing the agency that built the custom-coded site. Gotham did more than $5 million in revenue in year one.",
-    tools: ["web development", "agency management", "eCommerce"]
-  },
-  {
-    project: "Gotham Goods",
-    text: "Set up Gotham's tagging and analytics from day one in GA4 and Google Tag Manager, built its email program in Klaviyo, and ran loyalty and point-of-sale software through the store launch.",
-    tools: ["GA4", "Google Tag Manager", "Klaviyo", "email marketing", "loyalty", "POS"]
+    text: "Tech lead for Gotham through the launch of its first retail store in the Bowery. Gotham did more than $5 million in revenue in year one. Managed the agency that built the custom-coded site and set up GA4, Google Tag Manager, Klaviyo email, loyalty, and point of sale from day one.",
+    tools: ["web development", "eCommerce", "GA4", "Google Tag Manager", "Klaviyo"]
   },
   {
     project: "Haven's Kitchen",
-    text: "Launched direct-to-consumer eCommerce for Haven's Kitchen, a brand that had only sold through retail and Amazon, managing the three engineers who built it. Then integrated Amazon Buy with Prime and ran the Aioli line launch with new product pages, Google Ads, and the weekly strategy call.",
-    tools: ["eCommerce", "web development", "Amazon", "Buy with Prime", "Google Ads", "growth marketing"]
+    text: "Launched direct-to-consumer eCommerce for Haven's Kitchen, a brand that had only sold through retail and Amazon, managing the three engineers who built it. Then integrated Amazon Buy with Prime and ran the Aioli line launch with new product pages and Google Ads.",
+    tools: ["eCommerce", "web development", "Amazon", "Google Ads", "growth marketing"]
   },
   {
     project: "Super Teeth",
@@ -88,142 +83,119 @@ export const bullets: Bullet[] = [
   },
   {
     project: "Fox Fodder Flowers",
-    text: "Ran a technical SEO audit for Fox Fodder Flowers, canonical tags to sitemap to internal linking, then built its Google Ads account from nothing and kept it profitable on brand and non-brand terms. Sales grew 20% that year.",
+    text: "Sales at Fox Fodder Flowers grew 20% in a year. Ran the technical SEO audit, then built its Google Ads account from nothing and kept it profitable on brand and non-brand terms.",
     tools: ["SEO audit", "Google Ads", "paid search", "growth"]
   },
   {
     project: "bartaco",
-    text: "Led digital marketing and growth for bartaco across 34 markets: email, loyalty, paid media, website, app, and takeout. Ran the email program to more than 500,000 subscribers and built an AI-assisted creative workflow that turns a concept into a finished Klaviyo campaign.",
-    tools: ["Klaviyo", "paid media", "loyalty", "Olo", "growth marketing", "email marketing", "lifecycle", "Adobe Firefly", "Claude", "brand"]
+    text: "Led digital marketing and growth for bartaco across 34 markets: email, loyalty, paid media, website, and app. Ran the email program to more than 500,000 subscribers and built an AI-assisted creative workflow that turns a concept into a finished Klaviyo campaign.",
+    tools: ["Klaviyo", "email marketing", "loyalty", "paid media", "Claude"]
   },
   {
     project: "bartaco",
-    text: "Ran the QR dine-in ordering rollout across 30 locations with multiple vendors and more than 50 people, and the ezCater catering listings in seven markets: sponsored budgets, commission bids that set search rank, a store-by-store audit of the return.",
-    tools: ["Olo", "OneDine", "project management", "product", "ezCater", "marketplace advertising"]
+    text: "Moved Uber Eats and DoorDash onto a market-by-market profitability framework, with a keep or remove call on every market each month taken to the CEO and CFO. Delivery is measured on payout dollars, not platform-reported sales. Automated the month close in Python, from payout exports to a year-over-year Google Sheet with an executive overview.",
+    tools: ["Uber Eats", "DoorDash", "growth strategy", "Python", "Google Sheets"]
   },
   {
     project: "bartaco",
-    text: "Moved Uber Eats and DoorDash onto a market-by-market profitability framework: a keep or remove call on every market each month, taken to the CEO and CFO. Delivery is measured on payout dollars, not platform-reported sales, which gave the two platforms two jobs: one wins new customers, the other keeps them.",
-    tools: ["Uber Eats", "DoorDash", "growth strategy", "delivery marketing", "analytics", "customer acquisition", "Loop"]
+    text: "Ran the QR dine-in ordering rollout across 30 locations with multiple vendors and more than 50 people.",
+    tools: ["project management", "product", "Olo", "OneDine"]
   },
   {
     project: "bartaco",
-    text: "Built the delivery reporting in Python: an automated month close (payout exports in, a year-over-year Google Sheet with an executive overview out) and a monthly operations pipeline for missing items, wrong orders, and cancellations across 31 markets, cut for the CEO, regional managers, and GMs. It found the cost sat in missing items on bundled orders and turned a menu debate into a packing checklist.",
-    tools: ["Python", "pandas", "Google Sheets API", "Claude Code", "openpyxl", "Excel", "operations analytics"]
-  },
-  {
-    project: "bartaco",
-    text: "Audited the data before reading it: a DoorDash denominator that halved error rates, a mismatched Uber Eats export window, a customer undercount that would have inflated a growth story. Built a self-serve operations knowledge base regional managers upload to Claude and question directly, sixteen versions with a privacy scrub on each, and ran a five-channel competitor pricing study across ten brands, more than 1,200 price points traceable to their sources.",
-    tools: ["data audit", "data integrity", "pandas", "Claude", "Python", "knowledge base", "markdown", "Claude Code", "headless Edge", "Excel", "pricing analysis"]
+    text: "Built the monthly operations reporting for 31 markets in Python. It found the cost sat in missing items on bundled orders and turned a menu debate into a packing checklist. Added a knowledge base regional managers question directly in Claude and a competitor pricing study of more than 1,200 sourced price points.",
+    tools: ["Python", "operations analytics", "knowledge base", "Claude", "pricing analysis"]
   },
   {
     project: "A construction management firm in LA",
-    text: "Built a weekly report generator for a construction management firm in LA: a form and a contractor PDF in, a branded report out, on Power Automate, the Claude API, and Azure Document Intelligence. No new software for the team and a named human reviewer on every workflow.",
-    tools: ["Power Automate", "Claude API", "Azure Document Intelligence", "SharePoint"]
-  },
-  {
-    project: "A construction management firm in LA",
-    text: "Reused that architecture for a general document generator and a bid comparison analyzer that turns a folder of bids into an Excel scoreboard. One review showed a $1.3M headline gap between two bids was misleading.",
-    tools: ["Power Automate", "Claude API", "Excel", "automation"]
+    text: "Built a weekly report generator for a construction management firm in LA on Power Automate and the Claude API: a form and a contractor PDF in, a branded report out. No new software for the team and a named human reviewer on every workflow. The same build compares bids, and one review showed a $1.3M headline gap between two bids was misleading.",
+    tools: ["Power Automate", "Claude API", "SharePoint", "Excel", "automation"]
   },
   {
     project: "A construction management firm in LA",
     text: "Ran eight rounds of AI training at that firm, built Copilot agents and a prompt library the team maintains, and wrote the firm's voice as a rules register so every document reads the same.",
-    tools: ["Microsoft 365 Copilot", "Box AI", "training", "prompt library", "brand voice"]
+    tools: ["Microsoft 365 Copilot", "training", "prompt library", "brand voice"]
   },
   {
     project: "birthday-cards.ai",
-    text: "Designed, built, and launched birthday-cards.ai with Claude Code, from the Next.js front end to the OpenAI and Gemini image models behind it. Built the brand with it: a style guide, accessible color tokens, line icons, a typing demo, storytelling on every page.",
-    tools: ["Claude Code", "Next.js", "TypeScript", "Tailwind", "Vercel", "OpenAI", "Gemini", "Airtable", "Resend", "Upstash", "brand", "design", "storytelling", "style guide"]
+    text: "Designed, built, and launched birthday-cards.ai with Claude Code, from the Next.js front end to the OpenAI and Gemini image models behind it. It runs on its own analytics, and people arrive from Google, Bing, DuckDuckGo, and ChatGPT and make cards.",
+    tools: ["Claude Code", "Next.js", "OpenAI", "Airtable", "SEO"]
   },
   {
     project: "birthday-cards.ai",
-    text: "Wrote the tracking, about 60 events, so a delivered card counts apart from a click, and built the search and AI-answer page machine: landing pages with canonicals, JSON-LD, an image sitemap, llms.txt. People arrive from Google, Bing, DuckDuckGo, and ChatGPT and make cards.",
-    tools: ["Vercel Web Analytics", "Google Search Console", "Bing Webmaster", "IndexNow", "analytics", "SEO", "GEO", "JSON-LD", "llms.txt"]
-  },
-  {
-    project: "birthday-cards.ai",
-    text: "Hardened it for real traffic: per-IP rate limits, a daily render budget, spend caps with alerts, one-send email idempotency, a test suite before every deploy. Then forked the code into custom-cards.ai, a white-label card page for shops, and makemeabook.ai, a five-page illustrated book from one name and one idea.",
-    tools: ["Upstash", "Vitest", "security", "reliability", "Next.js", "Gemini", "OpenAI", "white-label", "product"]
+    text: "Hardened it for real traffic with rate limits, spend caps with alerts, and a test suite before every deploy. Then forked the code into custom-cards.ai, a white-label card page for shops, and makemeabook.ai, an illustrated book from one name and one idea.",
+    tools: ["security", "reliability", "Vitest", "white-label", "product"]
   },
   {
     project: "AI on every project",
-    text: "Built .md note systems for AI on every project: a briefing file, a state file rewritten each session, an append-only log, and archive-before-delete, more than 240 sessions deep on one product. Wrote twelve Claude Code skills on top, each validated before use.",
+    text: "Built .md note systems for AI on every project: a briefing file, a state file rewritten each session, an append-only log, and archive-before-delete. Wrote Claude Code skills on top, each validated before use.",
     tools: ["Claude Code", "markdown", "context engineering", "skills"]
   },
   {
     project: "glfanalytics.com",
-    text: "Audited and rebuilt glfanalytics.com in Astro on Vercel with a live stats block that reads the Vercel Web Analytics API at build time, and this page.",
-    tools: ["Astro", "Tailwind", "Vercel", "TypeScript", "web development"]
+    text: "Audited and rebuilt glfanalytics.com in Astro on Vercel with a live stats block that reads the Vercel Web Analytics API at build time.",
+    tools: ["Astro", "Tailwind", "Vercel", "web development"]
   }
 ];
 
 /*
-  The cloud vocabulary. `label` is what the page shows; `pattern` is the
-  regex counted against every bullet's text and tools (case-insensitive
-  unless the pattern says otherwise). Default = the label as a prefix at a
-  word boundary, so "audit" also counts "audited" and "audits", and "data"
-  counts "database" and "datasets". Build throws if any term scores zero.
+  The cloud vocabulary (curated since S31). `label` is what the page shows;
+  `weight` sets the size and tone: 5 is the one gold word, 1 the smallest.
+  Change a word's size by changing its number. `pattern` is only the presence
+  check against every bullet's text and tools (default = the label as a
+  prefix at a word boundary, so "audit" also matches "audited"). Build throws
+  if a term matches nothing, so the cloud never names a word the list dropped.
 */
-export type CloudTerm = { label: string; pattern?: RegExp };
+export type CloudTerm = { label: string; weight: 1 | 2 | 3 | 4 | 5; pattern?: RegExp };
 
 export const cloudTerms: CloudTerm[] = [
-  { label: "data" },
-  { label: "analytics", pattern: /(?<!GLF )\banalytic/gi },
-  { label: "marketing" },
-  { label: "growth", pattern: /\bgrow/gi },
-  { label: "audit" },
-  { label: "reporting", pattern: /\breport(ing|s)?\b/gi },
-  { label: "strategy", pattern: /\bstrateg/gi },
-  { label: "forecasting", pattern: /\bforecast/gi },
-  { label: "email" },
-  { label: "SEO", pattern: /\bSEO\b/g },
-  { label: "paid media", pattern: /\bpaid (media|social|search)\b/gi },
-  { label: "AI", pattern: /\bAI\b/g },
-  { label: "automation", pattern: /\bautomat/gi },
-  { label: "design", pattern: /\bdesign/gi },
-  { label: "brand", pattern: /(?<!non-)\bbrand\b(?! lift)/gi },
-  { label: "storytelling" },
-  { label: "product" },
-  { label: "training", pattern: /\btrain/gi },
-  { label: "eCommerce", pattern: /\becommerce\b/gi },
-  { label: "integrations", pattern: /\bintegrat/gi },
-  { label: "knowledge base" },
-  { label: "delivery", pattern: /\bdeliver/gi },
-  { label: "operations", pattern: /\boperation/gi },
-  { label: "SQL", pattern: /\bSQL\b/g },
-  { label: "BigQuery" },
-  { label: "Snowflake" },
-  { label: "Looker Studio" },
-  { label: "Tableau" },
-  { label: "GA4", pattern: /\bGA4\b/g },
-  { label: "Google Tag Manager" },
-  { label: "Klaviyo" },
-  { label: "Google Ads" },
-  { label: "Amazon" },
-  { label: "Uber Eats" },
-  { label: "DoorDash" },
-  { label: "Olo", pattern: /\bOlo\b/g },
-  { label: "ezCater" },
-  { label: "Python" },
-  { label: "pandas" },
-  { label: "Excel" },
-  { label: "Google Sheets" },
-  { label: "Claude Code" },
-  { label: "Claude API" },
-  { label: "Claude", pattern: /\bClaude\b(?! Code| API)/g },
-  { label: "Power Automate" },
-  { label: "Azure" },
-  { label: "Copilot" },
-  { label: "Next.js", pattern: /\bNext\.js/g },
-  { label: "TypeScript" },
-  { label: "Tailwind" },
-  { label: "Vercel" },
-  { label: "Airtable" },
-  { label: "Resend" },
-  { label: "Upstash" },
-  { label: "OpenAI" },
-  { label: "Gemini" },
-  { label: "Astro", pattern: /\bAstro\b/g },
-  { label: "markdown", pattern: /\b(markdown|\.md)\b/gi }
+  { label: "data", weight: 5 },
+
+  { label: "growth", weight: 4, pattern: /\bgrow/gi },
+  { label: "reporting", weight: 4, pattern: /\breport(ing|s)?\b/gi },
+  { label: "AI", weight: 4, pattern: /\bAI\b/g },
+
+  { label: "SQL", weight: 3, pattern: /\bSQL\b/g },
+  { label: "BigQuery", weight: 3 },
+  { label: "analytics", weight: 3, pattern: /(?<!GLF )\banalytic/gi },
+  { label: "strategy", weight: 3, pattern: /\bstrateg/gi },
+  { label: "forecasting", weight: 3, pattern: /\bforecast/gi },
+  { label: "automation", weight: 3, pattern: /\bautomat/gi },
+  { label: "marketing", weight: 3 },
+  { label: "Claude Code", weight: 3 },
+
+  { label: "email", weight: 2 },
+  { label: "SEO", weight: 2, pattern: /\bSEO\b/g },
+  { label: "paid media", weight: 2, pattern: /\bpaid (media|social|search)\b/gi },
+  { label: "eCommerce", weight: 2, pattern: /\becommerce\b/gi },
+  { label: "training", weight: 2, pattern: /\btrain/gi },
+  { label: "Python", weight: 2 },
+  { label: "Klaviyo", weight: 2 },
+  { label: "Snowflake", weight: 2 },
+  { label: "Looker Studio", weight: 2 },
+  { label: "Power Automate", weight: 2 },
+  { label: "Uber Eats", weight: 2 },
+  { label: "DoorDash", weight: 2 },
+  { label: "operations", weight: 2, pattern: /\boperation/gi },
+  { label: "audit", weight: 2 },
+
+  { label: "GA4", weight: 1, pattern: /\bGA4\b/g },
+  { label: "Google Tag Manager", weight: 1 },
+  { label: "Google Ads", weight: 1 },
+  { label: "Amazon", weight: 1 },
+  { label: "Tableau", weight: 1 },
+  { label: "Excel", weight: 1 },
+  { label: "Google Sheets", weight: 1, pattern: /\bGoogle Sheet/gi },
+  { label: "Copilot", weight: 1 },
+  { label: "Vercel", weight: 1 },
+  { label: "Next.js", weight: 1, pattern: /\bNext\.js/g },
+  { label: "Astro", weight: 1, pattern: /\bAstro\b/g },
+  { label: "Airtable", weight: 1 },
+  { label: "OpenAI", weight: 1 },
+  { label: "Gemini", weight: 1 },
+  { label: "knowledge base", weight: 1 },
+  { label: "product", weight: 1 },
+  { label: "brand", weight: 1, pattern: /(?<!non-)\bbrand\b(?! lift)/gi },
+  { label: "design", weight: 1, pattern: /\bdesign/gi },
+  { label: "integrations", weight: 1, pattern: /\bintegrat/gi }
 ];
