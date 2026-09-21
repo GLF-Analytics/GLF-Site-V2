@@ -1,27 +1,30 @@
 /**
  * Copy for /using-data-to-build-with-ai (S13, Sep 2026; recut S13b on
- * Gabriel's lede; cut by a quarter in S14; SECOND HALF REDESIGNED S28, 9/17/26:
- * the seven prose sections became four beats, each a mono eyebrow, one heading,
- * at most two sentences and one visual). The page renders this file; edit copy
- * here, never in the .astro. Rules that the page enforces at build: no numeral
- * in any rendered text other than a four-digit year unless the field is flagged
- * numerals: "dated-fact" and names its source file (the site law: traffic
- * numbers come from the snapshot or the live API, never typed). Counts in prose
- * are written as words. Headings carry no commas. The one live number in prose
- * is rendered by the page from getBcStats(), under the system beat. Chart data
- * (the method rows, the growth markers) carries a source per record; sources
- * are build-time provenance and never render.
+ * Gabriel's lede; cut by a quarter in S14; second half redesigned S28;
+ * SECOND HALF REWRITTEN AS A BLOG POST S30, 9/21/26: his own dictation close
+ * to word for word, plain headings, three simple graphics). The page renders
+ * this file; edit copy here, never in the .astro. Rules that the page enforces
+ * at build: no numeral in any paragraph, caption or heading other than a
+ * four-digit year unless the paragraph is flagged numerals: "dated-fact" and
+ * names its source file (the site law: traffic numbers come from the snapshot
+ * or the live API, never typed). Counts in prose are written as words.
+ * Headings carry no commas. The one live number in prose is rendered by the
+ * page from getBcStats() (the searchLine block). The method mix is a dated
+ * analysis fact: the card counts live here with their source and the page
+ * computes the shares, so a percentage is never typed.
  */
 
 export type Paragraph =
   | string
   | { text: string; numerals: "dated-fact"; source: string };
 
-export type Beat = {
+export type Figure = { figure: "tools" | "growth" | "searchLine" | "methods" };
+export type Block = Paragraph | Figure;
+
+export type PostSection = {
   id: string;
-  eyebrow: string;
   heading: string;
-  sentences: Paragraph[];
+  blocks: Block[];
 };
 
 export const meta = {
@@ -32,8 +35,8 @@ export const meta = {
   description:
     "How birthday-cards.ai grew from a card maker for friends into a product built end to end with AI, run on its own analytics, from the command line in Claude Code.",
   published: "2026-09-13",
-  // Bumped once per copy change (S28 redesign), never per rebuild.
-  modified: "2026-09-17"
+  // Bumped once per copy change (S30 blog post), never per rebuild.
+  modified: "2026-09-21"
 };
 
 // Product names that carry a digit. The page strips these before the numeral
@@ -49,150 +52,104 @@ export const sources = [
   "Claude Code"
 ];
 
-/* The four beats of the second half, in page order. Each renders as a mono
-   eyebrow, a heading, the sentences, then its visual (see the page). */
-export const beats: Beat[] = [
-  {
-    id: "loop",
-    eyebrow: "The system",
-    heading: "Everything runs from one command line",
-    sentences: [
-      "The app sends an event for every step a person takes and Claude Code reads every source through MCP. A weekly read tells me what moved and I decide what gets built."
-    ]
-  },
-  {
-    id: "decisions",
-    eyebrow: "One question",
-    heading: "Which making method do people keep",
-    sentences: [
-      "A search visitor made five cards and saved one Surprise Me so I asked the data. Every group is under twenty people so the order is the finding and the rates are not."
-    ]
-  },
+/* The tools of the post. One list drives two things: every mention of a name
+   in a post paragraph renders bold, and ToolStrip.astro draws the rows. The
+   page throws if a name here never appears in the post. */
+export type Tool = { name: string; group: "Build" | "Host" | "Draw" | "Measure" | "Notes" };
+
+export const toolGroups: Tool["group"][] = ["Build", "Host", "Draw", "Measure", "Notes"];
+
+export const tools: Tool[] = [
+  { name: "Claude Code", group: "Build" },
+  { name: "GitHub", group: "Build" },
+  { name: "command line", group: "Build" },
+  { name: "Vercel", group: "Host" },
+  { name: "OpenAI", group: "Draw" },
+  { name: "Vercel Web Analytics", group: "Measure" },
+  { name: "Google Search Console", group: "Measure" },
+  { name: "Bing Webmaster", group: "Measure" },
+  { name: "Airtable", group: "Measure" },
+  { name: ".md notes", group: "Notes" }
+];
+
+/* The post, in page order (S30, 9/21/26). His dictation close to word for
+   word; the edits are listed in archive/2026-09-21-s30-data-page-post. The
+   last paragraph of the last section is the sign-off. */
+export const post: PostSection[] = [
   {
     id: "start",
-    eyebrow: "How it grew",
-    heading: "Two months as the only user then search found it",
-    sentences: ["Nothing was paid and nothing was sent. The three marks are the work that moved the line."]
+    heading: "How it started",
+    blocks: [
+      "My friend gave me a personalized gift made with AI. Personalized gift giving is already very popular, and I knew that with AI it will only grow.",
+      "I also love giving cards and writing cards. It's one of the few times you have a good excuse to be vulnerable with someone and share how you feel.",
+      "So I built birthday-cards.ai. I was the only user for a few months. Then a few friends and family tried it and I got good feedback. I was printing the cards at home on cardstock, and the cards I gave to people in real life were well received."
+    ]
   },
   {
-    id: "for-a-business",
-    eyebrow: "What this is",
-    heading: "From idea to product with full visibility",
-    sentences: []
+    id: "build",
+    heading: "Getting set up",
+    blocks: [
+      "I write SQL. I'm not a full stack developer. So there was a learning curve. I had to get set up with GitHub, get comfortable on the command line, and learn Claude Code. Vercel hosts the site. OpenAI draws the cards. Airtable holds the emails.",
+      "The piece that guides all of it is a system of .md notes. A briefing, a state file that gets rewritten every session, a session log, a style guide. Claude reads them before it writes any code.",
+      { figure: "tools" }
+    ]
+  },
+  {
+    id: "growth",
+    heading: "A few sessions from random places",
+    blocks: [
+      "Anyways, I saw a few sessions from random places. So I set up analytics further and kept working on this as a passion project.",
+      { figure: "growth" },
+      { figure: "searchLine" },
+      "Three pieces of work moved those bars. In July, one indexing fix. Every search signal had been pointing at the wrong host. In August the analytics went live and the first weekly read ran. In September I built thirteen pages, each around one thing people search for.",
+      "I can also see how people make their cards.",
+      { figure: "methods" }
+    ]
+  },
+  {
+    id: "loop",
+    heading: "A glimpse into the future",
+    blocks: [
+      "Once I got all the systems connected, it became really cool to see a glimpse into the future (or the now). Claude Code reads Vercel Web Analytics, Google Search Console and Bing Webmaster and provides the analysis. Then we work together to plan the next product development steps.",
+      "AI is not doing all of it. It does the heavy lifting on the analysis, and it ties things together so nicely. We set rules on what works and what doesn't, so as we develop it learns about what worked and what didn't. We have brand guidelines and tone guidelines, and all of these things mean the project compounds knowledge.",
+      "I'm sure there are some risks associated with this workflow. But I move slow and deliberately, or at least I try to."
+    ]
+  },
+  {
+    id: "ahead",
+    heading: "Where it stands",
+    blocks: [
+      "It's all free now. It's my lead generator for GLF Analytics, to show what I can do. If it gets enough traffic, I might consider paid upgrades and ways to monetize.",
+      "It's all new. So this is my test project, my passion project, my playground, and a utility that has saved me a lot on cards I would otherwise be buying from the store.",
+      "-Gabe"
+    ]
   }
 ];
 
-/* The systems loop, in loop order. Rendered by SystemsLoop.astro as an ordered
-   list in three lanes. `person` marks the one node a person owns. */
-export type SystemNode = {
-  id: string;
-  lane: "sources" | "read" | "build";
-  role: string;
-  label: string;
-  sub?: string[];
-  person?: boolean;
+export const captions = {
+  tools: "The tools behind birthday-cards.ai.",
+  growth: "Visitors from search by month.",
+  methods: "More than half of the cards start with someone's photo."
 };
 
-export const systemLanes: { id: SystemNode["lane"]; label: string }[] = [
-  { id: "sources", label: "Sources" },
-  { id: "read", label: "Read" },
-  { id: "build", label: "Decide and build" }
-];
+/* How search visitors made their cards (9/17/26 analysis). Counts of cards by
+   homepage method; `photo` marks the methods that start from a photo. The
+   page computes every share from these counts. No keep rate appears anywhere:
+   every per-method group of makers is under twenty people. */
+export type MethodCount = { method: string; cards: number; photo: boolean };
 
-export const systems: SystemNode[] = [
-  { id: "app", lane: "sources", role: "The product", label: "The app sends an event for every step a person takes" },
-  { id: "vercel", lane: "sources", role: "Source", label: "Vercel Web Analytics" },
-  { id: "gsc", lane: "sources", role: "Source", label: "Google Search Console" },
-  { id: "bing", lane: "sources", role: "Source", label: "Bing Webmaster" },
-  { id: "airtable", lane: "sources", role: "Source", label: "Airtable holds the leads" },
-  { id: "reads", lane: "read", role: "Claude Code", label: "Reads each source through MCP and its API" },
-  {
-    id: "dashboard",
-    lane: "read",
-    role: "One dashboard",
-    label: "Every number reconciles before the page builds",
-    sub: ["Four checks run on each refresh", "A mismatch stops the build"]
-  },
-  {
-    id: "weekly",
-    lane: "read",
-    role: "Weekly read",
-    label: "What moved since last week in plain words",
-    sub: ["Was any of this me?", "Nothing under twenty arrivals counts"]
-  },
-  { id: "decide", lane: "build", role: "A person", label: "I decide what changes and what waits", person: true },
-  { id: "build", lane: "build", role: "Claude Code", label: "Builds what was picked" },
-  { id: "gates", lane: "build", role: "Gates", label: "Types lint tests and the build", sub: ["Screenshots at phone and desktop widths"] },
-  { id: "push", lane: "build", role: "Release", label: "I review and push from GitHub Desktop" },
-  { id: "live", lane: "build", role: "Live", label: "The next event starts the loop again" }
-];
-
-/* The worked example (9/17/26). Numbers are counts of people from the search
-   cohort August 26 to September 17; the figure draws one dot per maker and
-   fills the dot when that maker saved, downloaded, emailed or shared. No
-   percentage anywhere: every group is under twenty people. */
-export type MethodRow = { method: string; makers: number; acted: number; cards: number };
-
-export const methodCase = {
+export const methodMix = {
   date: "2026-09-17",
-  question: "Which making method do people keep?",
+  headline: "of cards start with a photo",
+  window: "Search visitors, August 26 to September 17",
   rows: [
-    { method: "Build from scratch", makers: 18, acted: 6, cards: 48 },
-    { method: "Transform a photo", makers: 11, acted: 7, cards: 41 },
-    { method: "Funny premade", makers: 8, acted: 2, cards: 12 },
-    { method: "Surprise me", makers: 5, acted: 3, cards: 10 }
-  ] as MethodRow[],
-  caption: "Search visitors from late August to mid September. A filled dot is a maker who saved, downloaded, emailed or shared.",
+    { method: "Build from scratch", cards: 48, photo: false },
+    { method: "Transform a photo", cards: 41, photo: true },
+    { method: "Funny premade", cards: 12, photo: true },
+    { method: "Surprise me", cards: 10, photo: true }
+  ] as MethodCount[],
   source: "Claude Fun/analytics/analyses/2026-09-17-flow-mix/README.md"
 };
-
-export const decisions: { label: string; text: Paragraph }[] = [
-  {
-    label: "Decided: nothing",
-    text: "Every group is under twenty people. Instead of moving anything on the page I wrote it down as a test with a read date."
-  },
-  {
-    label: "Decided: one line",
-    text: {
-      text: "The same read found 44 completed shares and zero arrivals that could be traced back. The share link now carries a tag. Live the same afternoon and read in fourteen days.",
-      numerals: "dated-fact",
-      source: "Claude Fun/analytics/analyses/2026-09-17-flow-mix/README.md; Claude Fun/SESSION_LOG.md S274 (9/17/26)"
-    }
-  }
-];
-
-/* The growth chart's three work markers. `month` places the tick; `when` and
-   `label` render in the key under the chart. Each carries its source. */
-export type GrowthMarker = { month: string; when: string; label: string; source: string };
-
-export const growthMarkers: GrowthMarker[] = [
-  {
-    month: "2026-07",
-    when: "July",
-    label: "One indexing fix. Every search signal had pointed at the wrong host.",
-    source: "Claude Fun/SESSION_LOG.md S56 (7/19/26); Claude Fun/LEARNINGS.md sec 2"
-  },
-  {
-    month: "2026-08",
-    when: "August",
-    label: "The analytics pipe went live and the first weekly read ran.",
-    source: "Claude Fun/audits/ANALYTICS_SETUP_PLAN_2026-08-28.md; analytics/SESSION_LOG.md S1 to S2"
-  },
-  {
-    month: "2026-09",
-    when: "September",
-    label: "Thirteen pages built around one intent each from one page machine.",
-    source: "Claude Fun/SESSION_LOG.md S225 to S253; Claude Fun/audits/GROWTH_ARC_2026-09-17.md sec 5"
-  }
-];
-
-/* The closing grid. Plain nouns, one line each. */
-export const takeaways: { label: string; line: string }[] = [
-  { label: "Built", line: "End to end with AI and every function live" },
-  { label: "Measured", line: "About sixty events and one dashboard that reconciles" },
-  { label: "Decided", line: "A person picks and Claude builds" },
-  { label: "Tested", line: "Read on a date and changed on the numbers" }
-];
 
 export const faq: { q: string; a: string }[] = [
   {

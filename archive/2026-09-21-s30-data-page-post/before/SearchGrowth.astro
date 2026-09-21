@@ -1,0 +1,87 @@
+---
+/**
+ * Visitors from search per month with the three work markers (S28, 9/17/26),
+ * on /using-data-to-build-with-ai. One inline SVG line, geometry computed here
+ * the way MonthlyCards does it (same viewBox so the two charts line up), one
+ * series, one hairline baseline, gold as the only accent. Values from
+ * getBcMonthly() (bc-monthly.json search_visitors, or the live API). Markers
+ * from how-data.ts growthMarkers; their text lives in the key under the chart
+ * at every width because three labels collide inside a phone-width chart.
+ * The current month is hollow and labeled "so far" from fetched_at.
+ */
+import { getBcMonthly } from "../lib/bcStats";
+import { growthMarkers } from "../data/how-data";
+
+const data = await getBcMonthly();
+const months = data.months;
+if (!months.length) throw new Error("[searchGrowth] empty series");
+if (months.some((m) => typeof m.search_visitors !== "number")) throw new Error("[searchGrowth] a month is missing search_visitors");
+
+const currentKey = data.fetched_at.slice(0, 7);
+const short = (m: string) =>
+  new Date(`${m}-15T12:00:00Z`).toLocaleDateString("en-US", { month: "short", timeZone: "UTC" });
+const long = (m: string) =>
+  new Date(`${m}-15T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+const fmt = (n: number) => n.toLocaleString("en-US");
+
+const W = 640;
+const H = 224;
+const padX = 12;
+const top = 48;
+const baseline = 184;
+const labelY = 208;
+const slot = (W - padX * 2) / months.length;
+const max = Math.max(1, ...months.map((m) => m.search_visitors));
+const markerMonths = new Set(growthMarkers.map((g) => g.month));
+
+const points = months.map((m, i) => {
+  const cx = Math.round(padX + slot * i + slot / 2);
+  const cy = Math.round(baseline - ((baseline - top) * m.search_visitors) / max);
+  const partial = m.month === currentKey;
+  const marked = markerMonths.has(m.month);
+  const last = i === months.length - 1;
+  return { ...m, i, cx, cy, partial, marked, last, labeled: i === 0 || last || marked, label: short(m.month) };
+});
+const path = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.cx} ${p.cy}`).join(" ");
+const markerIndex = (month: string) => growthMarkers.findIndex((g) => g.month === month) + 1;
+
+const desc =
+  `Visitors from a search engine per month since ${long(months[0].month)}: ` +
+  points.map((p) => `${long(p.month)} ${fmt(p.search_visitors)}${p.partial ? " so far" : ""}`).join(", ") +
+  `. Marked months: ${growthMarkers.map((g) => `${g.when} (${g.label})`).join("; ")}.`;
+
+console.log(`[searchGrowth] ${months.length} months, last ${currentKey} ${fmt(points[points.length - 1].search_visitors)} so far, max ${max}, ${growthMarkers.length} markers`);
+---
+<figure class="sg mt-6 border border-white/[0.08] bg-surface-950 p-4 md:p-5">
+  <figcaption class="block font-mono text-[11px] tracking-[0.2em] uppercase text-surface-500 mb-3">Visitors from search per month</figcaption>
+  <svg viewBox={`0 0 ${W} ${H}`} class="block w-full h-auto" role="img" aria-labelledby="sg-title sg-desc">
+    <title id="sg-title">Visitors from search per month on birthday-cards.ai</title>
+    <desc id="sg-desc">{desc}</desc>
+    <line x1={padX} x2={W - padX} y1={baseline} y2={baseline} stroke="rgba(255,255,255,0.14)" stroke-width="1" />
+    {points.filter((p) => p.marked).map((p) => (
+      <g class="sg__marker">
+        <line x1={p.cx} x2={p.cx} y1={16} y2={baseline} stroke="#D4A853" stroke-width="1" stroke-dasharray="2 4" stroke-opacity="0.7" />
+        <rect x={p.cx - 3} y={6} width="6" height="6" fill="#D4A853" />
+        <text class="sg__marker-n" x={p.cx + 8} y={13} text-anchor="start">{markerIndex(p.month)}</text>
+      </g>
+    ))}
+    <path class="sg__line" d={path} fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
+    {points.map((p) => (
+      <g class="sg__pt" style={`--i:${p.i}`}>
+        <circle cx={p.cx} cy={p.cy} r={p.last ? 5 : 4} fill={p.partial ? "#050505" : p.last ? "#D4A853" : "#0a0a0a"} stroke={p.last ? "#D4A853" : "rgba(255,255,255,0.7)"} stroke-width={p.last ? 1.5 : 1} />
+        {p.labeled && (
+          <text class="sg__value" x={p.cx} y={p.cy - 12} text-anchor="middle">{fmt(p.search_visitors)}{p.partial ? " so far" : ""}</text>
+        )}
+        <text class="sg__month" x={p.cx} y={labelY} text-anchor="middle">{p.label}</text>
+      </g>
+    ))}
+  </svg>
+  <ol class="sg__key mt-4">
+    {growthMarkers.map((g, i) => (
+      <li class="sg__key-item">
+        <span class="sg__key-mark" aria-hidden="true">{i + 1}</span>
+        <span class="text-[13px] leading-snug text-surface-300"><span class="text-white">{g.when}.</span> {g.label}</span>
+      </li>
+    ))}
+  </ol>
+</figure>

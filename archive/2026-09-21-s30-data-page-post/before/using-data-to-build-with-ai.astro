@@ -8,12 +8,10 @@
 
   Build-time guards: a paragraph or FAQ answer with a numeral other than a
   four-digit year throws unless it is flagged numerals: "dated-fact" with a
-  source (the site law: traffic numbers are never typed). Since S30 (9/21/26)
-  everything under the numbers is a blog post in Gabriel's own words: plain
-  headings, paragraphs, three simple graphics (ToolStrip, SearchGrowth,
-  MethodMix) with a caption each, signed -Gabe. Every tool named in
-  how-data.ts `tools` renders bold wherever a post paragraph mentions it. The
-  post's word count is printed every build (band 450 to 650, a throw above 700).
+  source (the site law: traffic numbers are never typed). The word count is
+  printed so the read-time target (650 to 750 words since S14's 25% cut) is checked every build.
+  No data-reveal on this page (the /everything precedent): the chart and the
+  map animate on their own and the prose renders plainly.
 */
 import BaseLayout from "../layouts/BaseLayout.astro";
 import StatGrid from "../components/StatGrid.astro";
@@ -21,10 +19,10 @@ import MonthlyCards from "../components/MonthlyCards.astro";
 import CountryMap from "../components/CountryMap.astro";
 import { getBcStats } from "../lib/bcStats";
 import { bcStatsSource, siteUrl } from "../config/site";
-import ToolStrip from "../components/ToolStrip.astro";
-import MethodMix from "../components/MethodMix.astro";
+import SystemsLoop from "../components/SystemsLoop.astro";
+import MethodDots from "../components/MethodDots.astro";
 import SearchGrowth from "../components/SearchGrowth.astro";
-import { meta, sources, post, captions, tools, faq, namedTokens, type Paragraph, type Block, type Figure } from "../data/how-data";
+import { meta, sources, beats, systems, methodCase, decisions, growthMarkers, takeaways, faq, namedTokens, type Paragraph } from "../data/how-data";
 
 const s = await getBcStats();
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -38,49 +36,57 @@ const hasStrayNumeral = (t: string) => {
   return /\d/.test(stripped);
 };
 
-// S30 guard: every paragraph, caption and heading of the post is checked.
-// Numerals pass only inside a dated-fact paragraph with a source; headings
-// carry no commas; the post band is 450 to 650 words, a throw above 700.
-const isFigure = (b: Block): b is Figure => typeof b !== "string" && "figure" in b;
+// S28 guard: every rendered text field is checked. Numerals pass only inside a
+// dated-fact field with a source; headings carry no commas; the word band is
+// 380 to 480 (the redesign's target, POSITIONING.md), a throw above 500.
 const guardText = (where: string, p: Paragraph) => {
   const flagged = typeof p !== "string" && p.numerals === "dated-fact" && p.source.trim().length > 0;
   if (hasStrayNumeral(text(p)) && !flagged) {
     throw new Error(`[how-data] numeral in prose without a dated-fact source (${where}): "${text(p).slice(0, 60)}"`);
   }
 };
-for (const sec of post) {
-  if (sec.heading.includes(",")) throw new Error(`[how-data] heading with a comma: "${sec.heading}"`);
-  guardText(sec.id, sec.heading);
-  for (const b of sec.blocks) if (!isFigure(b)) guardText(sec.id, b);
+for (const b of beats) {
+  if (b.heading.includes(",")) throw new Error(`[how-data] heading with a comma: "${b.heading}"`);
+  for (const p of b.sentences) guardText(b.id, p);
 }
-for (const [k, c] of Object.entries(captions)) guardText(`captions/${k}`, c);
+for (const n of systems) {
+  guardText(`systems/${n.id}`, n.role);
+  guardText(`systems/${n.id}`, n.label);
+  for (const s of n.sub ?? []) guardText(`systems/${n.id}`, s);
+}
+for (const t of takeaways) { guardText("takeaways", t.label); guardText("takeaways", t.line); }
+for (const g of growthMarkers) {
+  if (!g.source.trim()) throw new Error(`[how-data] growth marker without a source: ${g.month}`);
+  guardText(`growthMarkers/${g.month}`, g.when);
+  guardText(`growthMarkers/${g.month}`, g.label);
+}
+guardText("methodCase", methodCase.question);
+guardText("methodCase", methodCase.caption);
+if (!methodCase.source.trim()) throw new Error("[how-data] methodCase without a source");
+for (const d of decisions) { guardText("decisions", d.label); guardText("decisions", d.text); }
 for (const f of faq) {
   if (hasStrayNumeral(f.a) || hasStrayNumeral(f.q)) throw new Error(`[how-data] numeral in the FAQ: "${f.q}"`);
 }
 
 const searchLine = `In the last ${s.window_days} days ${fmt(s.search_visitors_30d)} of ${fmt(s.visitors_30d)} visitors came from a search engine.`;
 
-// Every tool name renders bold wherever a post paragraph mentions it. The
-// paragraph is escaped first, then the names are wrapped, longest first so
-// "Vercel Web Analytics" wins over "Vercel". A listed tool the post never
-// mentions is a throw, so the strip and the prose cannot disagree.
-const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const reEsc = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const toolNames = tools.map((t) => t.name).sort((a, b) => b.length - a.length);
-const toolRe = new RegExp(`(?<![\\w])(${toolNames.map((n) => reEsc(esc(n))).join("|")})(?![\\w])`, "g");
-const bold = (t: string) => esc(t).replace(toolRe, '<strong class="font-medium text-white">$1</strong>');
-
-const postParagraphs = post.flatMap((sec) => sec.blocks.filter((b): b is Paragraph => !isFigure(b)).map(text));
-const postText = postParagraphs.join(" ");
-const unmentioned = tools.filter((t) => !new RegExp(`(?<![\\w])${reEsc(t.name)}(?![\\w])`).test(postText));
-if (unmentioned.length) throw new Error(`[how-data] tools never mentioned in the post: ${unmentioned.map((t) => t.name).join(", ")}`);
-const boldCount = (bold(postText).match(/<strong /g) ?? []).length;
-
-const words = (t: string) => t.split(/\s+/).filter(Boolean).length;
-const postWords = words([postText, searchLine, ...Object.values(captions)].join(" "));
-const wordCount = postWords + words([meta.lede, ...faq.flatMap((f) => [f.q, f.a])].join(" "));
-if (postWords > 700) throw new Error(`[how-data] the post is ${postWords} words, above the 700 cap`);
-console.log(`[how-data] post ${postWords} words (450 to 650), page ${wordCount}, ${post.length} sections, ${tools.length} tools all mentioned, ${boldCount} bold mentions, ${faq.length} FAQ`);
+// Prose only, as the S13 count was: sentences and captions, not eyebrows,
+// headings or the mono role labels.
+const prose = [
+  meta.lede,
+  ...beats.flatMap((b) => b.sentences.map(text)),
+  ...systems.flatMap((n) => [n.label, ...(n.sub ?? [])]),
+  methodCase.caption,
+  ...decisions.map((d) => text(d.text)),
+  ...growthMarkers.map((g) => g.label),
+  ...takeaways.map((t) => t.line),
+  searchLine,
+  ...faq.flatMap((f) => [f.q, f.a])
+].join(" ");
+const wordCount = prose.split(/\s+/).filter(Boolean).length;
+const datedFacts = decisions.filter((d) => typeof d.text !== "string").length;
+if (wordCount > 500) throw new Error(`[how-data] ${wordCount} words is above the 500 cap`);
+console.log(`[how-data] ${wordCount} words (target 380 to 480), ${beats.length} beats, ${systems.length} system nodes, ${faq.length} FAQ, ${datedFacts} dated facts`);
 
 const url = `${siteUrl}/using-data-to-build-with-ai/`;
 const ld = [
@@ -152,24 +158,42 @@ const ld = [
   <section class="px-6 md:px-12 lg:px-16 py-16 md:py-24 border-b border-white/[0.06]">
     <div class="max-w-7xl mx-auto">
       <div class="max-w-3xl">
-        {post.map((sec, i) => (
-          <section id={sec.id} class={i === 0 ? "" : "mt-14"} aria-labelledby={`${sec.id}-heading`}>
-            <h2 id={`${sec.id}-heading`} class="heading-display text-2xl md:text-3xl text-white">{sec.heading}</h2>
-            {sec.blocks.map((b) =>
-              isFigure(b) ? (
-                b.figure === "searchLine" ? (
-                  <p class="mt-5 text-surface-200 leading-relaxed max-w-2xl">{searchLine}</p>
-                ) : (
-                  <div class="mt-8 mb-8">
-                    {b.figure === "tools" && <ToolStrip />}
-                    {b.figure === "growth" && <SearchGrowth />}
-                    {b.figure === "methods" && <MethodMix />}
-                    <p class="mt-3 text-[13px] leading-snug text-surface-400">{captions[b.figure]}</p>
+        {beats.map((b, i) => (
+          <section id={b.id} class={i === 0 ? "" : "mt-14 pt-10 border-t border-white/[0.06]"} aria-labelledby={`${b.id}-heading`} data-reveal>
+            <p class="font-mono text-[11px] tracking-[0.2em] uppercase text-gold-500">{b.eyebrow}</p>
+            <h2 id={`${b.id}-heading`} class="heading-display mt-3 text-2xl md:text-3xl text-white">{b.heading}</h2>
+            {b.sentences.map((p) => (
+              <p class="mt-4 text-surface-200 leading-relaxed max-w-2xl">{text(p)}</p>
+            ))}
+            {b.id === "loop" && (
+              <>
+                <p class="mt-4 text-surface-200 leading-relaxed max-w-2xl">{searchLine}</p>
+                <SystemsLoop />
+              </>
+            )}
+            {b.id === "decisions" && (
+              <>
+                <MethodDots />
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-px bg-white/[0.06]">
+                  {decisions.map((d) => (
+                    <div class="bg-surface-950 p-5 md:p-6">
+                      <span class="block font-mono text-[11px] tracking-[0.15em] uppercase text-gold-500">{d.label}</span>
+                      <p class="mt-3 text-[15px] leading-relaxed text-surface-200">{text(d.text)}</p>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            {b.id === "start" && <SearchGrowth />}
+            {b.id === "for-a-business" && (
+              <div class="mt-6 grid grid-cols-2 gap-px bg-white/[0.06]">
+                {takeaways.map((t) => (
+                  <div class="bg-surface-950 p-5 md:p-6">
+                    <span class="block font-mono text-[11px] tracking-[0.15em] uppercase text-surface-500">{t.label}</span>
+                    <p class="mt-2 text-[15px] leading-snug text-white">{t.line}</p>
                   </div>
-                )
-              ) : (
-                <p class="mt-5 text-surface-200 leading-relaxed max-w-2xl" set:html={bold(text(b))} />
-              )
+                ))}
+              </div>
             )}
           </section>
         ))}

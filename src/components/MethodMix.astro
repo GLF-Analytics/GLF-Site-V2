@@ -1,0 +1,43 @@
+---
+/**
+ * How search visitors make their cards, as scorecards (S30, 9/21/26; replaces
+ * MethodDots). One headline tile (the share of cards that start from a photo)
+ * over one tile per method, the StatGrid markup so the post and the numbers
+ * above it read as one system. Every share is computed here from the card
+ * counts in how-data.ts methodMix (a dated analysis fact with its source);
+ * a percentage is never typed. Largest-remainder rounding so the four method
+ * shares sum to one hundred. No keep rates: every per-method group of makers
+ * is under twenty people.
+ */
+import { methodMix } from "../data/how-data";
+
+if (!methodMix.source.trim()) throw new Error("[methodMix] no source");
+const total = methodMix.rows.reduce((s, r) => s + r.cards, 0);
+if (total < 100) throw new Error(`[methodMix] base of ${total} cards is under one hundred; a share is not shown on a base that small`);
+
+const exact = methodMix.rows.map((r) => (r.cards / total) * 100);
+const shares = exact.map(Math.floor);
+let left = 100 - shares.reduce((s, n) => s + n, 0);
+const byRemainder = exact.map((e, i) => ({ i, rem: e - Math.floor(e) })).sort((a, b) => b.rem - a.rem);
+for (const { i } of byRemainder) { if (left <= 0) break; shares[i] += 1; left -= 1; }
+
+const photoCards = methodMix.rows.filter((r) => r.photo).reduce((s, r) => s + r.cards, 0);
+const photoShare = Math.round((photoCards / total) * 100);
+
+console.log(`[methodMix] ${total} cards, photo ${photoShare}%, shares ${shares.join(" / ")} (sum ${shares.reduce((s, n) => s + n, 0)})`);
+---
+<figure class="mt-6">
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/[0.06]">
+    <div class="col-span-2 md:col-span-4 bg-surface-950 p-5 md:p-6">
+      <span class="block heading-display text-5xl md:text-6xl text-gold-500 tabular-nums">{photoShare}%</span>
+      <span class="block mt-2 text-sm text-surface-300">{methodMix.headline}</span>
+    </div>
+    {methodMix.rows.map((r, i) => (
+      <div class="bg-surface-950 p-5 md:p-6">
+        <span class="block heading-display text-3xl md:text-4xl text-white tabular-nums">{shares[i]}%</span>
+        <span class="block mt-2 text-sm text-surface-300">{r.method}</span>
+      </div>
+    ))}
+  </div>
+  <p class="mt-3 font-mono text-[11px] tracking-[0.15em] uppercase text-surface-500">{methodMix.window}. {total} cards.</p>
+</figure>

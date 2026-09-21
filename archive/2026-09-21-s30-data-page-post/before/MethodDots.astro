@@ -1,0 +1,32 @@
+---
+/**
+ * The worked example on /using-data-to-build-with-ai (S28, 9/17/26): one dot
+ * per maker, filled when that maker saved, downloaded, emailed or shared. Rows
+ * sorted by makers. No axis and no percentage: every group is under twenty
+ * people, so the count is the honest form. Data from how-data.ts methodCase;
+ * a visually hidden sentence per row carries the numbers for assistive tech.
+ */
+import { methodCase } from "../data/how-data";
+
+const rows = [...methodCase.rows].sort((a, b) => b.makers - a.makers);
+const fmt = (n: number) => n.toLocaleString("en-US");
+---
+<figure class="dots mt-6 border border-white/[0.08] bg-surface-950 p-4 md:p-5">
+  <figcaption class="block font-mono text-[11px] tracking-[0.2em] uppercase text-surface-500 mb-4">{methodCase.question}</figcaption>
+  <ol class="dots__rows">
+    {rows.map((r) => (
+      <li class="dots__row">
+        <span class="dots__method text-[15px] text-surface-200">{r.method}</span>
+        <span class="dots__cells" aria-hidden="true">
+          {Array.from({ length: r.makers }, (_, i) => (
+            <span class:list={["dots__dot", { "dots__dot--on": i < r.acted }]}></span>
+          ))}
+        </span>
+        <span class="dots__count tabular-nums text-[15px] text-white" aria-hidden="true">{fmt(r.acted)} of {fmt(r.makers)}</span>
+        <span class="dots__cards font-mono text-[11px] tracking-[0.1em] uppercase text-surface-500" aria-hidden="true">{fmt(r.cards)} cards</span>
+        <span class="sr-only">{r.method}: {fmt(r.acted)} of {fmt(r.makers)} makers saved, downloaded, emailed or shared, {fmt(r.cards)} cards made.</span>
+      </li>
+    ))}
+  </ol>
+  <p class="mt-4 text-[13px] leading-snug text-surface-400">{methodCase.caption}</p>
+</figure>
