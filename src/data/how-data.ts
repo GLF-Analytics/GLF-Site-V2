@@ -18,7 +18,7 @@ export type Paragraph =
   | string
   | { text: string; numerals: "dated-fact"; source: string };
 
-export type Figure = { figure: "tools" | "growth" | "searchLine" | "methods" };
+export type Figure = { figure: "tools" | "growth" | "searchLine" | "methods" | "video" | "map" };
 export type Block = Paragraph | Figure;
 
 export type PostSection = {
@@ -36,11 +36,23 @@ export const meta = {
     "How birthday-cards.ai grew from a card maker for friends into a product built end to end with AI, run on its own analytics, from the command line in Claude Code.",
   published: "2026-09-13",
   // Bumped once per copy change (S30 blog post), never per rebuild.
-  modified: "2026-09-21"
+  modified: "2026-09-23"
 };
 
 // Product names that carry a digit. The page strips these before the numeral
 // guard runs; they are names, not counts.
+/* The clip in the growth section (S32, 9/23/26): built from the beat sheet in
+   GLF Business Context/glf website/video/using-data-post/BEAT_SHEET.md, every
+   number on its frames sourced there. Silent, captions burned in. */
+export const video = {
+  src: "/video/using-data-loop.mp4",
+  poster: "/video/using-data-loop-poster.jpg",
+  seconds: 44,
+  uploadDate: "2026-09-23",
+  name: "How one search page on birthday-cards.ai went from a guess to the best converter",
+  description: "A silent 44 second clip: one page built for one search term in June, the search data read in Claude Code, where it grew on Bing, the tap that leaked, one fix, and the conversion read that became the rule for every page since."
+};
+
 export const namedTokens = ["gpt-image-2", "GPT-4o"];
 
 export const sources = [
@@ -102,6 +114,7 @@ export const post: PostSection[] = [
       { figure: "growth" },
       { figure: "searchLine" },
       "Three pieces of work moved those bars. In July, one indexing fix. Every search signal had been pointing at the wrong host. In August the analytics went live and the first weekly read ran. In September I built thirteen pages, each around one thing people search for.",
+      { figure: "video" },
       "I can also see how people make their cards.",
       { figure: "methods" }
     ]
@@ -111,6 +124,7 @@ export const post: PostSection[] = [
     heading: "A glimpse into the future",
     blocks: [
       "Once I got all the systems connected, it became really cool to see a glimpse into the future (or the now). Claude Code reads Vercel Web Analytics, Google Search Console and Bing Webmaster and provides the analysis. Then we work together to plan the next product development steps.",
+      { figure: "map" },
       "AI is not doing all of it. It does the heavy lifting on the analysis, and it ties things together so nicely. We set rules on what works and what doesn't, so as we develop it learns about what worked and what didn't. We have brand guidelines and tone guidelines, and all of these things mean the project compounds knowledge.",
       "I'm sure there are some risks associated with this workflow. But I move slow and deliberately, or at least I try to."
     ]
@@ -129,7 +143,9 @@ export const post: PostSection[] = [
 export const captions = {
   tools: "The tools behind birthday-cards.ai.",
   growth: "Visitors from search by month.",
-  methods: "More than half of the cards start with someone's photo."
+  methods: "More than half of the cards start with someone's photo.",
+  video: "One page, from a guess in June to the best converting page on the site. Forty-four seconds, no sound, and it loops.",
+  map: "The loop. Five sources feed Claude Code, a person decides, and the next build ships to the site."
 };
 
 /* How search visitors made their cards (9/17/26 analysis). Counts of cards by

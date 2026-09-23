@@ -1,0 +1,45 @@
+---
+/**
+ * The loop as one drawing (S32, 9/23/26): five sources into Claude Code, a
+ * person decides, the next build ships to the site, and the dashed gold line
+ * closes the loop. The .md notes sit under Claude Code as the memory. Inline
+ * SVG in the site tokens (flat #0a0a0a boxes, hairline strokes, gold as the
+ * one accent), the same drawing the clip ends on and the social image uses
+ * (public/images/og-using-data.png). Under 640px the figure scrolls sideways
+ * so the labels stay readable instead of shrinking.
+ */
+---
+<figure class="mt-6 border border-white/[0.08] bg-surface-950 p-3 md:p-5 overflow-x-auto">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 620" class="block w-full h-auto min-w-[640px]" role="img" aria-labelledby="sysmap-title sysmap-desc" font-family="'Geist Mono', ui-monospace, monospace" font-size="20" fill="#ededed">
+<title id="sysmap-title">How birthday-cards.ai runs on its own data with Claude Code</title>
+<desc id="sysmap-desc">Five sources feed Claude Code: Vercel Web Analytics, Google Search Console, Bing Webmaster, Airtable and the site itself. A person decides, the next build ships to the site, and the loop starts again. The .md notes hold what was learned.</desc>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#D4A853"/></marker></defs>
+<g class="src" stroke="rgba(255,255,255,0.18)" fill="#0a0a0a">
+ <rect x="40" y="40" width="290" height="64"/><rect x="40" y="150" width="290" height="64"/><rect x="40" y="260" width="290" height="64"/><rect x="40" y="370" width="290" height="64"/><rect x="40" y="480" width="290" height="64" stroke="rgba(212,168,83,0.6)"/>
+</g>
+<g class="src" fill="#ededed">
+ <text x="60" y="78">Vercel Web Analytics</text><text x="60" y="188">Google Search Console</text><text x="60" y="298">Bing Webmaster</text><text x="60" y="408">Airtable</text><text x="60" y="518">birthday-cards.ai</text>
+</g>
+<g class="src" font-size="14" fill="#8a8a8a"><text x="60" y="96">visits, events, countries</text><text x="60" y="206">queries, clicks, position</text><text x="60" y="316">queries, clicks, position</text><text x="60" y="426">the email list</text><text x="60" y="536">the product itself</text></g>
+<g class="lines" stroke="rgba(255,255,255,0.35)" fill="none" marker-end="url(#a)">
+ <path d="M330 72 H400 V270 H468"/><path d="M330 182 H400"/><path d="M330 292 H468"/><path d="M330 402 H400"/><path d="M330 512 H400 V330 H468"/>
+</g>
+<g class="cc"><rect x="470" y="150" width="300" height="300" fill="#0a0a0a" stroke="#D4A853"/>
+ <text x="494" y="190" font-size="24" font-weight="500">Claude Code</text>
+ <text x="494" y="230" font-size="17" fill="#8a8a8a">$ refresh the dashboard</text>
+ <text x="494" y="270">reads every source</text><text x="494" y="300">reconciles the counts</text><text x="494" y="330">writes the memo</text><text x="494" y="360">builds what we pick</text><text x="494" y="390">verifies the page</text>
+ <rect x="470" y="480" width="300" height="64" fill="#0a0a0a" stroke="rgba(255,255,255,0.18)"/>
+ <text x="494" y="507" font-size="17">.md notes</text><text x="494" y="530" font-size="13" fill="#8a8a8a">briefing · state · session log · style guide</text>
+ <path d="M620 450 V478" stroke="rgba(255,255,255,0.35)" fill="none"/>
+</g>
+<g class="person"><path d="M770 300 H848" stroke="rgba(255,255,255,0.35)" fill="none" marker-end="url(#a)"/>
+ <rect x="850" y="268" width="200" height="64" fill="#0a0a0a" stroke="rgba(255,255,255,0.18)"/><text x="870" y="306">a person decides</text>
+ <path d="M950 332 V398" stroke="rgba(255,255,255,0.35)" fill="none" marker-end="url(#a)"/>
+ <rect x="850" y="400" width="200" height="64" fill="#0a0a0a" stroke="rgba(255,255,255,0.18)"/><text x="870" y="438">the next build</text>
+</g>
+<g class="loop"><path d="M950 464 V590 H185 V546" stroke="#D4A853" fill="none" marker-end="url(#a)" stroke-dasharray="4 4"/>
+ <text x="560" y="610" font-size="16" fill="#D4A853">ships to the site, and the numbers change</text></g>
+</svg>
+
+
+</figure>

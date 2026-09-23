@@ -1,0 +1,44 @@
+---
+/**
+ * The 44 second silent clip on /using-data-to-build-with-ai (S32, 9/23/26).
+ * Muted autoplay that loops, the birthday-cards.ai demo pattern. Captions are
+ * burned into the frames, so there is no audio track and nothing to unmute.
+ * The one event: `video_play` fires once per page view on the first play
+ * (window.va is the Vercel Web Analytics queue stub from BaseLayout; a no-op
+ * when analytics is off). Source and every on-screen number: the beat sheet
+ * named in how-data.ts `video`. Under md the video is cropped to a square
+ * by CSS (the frames keep every element inside the center column, so the
+ * square is the LinkedIn framing from the same file, no second encode).
+ */
+import { video } from "../data/how-data";
+---
+<figure class="mt-6 border border-white/[0.08] bg-surface-950 p-2 md:p-3">
+  <video
+    class="block w-full aspect-square md:aspect-video object-cover object-center bg-[#050505]"
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="metadata"
+    poster={video.poster}
+    width="1920"
+    height="1080"
+    aria-label={video.description}
+    data-loop-video
+  >
+    <source src={video.src} type="video/mp4" />
+  </video>
+</figure>
+<script is:inline>
+  (function () {
+    var v = document.querySelector("video[data-loop-video]");
+    if (!v) return;
+    v.muted = true;
+    var fired = false;
+    v.addEventListener("play", function () {
+      if (fired) return;
+      fired = true;
+      if (window.va) window.va("event", { name: "video_play", data: { page: location.pathname } });
+    });
+  })();
+</script>
