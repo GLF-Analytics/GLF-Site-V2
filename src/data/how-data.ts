@@ -41,16 +41,16 @@ export const meta = {
 
 // Product names that carry a digit. The page strips these before the numeral
 // guard runs; they are names, not counts.
-/* The clip in the growth section (S32, 9/23/26): built from the beat sheet in
+/* The clip in the growth section (S32, 9/23/26; 60 s since his first watch): built from the beat sheet in
    GLF Business Context/glf website/video/using-data-post/BEAT_SHEET.md, every
    number on its frames sourced there. Silent, captions burned in. */
 export const video = {
   src: "/video/using-data-loop.mp4",
   poster: "/video/using-data-loop-poster.jpg",
-  seconds: 44,
+  seconds: 60,
   uploadDate: "2026-09-23",
   name: "How one search page on birthday-cards.ai went from a guess to the best converter",
-  description: "A silent 44 second clip: one page built for one search term in June, the search data read in Claude Code, where it grew on Bing, the tap that leaked, one fix, and the conversion read that became the rule for every page since."
+  description: "A silent one minute clip: one page built for one search term in June, the search data read in Claude Code, where it grew on Bing, the tap that leaked, one fix, and the conversion read that became the rule for every page since."
 };
 
 export const namedTokens = ["gpt-image-2", "GPT-4o"];
@@ -144,7 +144,7 @@ export const captions = {
   tools: "The tools behind birthday-cards.ai.",
   growth: "Visitors from search by month.",
   methods: "More than half of the cards start with someone's photo.",
-  video: "One page, from a guess in June to the best converting page on the site. Forty-four seconds, no sound, and it loops.",
+  video: "One page, from a guess in June to the best converting page on the site. One minute, no sound, and it loops.",
   map: "The loop. Five sources feed Claude Code, a person decides, and the next build ships to the site."
 };
 
