@@ -4,7 +4,9 @@
   this file. Voice: "I" (the glfanalytics.com register in POSITIONING.md):
   plain nouns, no commas in headings, no em or en dashes, no exclamation
   points, no credibility labels, no prices, no "doing this alone" tone.
-  The reply promise ("two business days") is Gabriel's to keep or change.
+  S34 (9/28/26, his live read): no reply promise anywhere ("as soon as I can"),
+  no consent line, no "link is in your inbox" line, the confirmation email cut
+  to his four lines.
 */
 
 /** The service areas, his words (Airtable `intent` single select, 9/28/26). The value is written to the row as is. */
@@ -22,8 +24,8 @@ export const meta = {
   slug: "contact",
   eyebrow: "Contact",
   title: "Start a conversation",
-  description: "Tell Gabriel Freeman what you are working on. Every message gets a reply within two business days, or pick a time on the calendar.",
-  lede: "Tell me what you are working on and what you want out of it. I read every message and reply within two business days. If a call is easier, the calendar link is below the form."
+  description: "Tell Gabriel Freeman what you are working on. Every message gets a reply, or pick a time on the calendar.",
+  lede: "Tell me what you are working on and what you want out of it. I read every message and get back as soon as I can. If a call is easier, the calendar link is below the form."
 };
 
 export const form = {
@@ -34,11 +36,9 @@ export const form = {
   message: "What you are working on and what you want to get out of it",
   send: "Send",
   sending: "Sending",
-  consent: "One confirmation email. No list.",
-  sent: "Sent. I reply within two business days.",
+  sent: "Sent. I will get back to you as soon as I can.",
   bookLine: "If a call is easier, pick a time.",
   book: "Book a call",
-  bookInbox: "The same link is in your inbox.",
   missing: "Add a name, an email, and a message.",
   badEmail: "Check the address.",
   rate: "Too many sends from this connection. Try again in a few minutes.",
@@ -58,7 +58,7 @@ export const direct = {
 export const faq: { q: string; a: string }[] = [
   {
     q: "What happens after I send this",
-    a: "You get a short confirmation by email with a link to my calendar. I read the message and reply within two business days with questions or a time to talk."
+    a: "You get a short confirmation by email with a link to my calendar. I read the message and get back to you as soon as I can, with questions or a time to talk."
   },
   {
     q: "What should I include",
@@ -70,18 +70,13 @@ export const faq: { q: string; a: string }[] = [
   }
 ];
 
-/** The two emails. Plain text only; the visitor's own words are quoted back so the thread starts with them. */
+/** The two emails. Plain text only. The confirmation is his four lines (9/28); the notification carries everything. */
 export const mail = {
   confirmSubject: "Got your message",
-  confirm(i: { name: string; intent: string; message: string; booking?: string; postal: string }): string {
-    const lines = [
-      `Hi ${i.name},`,
-      "",
-      "Thanks for writing. I read every message and reply within two business days.",
-      ""
-    ];
+  confirm(i: { name: string; booking?: string; postal: string }): string {
+    const lines = [`Hi ${i.name},`, "", "Thanks for writing. Your message has been received and I will get back to you as soon as I can.", ""];
     if (i.booking) lines.push(`If a call is easier, pick a time here: ${i.booking}`, "");
-    lines.push("What you sent:", `About: ${i.intent}`, i.message, "", "Gabriel Freeman", `GLF Analytics, ${i.postal}`);
+    lines.push("Gabriel Freeman", `GLF Analytics, ${i.postal}`);
     return lines.join("\n");
   },
   notifySubject: (intent: string, name: string) => `Site contact (${intent}): ${name}`,

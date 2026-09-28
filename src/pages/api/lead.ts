@@ -23,7 +23,7 @@ import type { APIRoute } from "astro";
 import { createHash } from "node:crypto";
 import { DEFAULT_INTENT, intents, mail, type Intent } from "../../data/contact";
 import { byteLength, EMAIL_RE } from "../../lib/text";
-import { clientIp, createLimiter, DEV, env, gabriel, json, postal, sendMail, writeLead } from "../../lib/leadCapture";
+import { airtable, airtableUrl, clientIp, createLimiter, DEV, env, gabriel, json, postal, sendMail, writeLead } from "../../lib/leadCapture";
 
 export const prerender = false;
 
@@ -80,7 +80,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   // Company, page and source ride at the bottom of the message: the table has five fields on purpose (9/28/26).
   const stored = [message, "", company ? `Company: ${company}` : "", page ? `From: ${page}` : "", source ? `Source: ${source}` : ""].filter((l, i) => i < 2 || l).join("\n").trim();
   const notifyText = mail.notify({ name, email, company, intent, message, page, source });
-  const confirmText = mail.confirm({ name, intent, message, booking, postal: postal() });
+  const confirmText = mail.confirm({ name, booking, postal: postal() });
 
   if (dryRun) {
     try {
@@ -118,6 +118,33 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     return json({ ok: false, reason: "send" }, 502);
   }
   return json({ ok: true, id, stored: storedOk, notified: notifiedOk, confirmed: confirm.status === "fulfilled" && confirm.value.ok });
+};
+
+/*
+  GET ?_check=1 (S34, 9/28/26): the config check for a phone, no secrets. Which
+  switches are set, and a read probe of the Airtable table (one record) so the
+  status and Airtable's error type name the fault: 403 = the token cannot see
+  the base or the base id is off, 404 = the table name, 401 = the key.
+*/
+export const GET: APIRoute = async ({ url }) => {
+  if (url.searchParams.get("_check") !== "1") return json({ ok: false, reason: "method" }, 405);
+  const base = env("AIRTABLE_BASE_ID") || "";
+  const table = env("AIRTABLE_LEADS_TABLE") || "Leads";
+  let probe: { status: number; type: string } = { status: 0, type: "unconfigured" };
+  if (airtableUrl()) {
+    try {
+      const r = await airtable("GET", "?maxRecords=1", undefined);
+      probe = { status: r.status, type: r.ok ? "ok" : ((r.data as { error?: { type?: string } } | null)?.error?.type ?? "unknown") };
+    } catch (err) {
+      probe = { status: 0, type: err instanceof Error ? err.name : "threw" };
+    }
+  }
+  return json({
+    on: env("LEAD_CAPTURE_ENABLED") === "true" && Boolean(env("RESEND_API_KEY")),
+    resend: { configured: Boolean(env("RESEND_API_KEY")) },
+    airtable: { configured: Boolean(airtableUrl()), base: base ? `${base.slice(0, 6)}... (${base.length} chars)` : "unset", table, ...probe },
+    booking: Boolean(env("BOOKING_URL"))
+  });
 };
 
 export const ALL: APIRoute = () => json({ ok: false, reason: "method" }, 405);

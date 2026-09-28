@@ -3,7 +3,7 @@
   The contact form (S33, 9/28/26): five service chips in Gabriel's words, name,
   email, company (optional), message, a honeypot, one gold button. Posts JSON to
   /api/lead. Honest states: sending, sent (then the booking link if BOOKING_URL
-  is set), a rate message, and for "off" or a failure a mailto link that carries
+  is set; no consent or inbox line since S34, his call), a rate message, and for "off" or a failure a mailto link that carries
   the message so nothing typed is lost. Copy lives in src/data/contact.ts.
   Props: intent (a preselected chip; ?intent= in the URL also works), page (the
   path stored with the lead; defaults to the current path).
@@ -59,7 +59,6 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
 
     <div class="cf__row">
       <button type="submit" class="btn-primary"><span data-send-label>{form.send}</span></button>
-      <p class="cf__consent">{form.consent}</p>
     </div>
     <p class="cf__status" data-status aria-live="polite" hidden></p>
   </form>
@@ -70,7 +69,6 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
       <div class="cf__book">
         <p class="text-surface-300">{form.bookLine}</p>
         <a href={booking} target="_blank" rel="noopener" class="btn-primary" data-book><span>{form.book}</span></a>
-        <p class="text-surface-500 text-sm">{form.bookInbox}</p>
       </div>
     )}
   </div>
