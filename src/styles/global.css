@@ -2003,3 +2003,188 @@ summary {
 .wh-details .wh-sources {
   margin: 0 0 1rem;
 }
+
+/* ============================================
+   CONTACT FORM (S33, 9/28/26): /contact and ContactForm.astro.
+   Flat, hairline, gold as the accent. The values mirror the planner's
+   .wh-choice and .wh-offer__input so the two forms read as one site.
+   ============================================ */
+.cf {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+@media (min-width: 768px) {
+  .cf {
+    padding: 2rem;
+  }
+}
+
+.cf__about {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.cf__about legend {
+  margin-bottom: 0.75rem;
+  padding: 0;
+}
+
+.cf__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cf__chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color var(--transition-base), background-color var(--transition-base), color var(--transition-base);
+}
+
+.cf__chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cf__chip:hover {
+  border-color: var(--color-border-hover);
+  color: var(--color-text-primary);
+}
+
+.cf__chip:has(input:checked) {
+  border-color: var(--color-gold);
+  background-color: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-primary);
+}
+
+.cf__chip:has(input:focus-visible) {
+  outline: 1px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.cf__grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .cf__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.cf__field {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.cf__label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.cf__input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.6rem 0.875rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.cf__textarea {
+  min-height: 8rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.cf__input:focus {
+  border-color: var(--color-gold);
+  outline: none;
+}
+
+/* The honeypot: off screen, never in the tab order, never visible. */
+.cf__hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.cf__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cf__row .btn-primary {
+  min-height: 3rem;
+}
+
+.cf__row .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.cf__consent {
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary);
+}
+
+.cf__status {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+.cf__status.is-error {
+  color: var(--color-text-primary);
+}
+
+.cf__status a {
+  color: var(--color-gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cf__done {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 1px solid var(--color-gold);
+}
+
+.cf__book {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+/* The hidden attribute must win over the display rules above: the form hides after a send, the done box before it. */
+.cf[hidden],
+.cf__done[hidden],
+.cf__status[hidden] {
+  display: none;
+}

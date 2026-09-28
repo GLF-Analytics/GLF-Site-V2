@@ -5,6 +5,7 @@
   section keeps id="contact" (other pages link to /#contact) and the photo
   keeps id="about". The links are one array: add or drop a row here. The
   site-wide Footer (copyright + icons) still renders under this.
+  S33 (9/28/26): Reach leads with Contact (/contact, the form); Email me stays as the second row.
 */
 import { orgInfo, socialLinks } from "../config/site";
 
@@ -16,7 +17,8 @@ const groups: { label: string; rows: Row[] }[] = [
   {
     label: "Reach",
     rows: [
-      { label: "Email me", href: mailto, primary: true },
+      { label: "Contact", href: "/contact", primary: true },
+      { label: "Email me", href: mailto },
       { label: "LinkedIn", href: socialLinks.linkedin, external: true }
     ]
   },

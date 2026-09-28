@@ -1,0 +1,186 @@
+---
+/*
+  The contact form (S33, 9/28/26): five service chips in Gabriel's words, name,
+  email, company (optional), message, a honeypot, one gold button. Posts JSON to
+  /api/lead. Honest states: sending, sent (then the booking link if BOOKING_URL
+  is set), a rate message, and for "off" or a failure a mailto link that carries
+  the message so nothing typed is lost. Copy lives in src/data/contact.ts.
+  Props: intent (a preselected chip; ?intent= in the URL also works), page (the
+  path stored with the lead; defaults to the current path).
+*/
+import { DEFAULT_INTENT, form, intents } from "../data/contact";
+import { orgInfo } from "../config/site";
+import { env } from "../lib/leadCapture";
+
+interface Props {
+  intent?: string;
+  page?: string;
+}
+const { intent: preset = "", page = Astro.url.pathname } = Astro.props;
+const booking = env("BOOKING_URL") || "";
+const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTENT;
+---
+<div class="cf-wrap" data-contact>
+  <form class="cf" data-contact-form novalidate data-page={page} data-mailto={`mailto:${orgInfo.email}`}>
+    <fieldset class="cf__about">
+      <legend class="label">{form.about}</legend>
+      <div class="cf__chips">
+        {intents.map((i) => (
+          <label class="cf__chip">
+            <input type="radio" name="intent" value={i.value} checked={i.value === selected} />
+            <span>{i.label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+
+    <div class="cf__grid">
+      <label class="cf__field">
+        <span class="cf__label">{form.name}</span>
+        <input class="cf__input" type="text" name="name" autocomplete="name" required maxlength="120" />
+      </label>
+      <label class="cf__field">
+        <span class="cf__label">{form.email}</span>
+        <input class="cf__input" type="email" name="email" inputmode="email" autocomplete="email" required maxlength="254" />
+      </label>
+    </div>
+
+    <label class="cf__field">
+      <span class="cf__label">{form.company}</span>
+      <input class="cf__input" type="text" name="company" autocomplete="organization" maxlength="120" />
+    </label>
+
+    <label class="cf__field">
+      <span class="cf__label">{form.message}</span>
+      <textarea class="cf__input cf__textarea" name="message" rows="5" required maxlength="2000"></textarea>
+    </label>
+
+    <input class="cf__hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+    <div class="cf__row">
+      <button type="submit" class="btn-primary"><span data-send-label>{form.send}</span></button>
+      <p class="cf__consent">{form.consent}</p>
+    </div>
+    <p class="cf__status" data-status aria-live="polite" hidden></p>
+  </form>
+
+  <div class="cf__done" data-contact-done hidden role="status">
+    <p class="text-white text-lg">{form.sent}</p>
+    {booking && (
+      <div class="cf__book">
+        <p class="text-surface-300">{form.bookLine}</p>
+        <a href={booking} target="_blank" rel="noopener" class="btn-primary" data-book><span>{form.book}</span></a>
+        <p class="text-surface-500 text-sm">{form.bookInbox}</p>
+      </div>
+    )}
+  </div>
+</div>
+
+<script is:inline define:vars={{ strings: form, dev: import.meta.env.DEV }}>
+  (function () {
+    var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    // Dev only: ?_state=sent|error paints a state for a screenshot without a send. `dev` is false in production.
+    var harness = dev ? new URLSearchParams(location.search).get("_state") : null;
+    function track(name, data) {
+      if (window.va) window.va("event", { name: name, data: data });
+    }
+    document.querySelectorAll("[data-contact]").forEach(function (wrap) {
+      var f = wrap.querySelector("[data-contact-form]");
+      var done = wrap.querySelector("[data-contact-done]");
+      var status = f.querySelector("[data-status]");
+      var btn = f.querySelector("button[type=submit]");
+      var label = f.querySelector("[data-send-label]");
+      var params = new URLSearchParams(location.search);
+      var page = f.getAttribute("data-page") || location.pathname;
+
+      // ?intent= preselects a chip; utm_* or ref become the source line; otherwise the referring host.
+      var pre = params.get("intent");
+      if (pre) {
+        var r = f.querySelector('input[name="intent"][value="' + pre.replace(/"/g, "") + '"]');
+        if (r) r.checked = true;
+      }
+      var source = ["utm_source", "utm_medium", "utm_campaign", "ref"]
+        .filter(function (k) { return params.get(k); })
+        .map(function (k) { return k + "=" + params.get(k); })
+        .join("&");
+      if (!source && document.referrer) {
+        try {
+          var host = new URL(document.referrer).host;
+          if (host && host !== location.host) source = "referrer=" + host;
+        } catch (e) {}
+      }
+
+      function show(text, isError, link) {
+        status.textContent = "";
+        status.hidden = !text;
+        status.classList.toggle("is-error", Boolean(isError));
+        if (!text) return;
+        status.appendChild(document.createTextNode(text + (link ? " " : "")));
+        if (link) {
+          var a = document.createElement("a");
+          a.href = link;
+          a.textContent = strings.emailMe;
+          status.appendChild(a);
+        }
+      }
+      function mailto(d) {
+        var body = "About: " + d.intent + "\nName: " + d.name + (d.company ? "\nCompany: " + d.company : "") + "\n\n" + d.message;
+        return f.getAttribute("data-mailto") + "?subject=" + encodeURIComponent("Working together") + "&body=" + encodeURIComponent(body);
+      }
+
+      f.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var fd = new FormData(f);
+        var d = {
+          name: String(fd.get("name") || "").trim(),
+          email: String(fd.get("email") || "").trim(),
+          company: String(fd.get("company") || "").trim(),
+          intent: String(fd.get("intent") || "other"),
+          message: String(fd.get("message") || "").trim(),
+          website: String(fd.get("website") || ""),
+          source: source,
+          page: page
+        };
+        if (!d.name || !d.email || !d.message) return show(strings.missing, true);
+        if (!EMAIL_RE.test(d.email)) return show(strings.badEmail, true);
+
+        btn.disabled = true;
+        label.textContent = strings.sending;
+        show("", false);
+
+        fetch("/api/lead", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(d) })
+          .then(function (res) {
+            return res.json().catch(function () { return {}; }).then(function (body) { return { res: res, body: body }; });
+          })
+          .catch(function () { return { res: null, body: {} }; })
+          .then(function (out) {
+            btn.disabled = false;
+            label.textContent = strings.send;
+            var res = out.res;
+            if (res && res.ok) {
+              f.hidden = true;
+              done.hidden = false;
+              done.scrollIntoView({ block: "nearest" });
+              track("contact_submit", { intent: d.intent, page: page });
+              return;
+            }
+            if (res && res.status === 429) return show(strings.rate, true);
+            if (res && res.status === 400 && out.body && out.body.reason === "email") return show(strings.badEmail, true);
+            if (res && res.status === 400) return show(strings.missing, true);
+            track("contact_fallback", { status: res ? res.status : 0, page: page });
+            show(res && res.status === 503 ? strings.off : strings.failed, true, mailto(d));
+          });
+      });
+
+      var book = done.querySelector("[data-book]");
+      if (book) book.addEventListener("click", function () { track("booking_click", { page: page }); });
+
+      if (harness === "sent") {
+        f.hidden = true;
+        done.hidden = false;
+      } else if (harness === "error") {
+        show(strings.failed, true, mailto({ intent: "other", name: "Harness", company: "", message: "A harness message." }));
+      }
+    });
+  })();
+</script>

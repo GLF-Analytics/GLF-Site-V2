@@ -5,7 +5,6 @@
   on, not the platform default. Prerendered like every other page.
 */
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { orgInfo } from "../config/site";
 export const prerender = true;
 ---
 <BaseLayout title="Page not found" description="That page is not here. The homepage and an email address are." noindex>
@@ -14,15 +13,15 @@ export const prerender = true;
       <span class="label block mb-4">Not found</span>
       <h1 class="heading-display text-4xl md:text-5xl text-white">That page is not here</h1>
       <p class="mt-6 text-surface-400 text-base md:text-lg leading-relaxed max-w-xl">
-        The link may be old or the address may have a typo. Everything I do is on the homepage, and I read every email.
+        The link may be old or the address may have a typo. Everything I do is on the homepage, and the contact page reaches me.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 mt-10">
         <a href="/" class="btn-primary group">
           <span>Go to the homepage</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="relative z-10 transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
         </a>
-        <a href={`mailto:${orgInfo.email}`} class="btn-secondary">
-          <span>Email me</span>
+        <a href="/contact" class="btn-secondary">
+          <span>Get in touch</span>
         </a>
       </div>
     </div>
