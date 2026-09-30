@@ -22,7 +22,10 @@ export type Bullet = { project: string; text: string; tools: string[] };
 export const intro = {
   eyebrow: "Since 2017",
   title: "The long list",
-  lead: "My career has twists and turns and I keep picking up new skills. This is everything I would put on my resume if it did not have to fit on one page."
+  lead: "My career has twists and turns and I keep picking up new skills. This is everything I would put on my resume if it did not have to fit on one page.",
+  // S36 (9/30/26): the search description (was in the page; cut to 160 characters for search results).
+  description:
+    "The work Gabriel Freeman has done since 2017: data warehouses and reporting, forecasting, growth marketing, and AI tools built with Claude Code."
 };
 
 export const bullets: Bullet[] = [

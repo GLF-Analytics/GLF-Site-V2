@@ -4,8 +4,30 @@ import Seo from "../components/Seo.astro";
 import JsonLd from "../components/JsonLd.astro";
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
+import { siteUrl } from "../config/site";
 
-const { title, description, canonical, ogImage, noindex } = Astro.props;
+const { title, description, canonical, ogImage, ogType, noindex, crumb, parent } = Astro.props;
+
+// S36 (9/30/26): one canonical per page, no trailing slash (the sitemap lists
+// the same string; src/integrations/seoCheck.ts fails the build if they differ).
+const canonicalUrl = canonical ?? siteUrl + (Astro.url.pathname.replace(/\/+$/, "") || "/");
+
+// S36: a BreadcrumbList on every indexable page but the homepage. `crumb` = the
+// short name (defaults to the title); `parent` = an optional middle step, e.g.
+// { name: "All work", path: "/work" } on a case study.
+const isHome = canonicalUrl === `${siteUrl}/`;
+const breadcrumb =
+  isHome || noindex
+    ? null
+    : {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { name: "Home", item: `${siteUrl}/` },
+          ...(parent ? [{ name: parent.name, item: `${siteUrl}${parent.path}` }] : []),
+          { name: crumb ?? title, item: canonicalUrl }
+        ].map((step, i) => ({ "@type": "ListItem", position: i + 1, ...step }))
+      };
 ---
 <!doctype html>
 <html lang="en" class="scroll-smooth">
@@ -15,17 +37,26 @@ const { title, description, canonical, ogImage, noindex } = Astro.props;
     <script is:inline>
       document.documentElement.classList.add("js-split");
     </script>
+    {/* S36 (9/30/26): the SVG for browsers that take it, a 48px PNG and an .ico for
+        search results and older browsers, the 180px touch icon for iOS. PNGs are
+        drawn by scripts/favicons.py from the same mark as the SVG. */}
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/images/glf-favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-48.png" type="image/png" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#050505" />
     <!-- Preconnect for faster font loading -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <Seo
       title={title}
       description={description}
-      canonical={canonical}
+      canonical={canonicalUrl}
       ogImage={ogImage}
+      ogType={ogType}
       noindex={noindex}
     />
     <JsonLd />
+    {breadcrumb && <script type="application/ld+json" set:html={JSON.stringify(breadcrumb)} />}
     {/* Vercel Web Analytics (S23, 9/15/26): no dependency. The queue stub makes window.va a safe no-op
         until Vercel serves the script (Analytics enabled on the project) and in dev, where it 404s. */}
     {import.meta.env.PROD && <script is:inline>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>}

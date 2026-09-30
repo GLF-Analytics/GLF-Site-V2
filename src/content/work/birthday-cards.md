@@ -18,6 +18,7 @@ backgroundImage: "/images/work/birthdaycards-sample.jpg"
 tools: ["Claude Code", "Next.js", "Vercel", "OpenAI", "Gemini", "Airtable", "Resend", "Vercel Blob", "Upstash"]
 functions: ["design", "development", "database", "email", "SEO", "analytics"]
 showLiveStats: true
+seoTitle: "birthday-cards.ai: an AI card generator"
 ---
 <section class="work-section">
   <h2>What I built</h2>

@@ -19,6 +19,8 @@ backgroundImage: "/images/work/gothamgoods.jpg"
 testimonial: "GLF was part of our team. The work they did was an integral part of getting us to where we are today."
 testimonialAuthor: "Joanne Wilson, Founder @ Gotham NYC"
 outcome: "A custom site, full tracking, and an email program from day one."
+seoTitle: "Gotham Goods: a custom ecommerce launch"
+metaDescription: "Launched a custom ecommerce site with tracking and lifecycle marketing from day one. The agency build, tagging and analytics, and Klaviyo email programs."
 ---
 <section class="work-section">
   <h2>What I delivered</h2>

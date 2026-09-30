@@ -12,10 +12,13 @@ const {
   description = defaultDescription,
   canonical,
   ogImage = `${siteUrl}/images/og-default.png`,
+  ogType = "website",
   noindex = false
 } = Astro.props;
 
-const canonicalUrl = canonical ?? siteUrl + Astro.url.pathname;
+// S36 (9/30/26): BaseLayout passes the canonical (no trailing slash, the same
+// string the sitemap lists); the fallback strips the slash the same way.
+const canonicalUrl = canonical ?? siteUrl + (Astro.url.pathname.replace(/\/+$/, "") || "/");
 const pageTitle = title === defaultTitle ? title : `${title} | ${siteName}`;
 ---
 <title>{pageTitle}</title>
@@ -24,12 +27,16 @@ const pageTitle = title === defaultTitle ? title : `${title} | ${siteName}`;
 
 {noindex ? <meta name="robots" content="noindex, nofollow" /> : null}
 
-<meta property="og:type" content="website" />
+<meta property="og:type" content={ogType} />
+<meta property="og:locale" content="en_US" />
 <meta property="og:site_name" content={siteName} />
 <meta property="og:title" content={pageTitle} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonicalUrl} />
 <meta property="og:image" content={ogImage} />
+{/* All three social images are 1200x630 (og-default, og-warehouse, og-using-data). */}
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content={`${siteName}: ${description}`} />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={pageTitle} />

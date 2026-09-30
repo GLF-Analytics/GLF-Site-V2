@@ -1,0 +1,641 @@
+diff --git a/astro.config.ts b/astro.config.ts
+index 87679c4..3451b90 100644
+--- a/astro.config.ts
++++ b/astro.config.ts
+@@ -3,18 +3,35 @@ import tailwind from "@astrojs/tailwind";
+ import sitemap from "@astrojs/sitemap";
+ import vercel from "@astrojs/vercel/serverless";
+ import { siteUrl } from "./src/config/site.ts";
++import { pageDates } from "./src/lib/pageDates.ts";
++import seoCheck from "./src/integrations/seoCheck.ts";
+ 
+ // Unlisted pages: built and reachable by URL, kept out of the sitemap (and
+ // noindex on the page) until Gabriel links them. S23 (9/15/26): the warehouse
+ // planner is indexable now; the list stays for the next unlisted page.
+ const UNLISTED: string[] = [];
+ 
++// S36 (9/30/26): the sitemap's <lastmod> per route (src/lib/pageDates.ts).
++const dates = pageDates();
++
+ export default defineConfig({
+   site: siteUrl,
++  // S36 (9/30/26): one address per page, no trailing slash. The internal links
++  // were already /x; the canonicals and the sitemap now match them, and the
++  // Vercel adapter answers /x/ with a 308 to /x (its redirects for "never").
++  trailingSlash: "never",
+   // Hybrid (S15, 9/14/26): every page is still prerendered at build time; only
+   // routes that export `prerender = false` (src/pages/api/warehouse-suggest.ts)
+   // run as a Vercel function.
+   output: "hybrid",
+   adapter: vercel({ maxDuration: 60 }),
+-  integrations: [tailwind(), sitemap({ filter: (page) => !UNLISTED.some((path) => page.includes(path)) })]
++  integrations: [
++    tailwind(),
++    sitemap({
++      filter: (page) => !UNLISTED.some((path) => page.includes(path)),
++      serialize: (item) => ({ ...item, lastmod: dates[item.url.replace(siteUrl, "") || "/"] })
++    }),
++    // After sitemap(): it reads the sitemap the step above wrote.
++    seoCheck(siteUrl)
++  ]
+ });
+diff --git a/package.json b/package.json
+index 8ea6583..a85689e 100644
+--- a/package.json
++++ b/package.json
+@@ -12,7 +12,9 @@
+     "preview": "astro preview",
+     "astro": "astro",
+     "postinstall": "patch-package",
+-    "map:dots": "node scripts/world-dots.mjs"
++    "map:dots": "node scripts/world-dots.mjs",
++    "indexnow": "node scripts/indexnow.mjs",
++    "favicons": "python3 scripts/favicons.py"
+   },
+   "dependencies": {
+     "@anthropic-ai/sdk": "^0.125.0",
+diff --git a/public/robots.txt b/public/robots.txt
+index 994ef72..c681b66 100644
+--- a/public/robots.txt
++++ b/public/robots.txt
+@@ -1,4 +1,28 @@
++# S36 (9/30/26): everyone may crawl. The AI crawlers below get the same allow
++# by name, so the posture is explicit (we want AI answers to cite these pages)
++# and a bot that only reads its own named group still finds an allow.
++# Google AI Overviews use plain Googlebot, covered by the first group.
++
+ User-agent: *
+ Allow: /
++Disallow: /api/
++
++User-agent: GPTBot
++User-agent: OAI-SearchBot
++User-agent: ChatGPT-User
++User-agent: ClaudeBot
++User-agent: Claude-SearchBot
++User-agent: Claude-User
++User-agent: PerplexityBot
++User-agent: Perplexity-User
++User-agent: Google-Extended
++User-agent: Bingbot
++User-agent: Amazonbot
++User-agent: Applebot
++User-agent: Applebot-Extended
++User-agent: Meta-ExternalAgent
++User-agent: CCBot
++Allow: /
++Disallow: /api/
+ 
+ Sitemap: https://glfanalytics.com/sitemap-index.xml
+diff --git a/src/components/Footer.astro b/src/components/Footer.astro
+index cc6d797..9110989 100644
+--- a/src/components/Footer.astro
++++ b/src/components/Footer.astro
+@@ -1,14 +1,30 @@
+ ---
+ import { orgInfo, socialLinks } from "../config/site";
++
++// S36 (9/30/26): the planner and /work had no link on the site. The footer is
++// the one place the homepage links the planner (his call, 9/30); /work was
++// orphaned since S8. Text links, 44px tall like the icons.
++const pageLinks = [
++  { label: "Design your data warehouse", href: "/design-your-data-warehouse" },
++  { label: "All work", href: "/work" }
++];
+ ---
+ <footer class="relative border-t border-white/[0.06] bg-surface-950/50">
+   <div class="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 py-6">
+-    <div class="flex items-center justify-between">
++    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+       <span class="font-mono text-[11px] tracking-[0.1em] text-surface-500 uppercase">
+         &copy; {new Date().getFullYear()} GLF Analytics. Los Angeles.
+       </span>
+ 
+-      <div class="flex items-center gap-4">
++      <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
++        <nav aria-label="More from GLF Analytics" class="flex flex-wrap items-center gap-x-6">
++          {pageLinks.map((link) => (
++            <a href={link.href} class="inline-flex items-center min-h-11 text-sm text-surface-400 hover:text-gold-500 transition-colors">
++              {link.label}
++            </a>
++          ))}
++        </nav>
++        <div class="flex items-center gap-4">
+         <a
+           href={socialLinks.linkedin}
+           target="_blank"
+@@ -53,6 +69,7 @@ import { orgInfo, socialLinks } from "../config/site";
+             <rect width="20" height="16" x="2" y="4" rx="2" />
+           </svg>
+         </a>
++        </div>
+       </div>
+     </div>
+   </div>
+diff --git a/src/components/JsonLd.astro b/src/components/JsonLd.astro
+index 8c9f99d..0af9731 100644
+--- a/src/components/JsonLd.astro
++++ b/src/components/JsonLd.astro
+@@ -3,6 +3,17 @@ import { orgInfo, siteName, siteUrl, defaultDescription, socialLinks } from "../
+ 
+ const sameAs = Object.values(socialLinks).filter(Boolean);
+ 
++// S36 (9/30/26): a raster logo (the safe format for rich results; the PNG is
++// drawn by scripts/favicons.py from the same mark as the SVG), the headshot on
++// the Person, and an @id on every node so page-level JSON-LD can point at them.
++const logo = `${siteUrl}${orgInfo.logo}`;
++const address = {
++  "@type": "PostalAddress",
++  addressLocality: orgInfo.address.city,
++  addressRegion: orgInfo.address.region,
++  addressCountry: orgInfo.address.country
++};
++
+ const jsonLd = [
+   {
+     "@context": "https://schema.org",
+@@ -11,16 +22,11 @@ const jsonLd = [
+     name: orgInfo.name,
+     legalName: orgInfo.legalName,
+     url: siteUrl,
+-    logo: `${siteUrl}${orgInfo.logo}`,
++    logo,
+     email: orgInfo.email,
+     sameAs,
+     founder: { "@id": `${siteUrl}/#person` },
+-    address: {
+-      "@type": "PostalAddress",
+-      addressLocality: orgInfo.address.city,
+-      addressRegion: orgInfo.address.region,
+-      addressCountry: orgInfo.address.country
+-    }
++    address
+   },
+   {
+     "@context": "https://schema.org",
+@@ -29,6 +35,7 @@ const jsonLd = [
+     name: orgInfo.founder,
+     jobTitle: "Founder, GLF Analytics",
+     url: siteUrl,
++    image: `${siteUrl}/images/gabriel-freeman.webp`,
+     email: orgInfo.email,
+     sameAs,
+     worksFor: { "@id": `${siteUrl}/#organization` },
+@@ -42,6 +49,7 @@ const jsonLd = [
+   {
+     "@context": "https://schema.org",
+     "@type": "WebSite",
++    "@id": `${siteUrl}/#website`,
+     name: siteName,
+     url: siteUrl,
+     description: defaultDescription,
+@@ -50,9 +58,13 @@ const jsonLd = [
+   {
+     "@context": "https://schema.org",
+     "@type": "ProfessionalService",
++    "@id": `${siteUrl}/#service`,
+     name: siteName,
+     url: siteUrl,
++    image: logo,
+     description: defaultDescription,
++    address,
++    founder: { "@id": `${siteUrl}/#person` },
+     areaServed: "US",
+     serviceType: [
+       "data infrastructure and reporting",
+diff --git a/src/components/Seo.astro b/src/components/Seo.astro
+index e61f21d..efd7e47 100644
+--- a/src/components/Seo.astro
++++ b/src/components/Seo.astro
+@@ -12,10 +12,13 @@ const {
+   description = defaultDescription,
+   canonical,
+   ogImage = `${siteUrl}/images/og-default.png`,
++  ogType = "website",
+   noindex = false
+ } = Astro.props;
+ 
+-const canonicalUrl = canonical ?? siteUrl + Astro.url.pathname;
++// S36 (9/30/26): BaseLayout passes the canonical (no trailing slash, the same
++// string the sitemap lists); the fallback strips the slash the same way.
++const canonicalUrl = canonical ?? siteUrl + (Astro.url.pathname.replace(/\/+$/, "") || "/");
+ const pageTitle = title === defaultTitle ? title : `${title} | ${siteName}`;
+ ---
+ <title>{pageTitle}</title>
+@@ -24,12 +27,16 @@ const pageTitle = title === defaultTitle ? title : `${title} | ${siteName}`;
+ 
+ {noindex ? <meta name="robots" content="noindex, nofollow" /> : null}
+ 
+-<meta property="og:type" content="website" />
++<meta property="og:type" content={ogType} />
++<meta property="og:locale" content="en_US" />
+ <meta property="og:site_name" content={siteName} />
+ <meta property="og:title" content={pageTitle} />
+ <meta property="og:description" content={description} />
+ <meta property="og:url" content={canonicalUrl} />
+ <meta property="og:image" content={ogImage} />
++{/* All three social images are 1200x630 (og-default, og-warehouse, og-using-data). */}
++<meta property="og:image:width" content="1200" />
++<meta property="og:image:height" content="630" />
+ <meta property="og:image:alt" content={`${siteName}: ${description}`} />
+ <meta name="twitter:card" content="summary_large_image" />
+ <meta name="twitter:title" content={pageTitle} />
+diff --git a/src/config/site.ts b/src/config/site.ts
+index ff7f681..1c44cd0 100644
+--- a/src/config/site.ts
++++ b/src/config/site.ts
+@@ -1,8 +1,10 @@
+ export const siteName = "GLF Analytics";
+ export const siteUrl = "https://glfanalytics.com";
+-export const defaultTitle = "GLF Analytics | Data, growth, and the tech that runs your business";
++// S36 (9/30/26): the hero line and the hero paragraph, cut to fit a search
++// result (title 60 characters, description 160, no comma in a title).
++export const defaultTitle = "GLF Analytics | The data and the tech behind growing brands";
+ export const defaultDescription =
+-  "Gabriel Freeman helps brands grow with numbers and the right tools: data infrastructure, growth strategy, and the systems a business runs on. Since 2017, across eCommerce, CPG, and restaurants.";
++  "Gabriel Freeman helps brands grow by turning messy data into strategic recommendations. Reporting since 2017, plus marketing, websites and AI workflows.";
+ 
+ export const socialLinks = {
+   linkedin: "https://www.linkedin.com/in/gabriel-freeman-47b80389/",
+@@ -12,7 +14,7 @@ export const socialLinks = {
+ export const orgInfo = {
+   name: "GLF Analytics",
+   legalName: "GLF Analytics",
+-  logo: "/images/glf-logo.svg",
++  logo: "/images/glf-logo.png",
+   email: "gabrielf@glfanalytics.com",
+   founder: "Gabriel Freeman",
+   address: {
+diff --git a/src/content/config.ts b/src/content/config.ts
+index 215a696..71d8dca 100644
+--- a/src/content/config.ts
++++ b/src/content/config.ts
+@@ -24,7 +24,11 @@ const work = defineCollection({
+     outcome: z.string().optional(),
+     tools: z.array(z.string()).optional(),
+     functions: z.array(z.string()).optional(),
+-    showLiveStats: z.boolean().optional()
++    showLiveStats: z.boolean().optional(),
++    // S36 (9/30/26): the search-result title and description. The page's h1 and
++    // summary stay as they are; these fall back to `title` and `summary`.
++    seoTitle: z.string().optional(),
++    metaDescription: z.string().optional()
+   })
+ });
+ 
+diff --git a/src/content/work/bartaco.md b/src/content/work/bartaco.md
+index 1f62554..11f2057 100644
+--- a/src/content/work/bartaco.md
++++ b/src/content/work/bartaco.md
+@@ -18,6 +18,8 @@ backgroundImage: "/images/work/bartaco.jpg"
+ testimonial: "GLF became a valuable extension of our team, bringing strong execution, fresh ideas, and the versatility to solve new problems and keep the business moving forward."
+ testimonialAuthor: "Lindsay Crasnick, Director of Digital Experience + Product @ bartaco"
+ outcome: "The channels I manage for bartaco have grown across 34 markets."
++seoTitle: "Bartaco: digital growth across 34 markets"
++metaDescription: "Led digital growth across ordering, loyalty, and paid channels across 34 markets. Launched QR ordering and scaled loyalty, email, paid media and delivery."
+ ---
+ <section class="work-section">
+   <h2>What I delivered</h2>
+diff --git a/src/content/work/birthday-cards.md b/src/content/work/birthday-cards.md
+index f8bdbe2..49879e7 100644
+--- a/src/content/work/birthday-cards.md
++++ b/src/content/work/birthday-cards.md
+@@ -18,6 +18,7 @@ backgroundImage: "/images/work/birthdaycards-sample.jpg"
+ tools: ["Claude Code", "Next.js", "Vercel", "OpenAI", "Gemini", "Airtable", "Resend", "Vercel Blob", "Upstash"]
+ functions: ["design", "development", "database", "email", "SEO", "analytics"]
+ showLiveStats: true
++seoTitle: "birthday-cards.ai: an AI card generator"
+ ---
+ <section class="work-section">
+   <h2>What I built</h2>
+diff --git a/src/content/work/construction-ai-integration.md b/src/content/work/construction-ai-integration.md
+index 0a7b5fd..ac6083b 100644
+--- a/src/content/work/construction-ai-integration.md
++++ b/src/content/work/construction-ai-integration.md
+@@ -19,6 +19,7 @@ outcome: "Reports, bids, and a prompt library the team runs on its own. Every wo
+ url: "https://glf-ai.com"
+ tools: ["Power Automate", "Claude API", "Azure Document Intelligence", "Microsoft 365", "Copilot", "Claude Code"]
+ functions: ["workflow design", "prompt engineering", "document templates", "training"]
++metaDescription: "My AI practice for construction teams. Report generators on Power Automate and the Claude API, a bid comparison tool, and training for a whole firm."
+ ---
+ <section class="work-section">
+   <h2>What I built</h2>
+diff --git a/src/content/work/fox-fodder-flowers.md b/src/content/work/fox-fodder-flowers.md
+index c3a66ab..bb2daef 100644
+--- a/src/content/work/fox-fodder-flowers.md
++++ b/src/content/work/fox-fodder-flowers.md
+@@ -17,6 +17,8 @@ duration: "10 months"
+ url: "https://www.foxfodderflowers.com/"
+ logo: "/images/work/fox-fodder-flowers.svg"
+ backgroundImage: "/images/work/foxfodderflowers.jpg"
++seoTitle: "Fox Fodder Flowers: SEO and Google Ads"
++metaDescription: "Delivered reporting, SEO fixes, and Google Ads growth with positive ROI. A full SEO audit, the technical issues resolved, and Google Ads launched from scratch."
+ ---
+ <section class="work-section">
+   <h2>What I delivered</h2>
+diff --git a/src/content/work/gotham-goods.md b/src/content/work/gotham-goods.md
+index 8fb99a9..9efe094 100644
+--- a/src/content/work/gotham-goods.md
++++ b/src/content/work/gotham-goods.md
+@@ -19,6 +19,8 @@ backgroundImage: "/images/work/gothamgoods.jpg"
+ testimonial: "GLF was part of our team. The work they did was an integral part of getting us to where we are today."
+ testimonialAuthor: "Joanne Wilson, Founder @ Gotham NYC"
+ outcome: "A custom site, full tracking, and an email program from day one."
++seoTitle: "Gotham Goods: a custom ecommerce launch"
++metaDescription: "Launched a custom ecommerce site with tracking and lifecycle marketing from day one. The agency build, tagging and analytics, and Klaviyo email programs."
+ ---
+ <section class="work-section">
+   <h2>What I delivered</h2>
+diff --git a/src/content/work/ucan.md b/src/content/work/ucan.md
+index ef42679..b8569c3 100644
+--- a/src/content/work/ucan.md
++++ b/src/content/work/ucan.md
+@@ -20,6 +20,8 @@ backgroundImageTablet: "/images/work/ucan-tablet.jpg"
+ backgroundImageMobile: "/images/work/ucan-mobile.jpg"
+ testimonial: "GLF built automated performance reports used across our business to inform daily decisions. Their reporting enabled smarter investment in paid partnerships and helped us grow multiple channels in ways we previously couldn’t."
+ testimonialAuthor: "Varun Sriram, Director of Partnerships @ UCAN"
++seoTitle: "UCAN: the data stack and digital strategy"
++metaDescription: "Built the data stack, then used it to run digital strategy across channels. BigQuery with Looker Studio and Sheets, then paid social, influencer and sampling."
+ ---
+ <section class="work-section">
+   <h2>What I delivered</h2>
+diff --git a/src/content/work/unilever.md b/src/content/work/unilever.md
+index b39f8cc..88a33b6 100644
+--- a/src/content/work/unilever.md
++++ b/src/content/work/unilever.md
+@@ -16,6 +16,8 @@ duration: "4 months"
+ url: "https://www.unilever.com/"
+ backgroundImage: "/images/work/unilever.jpg"
+ outcome: "One warehouse the brand teams report from."
++seoTitle: "Unilever: a BigQuery source of truth"
++metaDescription: "Built a BigQuery source of truth for Beauty & Wellbeing DTC brands. The warehouse, the sources and the SQL, so the brand teams trust one set of numbers."
+ ---
+ <section class="work-section">
+   <h2>What I delivered</h2>
+diff --git a/src/data/everything.ts b/src/data/everything.ts
+index 8487647..9efc6de 100644
+--- a/src/data/everything.ts
++++ b/src/data/everything.ts
+@@ -22,7 +22,10 @@ export type Bullet = { project: string; text: string; tools: string[] };
+ export const intro = {
+   eyebrow: "Since 2017",
+   title: "The long list",
+-  lead: "My career has twists and turns and I keep picking up new skills. This is everything I would put on my resume if it did not have to fit on one page."
++  lead: "My career has twists and turns and I keep picking up new skills. This is everything I would put on my resume if it did not have to fit on one page.",
++  // S36 (9/30/26): the search description (was in the page; cut to 160 characters for search results).
++  description:
++    "The work Gabriel Freeman has done since 2017: data warehouses and reporting, forecasting, growth marketing, and AI tools built with Claude Code."
+ };
+ 
+ export const bullets: Bullet[] = [
+diff --git a/src/data/how-data.ts b/src/data/how-data.ts
+index 11e7b5b..df2ebb3 100644
+--- a/src/data/how-data.ts
++++ b/src/data/how-data.ts
+@@ -33,7 +33,7 @@ export const meta = {
+   lede:
+     "birthday-cards.ai started as a fun way to make cards for friends and family. I built it end to end with AI, and its analytics connect to the same AI system in Claude Code that builds it. The numbers decide what gets built next. That is the 2026 model I work in. AI does as much as it can, and a person sets the direction.",
+   description:
+-    "How birthday-cards.ai grew from a card maker for friends into a product built end to end with AI, run on its own analytics, from the command line in Claude Code.",
++    "How birthday-cards.ai grew from a card maker for friends into a product built end to end with AI, run on its own analytics from the command line in Claude Code.",
+   published: "2026-09-13",
+   // Bumped once per copy change (S30 blog post), never per rebuild.
+   modified: "2026-09-23"
+diff --git a/src/data/warehouse-survey.ts b/src/data/warehouse-survey.ts
+index 9da166c..9602588 100644
+--- a/src/data/warehouse-survey.ts
++++ b/src/data/warehouse-survey.ts
+@@ -24,8 +24,11 @@ export const meta = {
+   slug: "design-your-data-warehouse",
+   eyebrow: "Free tool",
+   title: "Design your data warehouse",
++  // S36 (9/30/26): the search title (the h1 stays `title`). Leads with the words a
++  // searcher types; the description leads with what the page does.
++  metaTitle: "Data warehouse planner with monthly costs",
+   description:
+-    "A free tool from GLF Analytics. Answer ten questions and get a data warehouse and reporting stack with the monthly cost at list price. No sign-up.",
++    "Answer ten questions and get a data warehouse and reporting stack with the monthly cost at list price. A free tool from GLF Analytics. No sign-up.",
+   lede: "Answer ten questions about your data. We suggest the tools for a warehouse and reporting stack and add up the monthly cost at list price.",
+   promise: "Two minutes. No sign-up. Swap any layer and the total moves."
+ };
+diff --git a/src/layouts/BaseLayout.astro b/src/layouts/BaseLayout.astro
+index 15e2af3..712d8a5 100644
+--- a/src/layouts/BaseLayout.astro
++++ b/src/layouts/BaseLayout.astro
+@@ -4,8 +4,30 @@ import Seo from "../components/Seo.astro";
+ import JsonLd from "../components/JsonLd.astro";
+ import Nav from "../components/Nav.astro";
+ import Footer from "../components/Footer.astro";
++import { siteUrl } from "../config/site";
+ 
+-const { title, description, canonical, ogImage, noindex } = Astro.props;
++const { title, description, canonical, ogImage, ogType, noindex, crumb, parent } = Astro.props;
++
++// S36 (9/30/26): one canonical per page, no trailing slash (the sitemap lists
++// the same string; src/integrations/seoCheck.ts fails the build if they differ).
++const canonicalUrl = canonical ?? siteUrl + (Astro.url.pathname.replace(/\/+$/, "") || "/");
++
++// S36: a BreadcrumbList on every indexable page but the homepage. `crumb` = the
++// short name (defaults to the title); `parent` = an optional middle step, e.g.
++// { name: "All work", path: "/work" } on a case study.
++const isHome = canonicalUrl === `${siteUrl}/`;
++const breadcrumb =
++  isHome || noindex
++    ? null
++    : {
++        "@context": "https://schema.org",
++        "@type": "BreadcrumbList",
++        itemListElement: [
++          { name: "Home", item: `${siteUrl}/` },
++          ...(parent ? [{ name: parent.name, item: `${siteUrl}${parent.path}` }] : []),
++          { name: crumb ?? title, item: canonicalUrl }
++        ].map((step, i) => ({ "@type": "ListItem", position: i + 1, ...step }))
++      };
+ ---
+ <!doctype html>
+ <html lang="en" class="scroll-smooth">
+@@ -15,17 +37,26 @@ const { title, description, canonical, ogImage, noindex } = Astro.props;
+     <script is:inline>
+       document.documentElement.classList.add("js-split");
+     </script>
++    {/* S36 (9/30/26): the SVG for browsers that take it, a 48px PNG and an .ico for
++        search results and older browsers, the 180px touch icon for iOS. PNGs are
++        drawn by scripts/favicons.py from the same mark as the SVG. */}
++    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+     <link rel="icon" href="/images/glf-favicon.svg" type="image/svg+xml" />
++    <link rel="icon" href="/favicon-48.png" type="image/png" sizes="48x48" />
++    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
++    <meta name="theme-color" content="#050505" />
+     <!-- Preconnect for faster font loading -->
+     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+     <Seo
+       title={title}
+       description={description}
+-      canonical={canonical}
++      canonical={canonicalUrl}
+       ogImage={ogImage}
++      ogType={ogType}
+       noindex={noindex}
+     />
+     <JsonLd />
++    {breadcrumb && <script type="application/ld+json" set:html={JSON.stringify(breadcrumb)} />}
+     {/* Vercel Web Analytics (S23, 9/15/26): no dependency. The queue stub makes window.va a safe no-op
+         until Vercel serves the script (Analytics enabled on the project) and in dev, where it 404s. */}
+     {import.meta.env.PROD && <script is:inline>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>}
+diff --git a/src/pages/[slug].astro b/src/pages/[slug].astro
+index 6157b89..3a2ac9c 100644
+--- a/src/pages/[slug].astro
++++ b/src/pages/[slug].astro
+@@ -1,6 +1,8 @@
+ ---
+ import BaseLayout from "../layouts/BaseLayout.astro";
+ import { getCollection } from "astro:content";
++import { siteUrl } from "../config/site";
++import lastmod from "../data/lastmod.json";
+ 
+ export async function getStaticPaths() {
+   const entries = await getCollection("work");
+@@ -20,8 +22,39 @@ const mobileBg = entry.data.backgroundImageMobile || tabletBg;
+ const backgroundStyle = desktopBg
+   ? `--work-bg-desktop: url('${desktopBg}') top center / cover no-repeat; --work-bg-tablet: url('${tabletBg}') top center / cover no-repeat; --work-bg-mobile: url('${mobileBg}') top center / cover no-repeat;`
+   : undefined;
++
++// S36 (9/30/26): the search title and description (fall back to the h1 and the
++// summary), and an Article node tied to the site-wide Person and Organization.
++// dateModified = the sitemap's lastmod for this page (src/lib/pageDates.ts).
++const pageUrl = `${siteUrl}/${entry.slug}`;
++const metaTitle = entry.data.seoTitle ?? entry.data.title;
++const metaDescription = entry.data.metaDescription ?? entry.data.summary;
++const modified = (lastmod as Record<string, string>)[`/${entry.slug}`];
++const articleLd = {
++  "@context": "https://schema.org",
++  "@type": "Article",
++  "@id": `${pageUrl}#article`,
++  headline: metaTitle,
++  description: metaDescription,
++  url: pageUrl,
++  mainEntityOfPage: pageUrl,
++  image: desktopBg && !desktopBg.endsWith(".svg") ? `${siteUrl}${desktopBg}` : `${siteUrl}/images/og-default.png`,
++  author: { "@id": `${siteUrl}/#person` },
++  publisher: { "@id": `${siteUrl}/#organization` },
++  isPartOf: { "@id": `${siteUrl}/#website` },
++  ...(modified ? { dateModified: modified } : {}),
++  keywords: entry.data.tags.join(", "),
++  inLanguage: "en"
++};
+ ---
+-<BaseLayout title={entry.data.title} description={entry.data.summary}>
++<BaseLayout
++  title={metaTitle}
++  description={metaDescription}
++  ogType="article"
++  crumb={entry.data.title}
++  parent={{ name: "All work", path: "/work" }}
++>
++  <script type="application/ld+json" set:html={JSON.stringify(articleLd)} />
+   <article>
+     <!-- Hero Section -->
+     <div
+diff --git a/src/pages/design-your-data-warehouse.astro b/src/pages/design-your-data-warehouse.astro
+index 85d6a6c..3873d94 100644
+--- a/src/pages/design-your-data-warehouse.astro
++++ b/src/pages/design-your-data-warehouse.astro
+@@ -123,7 +123,7 @@ const jsonLd = {
+   ]
+ };
+ ---
+-<BaseLayout title={meta.title} description={meta.description} ogImage={`${siteUrl}/images/og-warehouse.png`}>
++<BaseLayout title={meta.metaTitle} description={meta.description} ogImage={`${siteUrl}/images/og-warehouse.png`} crumb={meta.title}>
+   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+ 
+   <div class="wh" data-email={orgInfo.email} data-url={pageUrl}>
+diff --git a/src/pages/everything.astro b/src/pages/everything.astro
+index 1da3475..9c5f450 100644
+--- a/src/pages/everything.astro
++++ b/src/pages/everything.astro
+@@ -94,10 +94,8 @@ console.log(
+ );
+ console.log("[everything] cloud order: " + cloud.map((t) => `${t.label}(${t.weight})`).join(" "));
+ 
+-const description =
+-  "The work Gabriel Freeman has done since 2017: data warehouses and reporting, forecasting, growth marketing, delivery strategy for a restaurant group, and AI tools built with Claude Code. Tools named on every line.";
+ ---
+-<BaseLayout title={intro.title} description={description}>
++<BaseLayout title={intro.title} description={intro.description}>
+   <section class="pt-32 pb-12 md:pt-40 md:pb-16 px-6 md:px-12 lg:px-16">
+     <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8">
+       <div class="lg:col-span-8">
+@@ -150,8 +148,8 @@ const description =
+     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-6">
+       <p class="text-surface-400">Working on something like these?</p>
+       <div class="flex flex-wrap gap-x-8 gap-y-3">
+-        <a href="/#contact" class="group inline-flex items-center gap-2 text-sm text-white font-medium hover:text-gold-500 transition-colors">
+-          <span>Email me</span>
++        <a href="/contact" class="group inline-flex items-center gap-2 text-sm text-white font-medium hover:text-gold-500 transition-colors">
++          <span>Get in touch</span>
+           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
+         </a>
+         <a href="/" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Back to the homepage</a>
+diff --git a/src/pages/using-data-to-build-with-ai.astro b/src/pages/using-data-to-build-with-ai.astro
+index 30534c3..3cf80bc 100644
+--- a/src/pages/using-data-to-build-with-ai.astro
++++ b/src/pages/using-data-to-build-with-ai.astro
+@@ -84,7 +84,7 @@ const wordCount = postWords + words([meta.lede, ...faq.flatMap((f) => [f.q, f.a]
+ if (postWords > 700) throw new Error(`[how-data] the post is ${postWords} words, above the 700 cap`);
+ console.log(`[how-data] post ${postWords} words (450 to 650), page ${wordCount}, ${post.length} sections, ${tools.length} tools all mentioned, ${boldCount} bold mentions, ${faq.length} FAQ`);
+ 
+-const url = `${siteUrl}/using-data-to-build-with-ai/`;
++const url = `${siteUrl}/using-data-to-build-with-ai`;
+ const ld = [
+   {
+     "@context": "https://schema.org",
+@@ -132,7 +132,7 @@ const ld = [
+   }
+ ];
+ ---
+-<BaseLayout title={meta.title} description={meta.description} ogImage={`${siteUrl}/images/og-using-data.png`}>
++<BaseLayout title={meta.title} description={meta.description} ogImage={`${siteUrl}/images/og-using-data.png`} ogType="article">
+   <script type="application/ld+json" is:inline set:html={JSON.stringify(ld)} />
+ 
+   <section class="pt-32 pb-10 md:pt-40 md:pb-12 px-6 md:px-12 lg:px-16">
+diff --git a/src/pages/work.astro b/src/pages/work.astro
+index d51a210..aec5f0a 100644
+--- a/src/pages/work.astro
++++ b/src/pages/work.astro
+@@ -8,6 +8,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
+ import { getCollection } from "astro:content";
+ import { getBcStats } from "../lib/bcStats";
+ import { bcStatsSource } from "../config/site";
++import { workMeta } from "../data/work-page";
+ 
+ const bc = await getBcStats();
+ const fmt = (n: number) => n.toLocaleString("en-US");
+@@ -18,15 +19,12 @@ const count = workItems.length;
+ const featuredCount = workItems.filter((item) => item.data.featured).length;
+ const hostOf = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+ ---
+-<BaseLayout
+-  title="All work"
+-  description={`Every GLF Analytics case study since 2017 in one list: ${count} engagements and products across restaurants, CPG, eCommerce, startups, and construction.`}
+->
++<BaseLayout title={workMeta(count).title} description={workMeta(count).description}>
+   <section class="pt-32 pb-16 md:pt-40 md:pb-24 px-6 md:px-12 lg:px-16 border-b border-white/[0.06]">
+     <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8">
+       <div class="lg:col-span-7" data-reveal>
+         <span class="label block mb-4">Case studies</span>
+-        <h1 class="heading-display text-4xl md:text-5xl text-white">All work since 2017</h1>
++        <h1 class="heading-display text-4xl md:text-5xl text-white">{workMeta(count).title}</h1>
+         <p class="mt-6 text-surface-400 text-base md:text-lg leading-relaxed max-w-xl">
+           {featuredCount === count ? `All ${count} case studies in one list, each with its own page.` : `The homepage shows ${featuredCount} of ${count}. This page has every one.`}
+         </p>
+@@ -90,8 +88,8 @@ const hostOf = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(
+     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-6">
+       <p class="text-surface-400">Working on something like these?</p>
+       <div class="flex flex-wrap gap-x-8 gap-y-3">
+-        <a href="/#contact" class="group inline-flex items-center gap-2 text-sm text-white font-medium hover:text-gold-500 transition-colors">
+-          <span>Email me</span>
++        <a href="/contact" class="group inline-flex items-center gap-2 text-sm text-white font-medium hover:text-gold-500 transition-colors">
++          <span>Get in touch</span>
+           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
+         </a>
+         <a href="/" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Back to the homepage</a>

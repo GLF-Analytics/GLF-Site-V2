@@ -1,8 +1,10 @@
 export const siteName = "GLF Analytics";
 export const siteUrl = "https://glfanalytics.com";
-export const defaultTitle = "GLF Analytics | Data, growth, and the tech that runs your business";
+// S36 (9/30/26): the hero line and the hero paragraph, cut to fit a search
+// result (title 60 characters, description 160, no comma in a title).
+export const defaultTitle = "GLF Analytics | The data and the tech behind growing brands";
 export const defaultDescription =
-  "Gabriel Freeman helps brands grow with numbers and the right tools: data infrastructure, growth strategy, and the systems a business runs on. Since 2017, across eCommerce, CPG, and restaurants.";
+  "Gabriel Freeman helps brands grow by turning messy data into strategic recommendations. Reporting since 2017, plus marketing, websites and AI workflows.";
 
 export const socialLinks = {
   linkedin: "https://www.linkedin.com/in/gabriel-freeman-47b80389/",
@@ -12,7 +14,7 @@ export const socialLinks = {
 export const orgInfo = {
   name: "GLF Analytics",
   legalName: "GLF Analytics",
-  logo: "/images/glf-logo.svg",
+  logo: "/images/glf-logo.png",
   email: "gabrielf@glfanalytics.com",
   founder: "Gabriel Freeman",
   address: {

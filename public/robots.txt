@@ -1,4 +1,28 @@
+# S36 (9/30/26): everyone may crawl. The AI crawlers below get the same allow
+# by name, so the posture is explicit (we want AI answers to cite these pages)
+# and a bot that only reads its own named group still finds an allow.
+# Google AI Overviews use plain Googlebot, covered by the first group.
+
 User-agent: *
 Allow: /
+Disallow: /api/
+
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Bingbot
+User-agent: Amazonbot
+User-agent: Applebot
+User-agent: Applebot-Extended
+User-agent: Meta-ExternalAgent
+User-agent: CCBot
+Allow: /
+Disallow: /api/
 
 Sitemap: https://glfanalytics.com/sitemap-index.xml

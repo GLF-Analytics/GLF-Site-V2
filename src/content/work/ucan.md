@@ -20,6 +20,8 @@ backgroundImageTablet: "/images/work/ucan-tablet.jpg"
 backgroundImageMobile: "/images/work/ucan-mobile.jpg"
 testimonial: "GLF built automated performance reports used across our business to inform daily decisions. Their reporting enabled smarter investment in paid partnerships and helped us grow multiple channels in ways we previously couldn’t."
 testimonialAuthor: "Varun Sriram, Director of Partnerships @ UCAN"
+seoTitle: "UCAN: the data stack and digital strategy"
+metaDescription: "Built the data stack, then used it to run digital strategy across channels. BigQuery with Looker Studio and Sheets, then paid social, influencer and sampling."
 ---
 <section class="work-section">
   <h2>What I delivered</h2>

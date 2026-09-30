@@ -24,7 +24,11 @@ const work = defineCollection({
     outcome: z.string().optional(),
     tools: z.array(z.string()).optional(),
     functions: z.array(z.string()).optional(),
-    showLiveStats: z.boolean().optional()
+    showLiveStats: z.boolean().optional(),
+    // S36 (9/30/26): the search-result title and description. The page's h1 and
+    // summary stay as they are; these fall back to `title` and `summary`.
+    seoTitle: z.string().optional(),
+    metaDescription: z.string().optional()
   })
 });
 

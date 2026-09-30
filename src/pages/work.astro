@@ -8,6 +8,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 import { getBcStats } from "../lib/bcStats";
 import { bcStatsSource } from "../config/site";
+import { workMeta } from "../data/work-page";
 
 const bc = await getBcStats();
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -18,15 +19,12 @@ const count = workItems.length;
 const featuredCount = workItems.filter((item) => item.data.featured).length;
 const hostOf = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
 ---
-<BaseLayout
-  title="All work"
-  description={`Every GLF Analytics case study since 2017 in one list: ${count} engagements and products across restaurants, CPG, eCommerce, startups, and construction.`}
->
+<BaseLayout title={workMeta(count).title} description={workMeta(count).description}>
   <section class="pt-32 pb-16 md:pt-40 md:pb-24 px-6 md:px-12 lg:px-16 border-b border-white/[0.06]">
     <div class="max-w-7xl mx-auto grid lg:grid-cols-12 gap-8">
       <div class="lg:col-span-7" data-reveal>
         <span class="label block mb-4">Case studies</span>
-        <h1 class="heading-display text-4xl md:text-5xl text-white">All work since 2017</h1>
+        <h1 class="heading-display text-4xl md:text-5xl text-white">{workMeta(count).title}</h1>
         <p class="mt-6 text-surface-400 text-base md:text-lg leading-relaxed max-w-xl">
           {featuredCount === count ? `All ${count} case studies in one list, each with its own page.` : `The homepage shows ${featuredCount} of ${count}. This page has every one.`}
         </p>
@@ -90,8 +88,8 @@ const hostOf = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-6">
       <p class="text-surface-400">Working on something like these?</p>
       <div class="flex flex-wrap gap-x-8 gap-y-3">
-        <a href="/#contact" class="group inline-flex items-center gap-2 text-sm text-white font-medium hover:text-gold-500 transition-colors">
-          <span>Email me</span>
+        <a href="/contact" class="group inline-flex items-center gap-2 text-sm text-white font-medium hover:text-gold-500 transition-colors">
+          <span>Get in touch</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
         </a>
         <a href="/" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Back to the homepage</a>

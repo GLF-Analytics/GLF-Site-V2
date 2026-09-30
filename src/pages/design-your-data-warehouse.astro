@@ -123,7 +123,7 @@ const jsonLd = {
   ]
 };
 ---
-<BaseLayout title={meta.title} description={meta.description} ogImage={`${siteUrl}/images/og-warehouse.png`}>
+<BaseLayout title={meta.metaTitle} description={meta.description} ogImage={`${siteUrl}/images/og-warehouse.png`} crumb={meta.title}>
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
   <div class="wh" data-email={orgInfo.email} data-url={pageUrl}>

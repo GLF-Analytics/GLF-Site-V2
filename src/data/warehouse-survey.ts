@@ -24,8 +24,11 @@ export const meta = {
   slug: "design-your-data-warehouse",
   eyebrow: "Free tool",
   title: "Design your data warehouse",
+  // S36 (9/30/26): the search title (the h1 stays `title`). Leads with the words a
+  // searcher types; the description leads with what the page does.
+  metaTitle: "Data warehouse planner with monthly costs",
   description:
-    "A free tool from GLF Analytics. Answer ten questions and get a data warehouse and reporting stack with the monthly cost at list price. No sign-up.",
+    "Answer ten questions and get a data warehouse and reporting stack with the monthly cost at list price. A free tool from GLF Analytics. No sign-up.",
   lede: "Answer ten questions about your data. We suggest the tools for a warehouse and reporting stack and add up the monthly cost at list price.",
   promise: "Two minutes. No sign-up. Swap any layer and the total moves."
 };

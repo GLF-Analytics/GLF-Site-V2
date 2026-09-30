@@ -18,6 +18,8 @@ backgroundImage: "/images/work/bartaco.jpg"
 testimonial: "GLF became a valuable extension of our team, bringing strong execution, fresh ideas, and the versatility to solve new problems and keep the business moving forward."
 testimonialAuthor: "Lindsay Crasnick, Director of Digital Experience + Product @ bartaco"
 outcome: "The channels I manage for bartaco have grown across 34 markets."
+seoTitle: "Bartaco: digital growth across 34 markets"
+metaDescription: "Led digital growth across ordering, loyalty, and paid channels across 34 markets. Launched QR ordering and scaled loyalty, email, paid media and delivery."
 ---
 <section class="work-section">
   <h2>What I delivered</h2>

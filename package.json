@@ -12,7 +12,9 @@
     "preview": "astro preview",
     "astro": "astro",
     "postinstall": "patch-package",
-    "map:dots": "node scripts/world-dots.mjs"
+    "map:dots": "node scripts/world-dots.mjs",
+    "indexnow": "node scripts/indexnow.mjs",
+    "favicons": "python3 scripts/favicons.py"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",

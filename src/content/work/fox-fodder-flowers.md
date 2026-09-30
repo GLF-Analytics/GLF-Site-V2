@@ -17,6 +17,8 @@ duration: "10 months"
 url: "https://www.foxfodderflowers.com/"
 logo: "/images/work/fox-fodder-flowers.svg"
 backgroundImage: "/images/work/foxfodderflowers.jpg"
+seoTitle: "Fox Fodder Flowers: SEO and Google Ads"
+metaDescription: "Delivered reporting, SEO fixes, and Google Ads growth with positive ROI. A full SEO audit, the technical issues resolved, and Google Ads launched from scratch."
 ---
 <section class="work-section">
   <h2>What I delivered</h2>

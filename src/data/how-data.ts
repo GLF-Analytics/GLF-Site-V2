@@ -33,7 +33,7 @@ export const meta = {
   lede:
     "birthday-cards.ai started as a fun way to make cards for friends and family. I built it end to end with AI, and its analytics connect to the same AI system in Claude Code that builds it. The numbers decide what gets built next. That is the 2026 model I work in. AI does as much as it can, and a person sets the direction.",
   description:
-    "How birthday-cards.ai grew from a card maker for friends into a product built end to end with AI, run on its own analytics, from the command line in Claude Code.",
+    "How birthday-cards.ai grew from a card maker for friends into a product built end to end with AI, run on its own analytics from the command line in Claude Code.",
   published: "2026-09-13",
   // Bumped once per copy change (S30 blog post), never per rebuild.
   modified: "2026-09-23"

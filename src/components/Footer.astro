@@ -1,14 +1,30 @@
 ---
 import { orgInfo, socialLinks } from "../config/site";
+
+// S36 (9/30/26): the planner and /work had no link on the site. The footer is
+// the one place the homepage links the planner (his call, 9/30); /work was
+// orphaned since S8. Text links, 44px tall like the icons.
+const pageLinks = [
+  { label: "Design your data warehouse", href: "/design-your-data-warehouse" },
+  { label: "All work", href: "/work" }
+];
 ---
 <footer class="relative border-t border-white/[0.06] bg-surface-950/50">
   <div class="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 py-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <span class="font-mono text-[11px] tracking-[0.1em] text-surface-500 uppercase">
         &copy; {new Date().getFullYear()} GLF Analytics. Los Angeles.
       </span>
 
-      <div class="flex items-center gap-4">
+      <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <nav aria-label="More from GLF Analytics" class="flex flex-wrap items-center gap-x-6">
+          {pageLinks.map((link) => (
+            <a href={link.href} class="inline-flex items-center min-h-11 text-sm text-surface-400 hover:text-gold-500 transition-colors">
+              {link.label}
+            </a>
+          ))}
+        </nav>
+        <div class="flex items-center gap-4">
         <a
           href={socialLinks.linkedin}
           target="_blank"
@@ -53,6 +69,7 @@ import { orgInfo, socialLinks } from "../config/site";
             <rect width="20" height="16" x="2" y="4" rx="2" />
           </svg>
         </a>
+        </div>
       </div>
     </div>
   </div>

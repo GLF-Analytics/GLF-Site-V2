@@ -3,6 +3,17 @@ import { orgInfo, siteName, siteUrl, defaultDescription, socialLinks } from "../
 
 const sameAs = Object.values(socialLinks).filter(Boolean);
 
+// S36 (9/30/26): a raster logo (the safe format for rich results; the PNG is
+// drawn by scripts/favicons.py from the same mark as the SVG), the headshot on
+// the Person, and an @id on every node so page-level JSON-LD can point at them.
+const logo = `${siteUrl}${orgInfo.logo}`;
+const address = {
+  "@type": "PostalAddress",
+  addressLocality: orgInfo.address.city,
+  addressRegion: orgInfo.address.region,
+  addressCountry: orgInfo.address.country
+};
+
 const jsonLd = [
   {
     "@context": "https://schema.org",
@@ -11,16 +22,11 @@ const jsonLd = [
     name: orgInfo.name,
     legalName: orgInfo.legalName,
     url: siteUrl,
-    logo: `${siteUrl}${orgInfo.logo}`,
+    logo,
     email: orgInfo.email,
     sameAs,
     founder: { "@id": `${siteUrl}/#person` },
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: orgInfo.address.city,
-      addressRegion: orgInfo.address.region,
-      addressCountry: orgInfo.address.country
-    }
+    address
   },
   {
     "@context": "https://schema.org",
@@ -29,6 +35,7 @@ const jsonLd = [
     name: orgInfo.founder,
     jobTitle: "Founder, GLF Analytics",
     url: siteUrl,
+    image: `${siteUrl}/images/gabriel-freeman.webp`,
     email: orgInfo.email,
     sameAs,
     worksFor: { "@id": `${siteUrl}/#organization` },
@@ -42,6 +49,7 @@ const jsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${siteUrl}/#website`,
     name: siteName,
     url: siteUrl,
     description: defaultDescription,
@@ -50,9 +58,13 @@ const jsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
+    "@id": `${siteUrl}/#service`,
     name: siteName,
     url: siteUrl,
+    image: logo,
     description: defaultDescription,
+    address,
+    founder: { "@id": `${siteUrl}/#person` },
     areaServed: "US",
     serviceType: [
       "data infrastructure and reporting",

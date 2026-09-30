@@ -84,7 +84,7 @@ const wordCount = postWords + words([meta.lede, ...faq.flatMap((f) => [f.q, f.a]
 if (postWords > 700) throw new Error(`[how-data] the post is ${postWords} words, above the 700 cap`);
 console.log(`[how-data] post ${postWords} words (450 to 650), page ${wordCount}, ${post.length} sections, ${tools.length} tools all mentioned, ${boldCount} bold mentions, ${faq.length} FAQ`);
 
-const url = `${siteUrl}/using-data-to-build-with-ai/`;
+const url = `${siteUrl}/using-data-to-build-with-ai`;
 const ld = [
   {
     "@context": "https://schema.org",
@@ -132,7 +132,7 @@ const ld = [
   }
 ];
 ---
-<BaseLayout title={meta.title} description={meta.description} ogImage={`${siteUrl}/images/og-using-data.png`}>
+<BaseLayout title={meta.title} description={meta.description} ogImage={`${siteUrl}/images/og-using-data.png`} ogType="article">
   <script type="application/ld+json" is:inline set:html={JSON.stringify(ld)} />
 
   <section class="pt-32 pb-10 md:pt-40 md:pb-12 px-6 md:px-12 lg:px-16">
