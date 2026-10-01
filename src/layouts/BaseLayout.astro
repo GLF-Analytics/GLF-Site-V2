@@ -6,7 +6,7 @@ import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
 import { siteUrl } from "../config/site";
 
-const { title, description, canonical, ogImage, ogType, noindex, crumb, parent } = Astro.props;
+const { title, description, canonical, ogImage, ogImageAlt, ogType, noindex, crumb, parent } = Astro.props;
 
 // S36 (9/30/26): one canonical per page, no trailing slash (the sitemap lists
 // the same string; src/integrations/seoCheck.ts fails the build if they differ).
@@ -52,6 +52,7 @@ const breadcrumb =
       description={description}
       canonical={canonicalUrl}
       ogImage={ogImage}
+      ogImageAlt={ogImageAlt}
       ogType={ogType}
       noindex={noindex}
     />
@@ -61,6 +62,31 @@ const breadcrumb =
         until Vercel serves the script (Analytics enabled on the project) and in dev, where it 404s. */}
     {import.meta.env.PROD && <script is:inline>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>}
     {import.meta.env.PROD && <script is:inline defer src="/_vercel/insights/script.js"></script>}
+    {/* Vercel Speed Insights (S37, 10/1/26): the same shape, real load numbers per page. */}
+    {import.meta.env.PROD && <script is:inline>window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };</script>}
+    {import.meta.env.PROD && <script is:inline defer src="/_vercel/speed-insights/script.js"></script>}
+    {/* First-touch source (S37, 10/1/26): where this tab's visit came from, kept in
+        sessionStorage["glf-src"] so the contact form and the planner can send it with a
+        lead even after the visitor has moved to another page. utm_* or ref when the
+        landing URL has them, else the referring host. The site's own host never counts,
+        and the first value written is the one that stays. */}
+    <script is:inline>
+      (function () {
+        try {
+          if (sessionStorage.getItem("glf-src")) return;
+          var q = new URLSearchParams(location.search);
+          var src = ["utm_source", "utm_medium", "utm_campaign", "ref"]
+            .filter(function (k) { return q.get(k); })
+            .map(function (k) { return k + "=" + q.get(k); })
+            .join("&");
+          if (!src && document.referrer) {
+            var host = new URL(document.referrer).host;
+            if (host && host.replace(/^www\./, "") !== location.host.replace(/^www\./, "")) src = "referrer=" + host;
+          }
+          if (src) sessionStorage.setItem("glf-src", src.slice(0, 100));
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body class="antialiased">
     <!-- Grain Texture Overlay -->
@@ -96,6 +122,34 @@ const breadcrumb =
           revealItems.forEach((item) => observer.observe(item));
         }
       }
+    </script>
+    {/* Click events (S37, 10/1/26): one listener for every page, Vercel custom events
+        through the window.va queue (a no-op in dev). Two properties at most per event.
+        outbound_click = any link off the site; contact_click = a link to /contact
+        (from = nav, footer or page); email_click = a mailto; planner_click = a link
+        to the planner. The forms and the planner keep their own events. */}
+    <script is:inline>
+      document.addEventListener("click", function (e) {
+        var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+        if (!a || !window.va) return;
+        var page = location.pathname;
+        var href = a.getAttribute("href") || "";
+        var name, data;
+        if (href.indexOf("mailto:") === 0) {
+          name = "email_click";
+          data = { page: page };
+        } else if (a.host && a.host !== location.host) {
+          name = "outbound_click";
+          data = { host: a.host.replace(/^www\./, ""), page: page };
+        } else if (a.pathname === "/contact" && page !== "/contact") {
+          name = "contact_click";
+          data = { page: page, from: a.closest("nav.nav-glass") ? "nav" : a.closest("footer") ? "footer" : "page" };
+        } else if (a.pathname === "/design-your-data-warehouse" && page !== a.pathname) {
+          name = "planner_click";
+          data = { page: page };
+        }
+        if (name) window.va("event", { name: name, data: data });
+      });
     </script>
   </body>
 </html>

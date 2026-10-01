@@ -398,14 +398,10 @@ const jsonLd = {
     const today = () => new Date().toISOString().slice(0, 10);
     let current = 0;
 
-    // First-touch attribution, read before the submit rewrites the query string.
-    const SRC_KEY = "wh-src";
-    try {
-      const q = new URLSearchParams(location.search);
-      const parts = ["utm_source", "utm_medium", "utm_campaign", "ref"].map((k) => q.get(k)).filter(Boolean) as string[];
-      const src = parts.length ? parts.join("/") : document.referrer ? new URL(document.referrer).hostname : "";
-      if (src && !sessionStorage.getItem(SRC_KEY)) sessionStorage.setItem(SRC_KEY, src.slice(0, 100));
-    } catch {}
+    // First-touch attribution. S37 (10/1/26): BaseLayout writes it on the landing page
+    // for the whole site (one key, one format, the site's own host never counts; this
+    // page used to record glfanalytics.com when a visitor came in from the footer).
+    const SRC_KEY = "glf-src";
     const ref = () => {
       try {
         return sessionStorage.getItem(SRC_KEY) ?? "";

@@ -24,7 +24,8 @@ export const meta = {
   slug: "contact",
   eyebrow: "Contact",
   title: "Start a conversation",
-  description: "Tell Gabriel Freeman what you are working on. Every message gets a reply, or pick a time on the calendar.",
+  // S37 (10/1/26): "Every message gets a reply" came out (his S34 call: no reply promise anywhere); the four service words went in.
+  description: "Tell Gabriel Freeman what you are working on: marketing, database work, AI tooling or web development. Or pick a time on the calendar.",
   lede: "Tell me what you are working on and what you want out of it. I read every message and get back as soon as I can. If a call is easier, the calendar link is below the form."
 };
 
@@ -33,6 +34,7 @@ export const form = {
   name: "Name",
   email: "Email",
   company: "Company (optional)",
+  found: "How did you find me (optional)",
   message: "What you are working on and what you want to get out of it",
   send: "Send",
   sending: "Sending",
@@ -80,12 +82,13 @@ export const mail = {
     return lines.join("\n");
   },
   notifySubject: (intent: string, name: string) => `Site contact (${intent}): ${name}`,
-  notify(i: { name: string; email: string; company: string; intent: string; message: string; page: string; source: string }): string {
+  notify(i: { name: string; email: string; company: string; found: string; intent: string; message: string; page: string; source: string }): string {
     return [
       `Name: ${i.name}`,
       `Email: ${i.email}`,
       `Company: ${i.company || "none"}`,
       `About: ${i.intent}`,
+      `Found me: ${i.found || "not said"}`,
       `Page: ${i.page || "none"}`,
       `Source: ${i.source || "none"}`,
       "",

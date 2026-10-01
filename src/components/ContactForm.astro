@@ -1,7 +1,8 @@
 ---
 /*
   The contact form (S33, 9/28/26): five service chips in Gabriel's words, name,
-  email, company (optional), message, a honeypot, one gold button. Posts JSON to
+  email, company (optional), how they found the site (optional, S37 10/1/26),
+  message, a honeypot, one gold button. Posts JSON to
   /api/lead. Honest states: sending, sent (then the booking link if BOOKING_URL
   is set; no consent or inbox line since S34, his call), a rate message, and for "off" or a failure a mailto link that carries
   the message so nothing typed is lost. Copy lives in src/data/contact.ts.
@@ -51,6 +52,11 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
     </label>
 
     <label class="cf__field">
+      <span class="cf__label">{form.found}</span>
+      <input class="cf__input" type="text" name="found" autocomplete="off" maxlength="120" />
+    </label>
+
+    <label class="cf__field">
       <span class="cf__label">{form.message}</span>
       <textarea class="cf__input cf__textarea" name="message" rows="5" required maxlength="2000"></textarea>
     </label>
@@ -91,16 +97,25 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
       var params = new URLSearchParams(location.search);
       var page = f.getAttribute("data-page") || location.pathname;
 
-      // ?intent= preselects a chip; utm_* or ref become the source line; otherwise the referring host.
+      // ?intent= preselects a chip. The source line is the visit's first touch, written
+      // by BaseLayout on the landing page (S37, 10/1/26: it used to be read on this page
+      // only, so a visitor who landed on the homepage arrived here with no source). The
+      // same read on this page is the fallback when sessionStorage is not available.
       var pre = params.get("intent");
       if (pre) {
         var r = f.querySelector('input[name="intent"][value="' + pre.replace(/"/g, "") + '"]');
         if (r) r.checked = true;
       }
-      var source = ["utm_source", "utm_medium", "utm_campaign", "ref"]
-        .filter(function (k) { return params.get(k); })
-        .map(function (k) { return k + "=" + params.get(k); })
-        .join("&");
+      var source = "";
+      try {
+        source = sessionStorage.getItem("glf-src") || "";
+      } catch (e) {}
+      if (!source) {
+        source = ["utm_source", "utm_medium", "utm_campaign", "ref"]
+          .filter(function (k) { return params.get(k); })
+          .map(function (k) { return k + "=" + params.get(k); })
+          .join("&");
+      }
       if (!source && document.referrer) {
         try {
           var host = new URL(document.referrer).host;
@@ -133,6 +148,7 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
           name: String(fd.get("name") || "").trim(),
           email: String(fd.get("email") || "").trim(),
           company: String(fd.get("company") || "").trim(),
+          found: String(fd.get("found") || "").trim(),
           intent: String(fd.get("intent") || "other"),
           message: String(fd.get("message") || "").trim(),
           website: String(fd.get("website") || ""),

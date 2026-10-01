@@ -28,7 +28,10 @@ const work = defineCollection({
     // S36 (9/30/26): the search-result title and description. The page's h1 and
     // summary stay as they are; these fall back to `title` and `summary`.
     seoTitle: z.string().optional(),
-    metaDescription: z.string().optional()
+    metaDescription: z.string().optional(),
+    // S37 (10/1/26): the "Related work" row at the bottom of the page. Slugs of
+    // other case studies, or a page path from RELATED_PAGES in [slug].astro.
+    related: z.array(z.string()).optional()
   })
 });
 

@@ -12,7 +12,7 @@
   the worst case for the reveal observer, so everything renders plainly.
 */
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { intro, bullets, cloudTerms } from "../data/everything";
+import { intro, bullets, caseStudies, cloudTerms } from "../data/everything";
 
 if (bullets.length < 15 || bullets.length > 60) {
   throw new Error(`/everything expects 15 to 60 bullets, found ${bullets.length}`);
@@ -87,6 +87,9 @@ for (let i = 1; i < cloud.length; i++) {
   if (j > -1) [cloud[i], cloud[j]] = [cloud[j], cloud[i]];
 }
 
+for (const project of Object.keys(caseStudies)) {
+  if (!runs.some((r) => r.project === project)) throw new Error(`/everything: caseStudies names "${project}", which is no project in the list`);
+}
 console.log(`[everything] ${bullets.length} bullets, ${runs.length} groups: ` + runs.map((r) => `${r.project} ${r.items.length}`).join(", "));
 console.log(
   "[everything] cloud weights: " +
@@ -122,7 +125,16 @@ console.log("[everything] cloud order: " + cloud.map((t) => `${t.label}(${t.weig
       <div class="max-w-2xl">
         {runs.map((run, i) => (
           <section id={run.id} class={i === 0 ? "" : "mt-10 pt-8 border-t border-white/[0.06]"} aria-labelledby={`${run.id}-heading`}>
-            <h2 id={`${run.id}-heading`} class="font-mono text-[11px] tracking-[0.15em] text-gold-500 mb-5">{run.project}</h2>
+            <div class="mb-5 flex items-baseline justify-between gap-4">
+              <h2 id={`${run.id}-heading`} class="font-mono text-[11px] tracking-[0.15em] text-gold-500">{run.project}</h2>
+              {caseStudies[run.project] && (
+                <a
+                  href={caseStudies[run.project]}
+                  aria-label={`${run.project} case study`}
+                  class="-my-3 py-3 font-mono text-[11px] tracking-[0.05em] text-surface-400 hover:text-gold-500 transition-colors whitespace-nowrap"
+                >Case study</a>
+              )}
+            </div>
             <ul class="space-y-6">
               {run.items.map((b) => (
                 <li class="flex items-start gap-4">

@@ -20,6 +20,7 @@ testimonialAuthor: "Lindsay Crasnick, Director of Digital Experience + Product @
 outcome: "The channels I manage for bartaco have grown across 34 markets."
 seoTitle: "Bartaco: digital growth across 34 markets"
 metaDescription: "Led digital growth across ordering, loyalty, and paid channels across 34 markets. Launched QR ordering and scaled loyalty, email, paid media and delivery."
+related: ["fox-fodder-flowers", "gotham-goods"]
 ---
 <section class="work-section">
   <h2>What I delivered</h2>

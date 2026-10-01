@@ -1,7 +1,6 @@
 ---
-import { orgInfo, siteName, siteUrl, defaultDescription, socialLinks } from "../config/site";
+import { orgInfo, orgSameAs, personSameAs, siteName, siteUrl, defaultDescription } from "../config/site";
 
-const sameAs = Object.values(socialLinks).filter(Boolean);
 
 // S36 (9/30/26): a raster logo (the safe format for rich results; the PNG is
 // drawn by scripts/favicons.py from the same mark as the SVG), the headshot on
@@ -21,10 +20,12 @@ const jsonLd = [
     "@id": `${siteUrl}/#organization`,
     name: orgInfo.name,
     legalName: orgInfo.legalName,
+    description: orgInfo.description,
+    foundingDate: orgInfo.foundingDate,
     url: siteUrl,
     logo,
     email: orgInfo.email,
-    sameAs,
+    sameAs: orgSameAs,
     founder: { "@id": `${siteUrl}/#person` },
     address
   },
@@ -34,10 +35,11 @@ const jsonLd = [
     "@id": `${siteUrl}/#person`,
     name: orgInfo.founder,
     jobTitle: "Founder, GLF Analytics",
+    description: defaultDescription,
     url: siteUrl,
     image: `${siteUrl}/images/gabriel-freeman.webp`,
     email: orgInfo.email,
-    sameAs,
+    sameAs: personSameAs,
     worksFor: { "@id": `${siteUrl}/#organization` },
     knowsAbout: [
       "data infrastructure and reporting (BigQuery, SQL, Looker Studio)",
@@ -66,11 +68,13 @@ const jsonLd = [
     address,
     founder: { "@id": `${siteUrl}/#person` },
     areaServed: "US",
+    // S37 (10/1/26): the four card titles in Capabilities.astro, word for word
+    // (src/integrations/seoCheck.ts fails the build if the homepage does not show each one).
     serviceType: [
-      "data infrastructure and reporting",
-      "growth strategy and paid media",
-      "eCommerce and digital systems",
-      "AI tooling"
+      "Data infrastructure and reporting",
+      "Growth strategy and marketing execution",
+      "Managing tech and tools",
+      "Integration of AI in organizations"
     ]
   }
 ];

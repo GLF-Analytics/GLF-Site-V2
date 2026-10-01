@@ -10,6 +10,10 @@
   rewrites src/data/lastmod.json when they changed (commit it with the page
   edit). Vercel clones shallow, where git dates are wrong, so there the build
   reads the committed json as is. No git at all = the json too.
+
+  S37 (10/1/26): the same run also writes src/data/published.json, one date per
+  case study = the day its markdown first entered git (the Article's
+  datePublished). A new, uncommitted case study counts as today.
 */
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
@@ -17,6 +21,7 @@ import { join } from "node:path";
 import { staticPages, WORK_DIR, WORK_TEMPLATE } from "../data/page-sources";
 
 const SNAPSHOT = "src/data/lastmod.json";
+const PUBLISHED = "src/data/published.json";
 
 export type PageSource = { path: string; sources: string[] };
 
@@ -45,6 +50,21 @@ function readSnapshot(root: string): Record<string, string> {
   return existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {};
 }
 
+/** Case study path -> the date its markdown first entered git. Full history only. */
+function writePublished(root: string): void {
+  const dates: Record<string, string> = {};
+  for (const f of readdirSync(join(root, WORK_DIR)).filter((f) => f.endsWith(".md")).sort()) {
+    const first = git(root, ["log", "--diff-filter=A", "--follow", "--format=%cs", "--", `${WORK_DIR}/${f}`]).split("\n").pop() ?? "";
+    dates[`/${f.replace(/\.md$/, "")}`] = /^\d{4}-\d{2}-\d{2}$/.test(first) ? first : todayLA();
+  }
+  const next = JSON.stringify(dates, null, 2) + "\n";
+  const file = join(root, PUBLISHED);
+  if (!existsSync(file) || readFileSync(file, "utf8") !== next) {
+    writeFileSync(file, next);
+    console.log(`[lastmod] ${PUBLISHED} updated (commit it)`);
+  }
+}
+
 /** Route path -> YYYY-MM-DD. Logs where the dates came from. */
 export function pageDates(root = process.cwd()): Record<string, string> {
   const pages = allPageSources(root);
@@ -70,6 +90,7 @@ export function pageDates(root = process.cwd()): Record<string, string> {
   const file = join(root, SNAPSHOT);
   const changed = !existsSync(file) || readFileSync(file, "utf8") !== next;
   if (changed) writeFileSync(file, next);
+  writePublished(root);
   console.log(`[lastmod] ${pages.length} routes from git, newest ${Object.values(dates).sort().at(-1)}${changed ? `, ${SNAPSHOT} updated (commit it)` : ""}`);
   return dates;
 }

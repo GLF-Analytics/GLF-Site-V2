@@ -9,7 +9,7 @@
 */
 import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
-import { defaultDescription, orgInfo, siteName, siteUrl } from "../config/site";
+import { defaultDescription, defaultTitle, orgInfo, siteName, siteUrl } from "../config/site";
 import { staticPages, type LlmsSection } from "../data/page-sources";
 import { meta as contactMeta } from "../data/contact";
 import { intro as everythingIntro } from "../data/everything";
@@ -23,7 +23,8 @@ export const GET: APIRoute = async () => {
   const work = (await getCollection("work")).sort((a, b) => a.data.order - b.data.order);
 
   const pageMeta: Record<string, { title: string; description: string }> = {
-    "/": { title: "Homepage", description: "The four service areas, every case study, and live numbers from birthday-cards.ai" },
+    // S37 (10/1/26): the homepage's own title (was the word "Homepage").
+    "/": { title: defaultTitle.split(" | ")[1], description: "The four service areas, every case study, and live numbers from birthday-cards.ai" },
     "/work": workMeta(work.length),
     "/everything": { title: everythingIntro.title, description: everythingIntro.description },
     "/contact": contactMeta,
@@ -53,7 +54,7 @@ export const GET: APIRoute = async () => {
   const text = [
     `# ${siteName}`,
     `> ${defaultDescription}`,
-    `GLF Analytics is Gabriel Freeman's practice in Los Angeles, independent since 2021. He works with brands, restaurant groups, startups, construction management firms and marketing agencies. Email: ${orgInfo.email}.`,
+    `${orgInfo.description} He works with brands, restaurant groups, startups, construction management firms and marketing agencies. Email: ${orgInfo.email}.`,
     ...body,
     `## Case studies\n\n${caseStudies.join("\n")}`
   ].join("\n\n");

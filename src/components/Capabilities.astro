@@ -1,4 +1,6 @@
 ---
+import { outboundRel } from "../config/site";
+
 const areas = [
   {
     number: "01",
@@ -78,7 +80,7 @@ const areas = [
         <a
           href={area.href}
           target={area.external ? "_blank" : undefined}
-          rel={area.external ? "noreferrer" : undefined}
+          rel={area.external ? outboundRel(area.href) : undefined}
           class="capability-card card card-accent bg-surface-950 p-8 md:p-9 group block"
           data-reveal
           style={`transition-delay: ${index * 100}ms`}

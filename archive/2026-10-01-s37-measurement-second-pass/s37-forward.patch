@@ -1,0 +1,1091 @@
+diff --git a/package.json b/package.json
+index a85689e..08c8b44 100644
+--- a/package.json
++++ b/package.json
+@@ -14,6 +14,7 @@
+     "postinstall": "patch-package",
+     "map:dots": "node scripts/world-dots.mjs",
+     "indexnow": "node scripts/indexnow.mjs",
++    "og": "node scripts/og-cards.mjs",
+     "favicons": "python3 scripts/favicons.py"
+   },
+   "dependencies": {
+diff --git a/src/components/About.astro b/src/components/About.astro
+index 29df0bf..5354c8b 100644
+--- a/src/components/About.astro
++++ b/src/components/About.astro
+@@ -58,7 +58,7 @@ const groups: { label: string; rows: Row[] }[] = [
+                   <a
+                     href={r.href}
+                     target={r.external || r.newTab ? "_blank" : undefined}
+-                    rel={r.external ? "noreferrer" : r.newTab ? "noopener" : undefined}
++                    rel={r.external ? "noreferrer" : r.newTab ? "opener" /* S37: a new tab of this site keeps the session, so the first-touch source travels */ : undefined}
+                     class={`group inline-flex items-center gap-2 py-2.5 text-base transition-colors hover:text-gold-500 ${r.primary ? "text-white" : "text-surface-300"}`}
+                   >
+                     <span>{r.label}</span>
+diff --git a/src/components/Capabilities.astro b/src/components/Capabilities.astro
+index 0efdc64..af85975 100644
+--- a/src/components/Capabilities.astro
++++ b/src/components/Capabilities.astro
+@@ -1,4 +1,6 @@
+ ---
++import { outboundRel } from "../config/site";
++
+ const areas = [
+   {
+     number: "01",
+@@ -78,7 +80,7 @@ const areas = [
+         <a
+           href={area.href}
+           target={area.external ? "_blank" : undefined}
+-          rel={area.external ? "noreferrer" : undefined}
++          rel={area.external ? outboundRel(area.href) : undefined}
+           class="capability-card card card-accent bg-surface-950 p-8 md:p-9 group block"
+           data-reveal
+           style={`transition-delay: ${index * 100}ms`}
+diff --git a/src/components/ContactForm.astro b/src/components/ContactForm.astro
+index fb01161..5f144ac 100644
+--- a/src/components/ContactForm.astro
++++ b/src/components/ContactForm.astro
+@@ -1,7 +1,8 @@
+ ---
+ /*
+   The contact form (S33, 9/28/26): five service chips in Gabriel's words, name,
+-  email, company (optional), message, a honeypot, one gold button. Posts JSON to
++  email, company (optional), how they found the site (optional, S37 10/1/26),
++  message, a honeypot, one gold button. Posts JSON to
+   /api/lead. Honest states: sending, sent (then the booking link if BOOKING_URL
+   is set; no consent or inbox line since S34, his call), a rate message, and for "off" or a failure a mailto link that carries
+   the message so nothing typed is lost. Copy lives in src/data/contact.ts.
+@@ -50,6 +51,11 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
+       <input class="cf__input" type="text" name="company" autocomplete="organization" maxlength="120" />
+     </label>
+ 
++    <label class="cf__field">
++      <span class="cf__label">{form.found}</span>
++      <input class="cf__input" type="text" name="found" autocomplete="off" maxlength="120" />
++    </label>
++
+     <label class="cf__field">
+       <span class="cf__label">{form.message}</span>
+       <textarea class="cf__input cf__textarea" name="message" rows="5" required maxlength="2000"></textarea>
+@@ -91,16 +97,25 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
+       var params = new URLSearchParams(location.search);
+       var page = f.getAttribute("data-page") || location.pathname;
+ 
+-      // ?intent= preselects a chip; utm_* or ref become the source line; otherwise the referring host.
++      // ?intent= preselects a chip. The source line is the visit's first touch, written
++      // by BaseLayout on the landing page (S37, 10/1/26: it used to be read on this page
++      // only, so a visitor who landed on the homepage arrived here with no source). The
++      // same read on this page is the fallback when sessionStorage is not available.
+       var pre = params.get("intent");
+       if (pre) {
+         var r = f.querySelector('input[name="intent"][value="' + pre.replace(/"/g, "") + '"]');
+         if (r) r.checked = true;
+       }
+-      var source = ["utm_source", "utm_medium", "utm_campaign", "ref"]
+-        .filter(function (k) { return params.get(k); })
+-        .map(function (k) { return k + "=" + params.get(k); })
+-        .join("&");
++      var source = "";
++      try {
++        source = sessionStorage.getItem("glf-src") || "";
++      } catch (e) {}
++      if (!source) {
++        source = ["utm_source", "utm_medium", "utm_campaign", "ref"]
++          .filter(function (k) { return params.get(k); })
++          .map(function (k) { return k + "=" + params.get(k); })
++          .join("&");
++      }
+       if (!source && document.referrer) {
+         try {
+           var host = new URL(document.referrer).host;
+@@ -133,6 +148,7 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
+           name: String(fd.get("name") || "").trim(),
+           email: String(fd.get("email") || "").trim(),
+           company: String(fd.get("company") || "").trim(),
++          found: String(fd.get("found") || "").trim(),
+           intent: String(fd.get("intent") || "other"),
+           message: String(fd.get("message") || "").trim(),
+           website: String(fd.get("website") || ""),
+diff --git a/src/components/JsonLd.astro b/src/components/JsonLd.astro
+index 0af9731..0bd1297 100644
+--- a/src/components/JsonLd.astro
++++ b/src/components/JsonLd.astro
+@@ -1,7 +1,6 @@
+ ---
+-import { orgInfo, siteName, siteUrl, defaultDescription, socialLinks } from "../config/site";
++import { orgInfo, orgSameAs, personSameAs, siteName, siteUrl, defaultDescription } from "../config/site";
+ 
+-const sameAs = Object.values(socialLinks).filter(Boolean);
+ 
+ // S36 (9/30/26): a raster logo (the safe format for rich results; the PNG is
+ // drawn by scripts/favicons.py from the same mark as the SVG), the headshot on
+@@ -21,10 +20,12 @@ const jsonLd = [
+     "@id": `${siteUrl}/#organization`,
+     name: orgInfo.name,
+     legalName: orgInfo.legalName,
++    description: orgInfo.description,
++    foundingDate: orgInfo.foundingDate,
+     url: siteUrl,
+     logo,
+     email: orgInfo.email,
+-    sameAs,
++    sameAs: orgSameAs,
+     founder: { "@id": `${siteUrl}/#person` },
+     address
+   },
+@@ -34,10 +35,11 @@ const jsonLd = [
+     "@id": `${siteUrl}/#person`,
+     name: orgInfo.founder,
+     jobTitle: "Founder, GLF Analytics",
++    description: defaultDescription,
+     url: siteUrl,
+     image: `${siteUrl}/images/gabriel-freeman.webp`,
+     email: orgInfo.email,
+-    sameAs,
++    sameAs: personSameAs,
+     worksFor: { "@id": `${siteUrl}/#organization` },
+     knowsAbout: [
+       "data infrastructure and reporting (BigQuery, SQL, Looker Studio)",
+@@ -66,11 +68,13 @@ const jsonLd = [
+     address,
+     founder: { "@id": `${siteUrl}/#person` },
+     areaServed: "US",
++    // S37 (10/1/26): the four card titles in Capabilities.astro, word for word
++    // (src/integrations/seoCheck.ts fails the build if the homepage does not show each one).
+     serviceType: [
+-      "data infrastructure and reporting",
+-      "growth strategy and paid media",
+-      "eCommerce and digital systems",
+-      "AI tooling"
++      "Data infrastructure and reporting",
++      "Growth strategy and marketing execution",
++      "Managing tech and tools",
++      "Integration of AI in organizations"
+     ]
+   }
+ ];
+diff --git a/src/components/LiveStats.astro b/src/components/LiveStats.astro
+index 2a82864..c0b5488 100644
+--- a/src/components/LiveStats.astro
++++ b/src/components/LiveStats.astro
+@@ -45,11 +45,12 @@ const built = [
+       <CountryMap />
+ 
+       <div class="mt-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6" data-reveal>
+-        <a href="/using-data-to-build-with-ai" target="_blank" rel="noopener" class="group inline-flex items-center gap-2 text-sm text-white hover:text-gold-500 transition-colors">
++        {/* rel="opener" (S37, 10/1/26): the new tab of this same site inherits sessionStorage, so the visit's first-touch source travels with it. */}
++        <a href="/using-data-to-build-with-ai" target="_blank" rel="opener" class="group inline-flex items-center gap-2 text-sm text-white hover:text-gold-500 transition-colors">
+           <span>How I built it</span>
+           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
+         </a>
+-        <a href={bcStatsSource.productUrl} target="_blank" rel="noreferrer" class="group inline-flex items-center gap-2 text-sm text-surface-300 hover:text-gold-500 transition-colors">
++        <a href={bcStatsSource.productUrl} target="_blank" rel="noopener" class="group inline-flex items-center gap-2 text-sm text-surface-300 hover:text-gold-500 transition-colors">
+           <span>Open birthday-cards.ai</span>
+           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6m-11 5L21 3m-3 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>
+         </a>
+diff --git a/src/components/SelectedWork.astro b/src/components/SelectedWork.astro
+index de4e082..dc45d30 100644
+--- a/src/components/SelectedWork.astro
++++ b/src/components/SelectedWork.astro
+@@ -1,7 +1,7 @@
+ ---
+ import { getCollection } from "astro:content";
+ import { getBcStats } from "../lib/bcStats";
+-import { bcStatsSource } from "../config/site";
++import { bcStatsSource, outboundRel } from "../config/site";
+ 
+ const bc = await getBcStats();
+ const fmt = (n: number) => n.toLocaleString("en-US");
+@@ -137,7 +137,7 @@ const getResponsiveBackgrounds = (item, index) => {
+                         class="group inline-flex items-center gap-2 text-sm text-surface-300 hover:text-gold-500 transition-colors"
+                         href={item.data.url}
+                         target="_blank"
+-                        rel="noreferrer"
++                        rel={outboundRel(item.data.url)}
+                       >
+                         <span>{item.data.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}</span>
+                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6m-11 5L21 3m-3 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>
+diff --git a/src/components/Seo.astro b/src/components/Seo.astro
+index efd7e47..1b27508 100644
+--- a/src/components/Seo.astro
++++ b/src/components/Seo.astro
+@@ -7,11 +7,17 @@ import {
+   socialLinks
+ } from "../config/site";
+ 
++// S37 (10/1/26): the default share image is public/images/og/default.png (drawn
++// by scripts/og-cards.mjs in the site's type; the S2 og-default.png had a serif
++// headline and a clipped line, and stays on disk). The alt says what the image
++// shows: the default card carries the homepage title, a page's own card its title.
++const defaultOgImage = `${siteUrl}/images/og/default.png`;
+ const {
+   title = defaultTitle,
+   description = defaultDescription,
+   canonical,
+-  ogImage = `${siteUrl}/images/og-default.png`,
++  ogImage = defaultOgImage,
++  ogImageAlt,
+   ogType = "website",
+   noindex = false
+ } = Astro.props;
+@@ -20,6 +26,7 @@ const {
+ // string the sitemap lists); the fallback strips the slash the same way.
+ const canonicalUrl = canonical ?? siteUrl + (Astro.url.pathname.replace(/\/+$/, "") || "/");
+ const pageTitle = title === defaultTitle ? title : `${title} | ${siteName}`;
++const imageAlt = ogImageAlt ?? (ogImage === defaultOgImage ? defaultTitle.replace(" | ", ": ") : pageTitle);
+ ---
+ <title>{pageTitle}</title>
+ <meta name="description" content={description} />
+@@ -34,10 +41,11 @@ const pageTitle = title === defaultTitle ? title : `${title} | ${siteName}`;
+ <meta property="og:description" content={description} />
+ <meta property="og:url" content={canonicalUrl} />
+ <meta property="og:image" content={ogImage} />
+-{/* All three social images are 1200x630 (og-default, og-warehouse, og-using-data). */}
++{/* Every social image is 1200x630; src/integrations/seoCheck.ts reads the PNG header and fails the build otherwise. */}
+ <meta property="og:image:width" content="1200" />
+ <meta property="og:image:height" content="630" />
+-<meta property="og:image:alt" content={`${siteName}: ${description}`} />
++<meta property="og:image:alt" content={imageAlt} />
++<meta name="twitter:image:alt" content={imageAlt} />
+ <meta name="twitter:card" content="summary_large_image" />
+ <meta name="twitter:title" content={pageTitle} />
+ <meta name="twitter:description" content={description} />
+diff --git a/src/components/TypingDemo.astro b/src/components/TypingDemo.astro
+index b7daa53..bc793c5 100644
+--- a/src/components/TypingDemo.astro
++++ b/src/components/TypingDemo.astro
+@@ -28,7 +28,7 @@ slots.forEach((slot, i) => {
+ <a
+   href={bcStatsSource.productUrl}
+   target="_blank"
+-  rel="noreferrer"
++  rel="noopener"
+   class="group block w-full max-w-xs mx-0 lg:mx-auto"
+   aria-label="Open birthday-cards.ai in a new tab"
+ >
+diff --git a/src/config/site.ts b/src/config/site.ts
+index 1c44cd0..6273005 100644
+--- a/src/config/site.ts
++++ b/src/config/site.ts
+@@ -11,12 +11,34 @@ export const socialLinks = {
+   substack: "https://glfanalytics.substack.com"
+ };
+ 
++// S37 (10/1/26): the other places that are this same practice, for the
++// Organization's sameAs in JsonLd.astro (the Person keeps LinkedIn and the
++// newsletter). birthday-cards.ai is a product, not the same entity, so it is
++// tied in on its case study instead (an `about` node with the Person as creator).
++export const orgSameAs = [socialLinks.linkedin, socialLinks.substack, "https://glf-ai.com", "https://github.com/GLF-Analytics"];
++export const personSameAs = [socialLinks.linkedin, socialLinks.substack, "https://medium.com/@gabe_freeman21"];
++
++// S37 (10/1/26): his own properties. A link to one of these opens with rel
++// "noopener" so that site's analytics sees glfanalytics.com as the referrer;
++// every other outside link keeps "noreferrer".
++const OWN_HOSTS = ["birthday-cards.ai", "glf-ai.com", "custom-cards.ai"];
++export const outboundRel = (url: string): "noopener" | "noreferrer" => {
++  try {
++    return OWN_HOSTS.includes(new URL(url).host.replace(/^www\./, "")) ? "noopener" : "noreferrer";
++  } catch {
++    return "noreferrer";
++  }
++};
++
+ export const orgInfo = {
+   name: "GLF Analytics",
+   legalName: "GLF Analytics",
+   logo: "/images/glf-logo.png",
+   email: "gabrielf@glfanalytics.com",
+   founder: "Gabriel Freeman",
++  // S37: the practice in one sentence (also the opening line of /llms.txt) and the year it started.
++  description: "GLF Analytics is Gabriel Freeman's practice in Los Angeles, independent since 2021.",
++  foundingDate: "2021",
+   address: {
+     city: "Los Angeles",
+     region: "CA",
+diff --git a/src/content/config.ts b/src/content/config.ts
+index 71d8dca..88df065 100644
+--- a/src/content/config.ts
++++ b/src/content/config.ts
+@@ -28,7 +28,10 @@ const work = defineCollection({
+     // S36 (9/30/26): the search-result title and description. The page's h1 and
+     // summary stay as they are; these fall back to `title` and `summary`.
+     seoTitle: z.string().optional(),
+-    metaDescription: z.string().optional()
++    metaDescription: z.string().optional(),
++    // S37 (10/1/26): the "Related work" row at the bottom of the page. Slugs of
++    // other case studies, or a page path from RELATED_PAGES in [slug].astro.
++    related: z.array(z.string()).optional()
+   })
+ });
+ 
+diff --git a/src/content/work/bartaco.md b/src/content/work/bartaco.md
+index 11f2057..f63513f 100644
+--- a/src/content/work/bartaco.md
++++ b/src/content/work/bartaco.md
+@@ -20,6 +20,7 @@ testimonialAuthor: "Lindsay Crasnick, Director of Digital Experience + Product @
+ outcome: "The channels I manage for bartaco have grown across 34 markets."
+ seoTitle: "Bartaco: digital growth across 34 markets"
+ metaDescription: "Led digital growth across ordering, loyalty, and paid channels across 34 markets. Launched QR ordering and scaled loyalty, email, paid media and delivery."
++related: ["fox-fodder-flowers", "gotham-goods"]
+ ---
+ <section class="work-section">
+   <h2>What I delivered</h2>
+diff --git a/src/content/work/birthday-cards.md b/src/content/work/birthday-cards.md
+index 49879e7..9329a31 100644
+--- a/src/content/work/birthday-cards.md
++++ b/src/content/work/birthday-cards.md
+@@ -19,6 +19,7 @@ tools: ["Claude Code", "Next.js", "Vercel", "OpenAI", "Gemini", "Airtable", "Res
+ functions: ["design", "development", "database", "email", "SEO", "analytics"]
+ showLiveStats: true
+ seoTitle: "birthday-cards.ai: an AI card generator"
++related: ["construction-ai-integration"]
+ ---
+ <section class="work-section">
+   <h2>What I built</h2>
+diff --git a/src/content/work/construction-ai-integration.md b/src/content/work/construction-ai-integration.md
+index ac6083b..c9e9602 100644
+--- a/src/content/work/construction-ai-integration.md
++++ b/src/content/work/construction-ai-integration.md
+@@ -20,6 +20,7 @@ url: "https://glf-ai.com"
+ tools: ["Power Automate", "Claude API", "Azure Document Intelligence", "Microsoft 365", "Copilot", "Claude Code"]
+ functions: ["workflow design", "prompt engineering", "document templates", "training"]
+ metaDescription: "My AI practice for construction teams. Report generators on Power Automate and the Claude API, a bid comparison tool, and training for a whole firm."
++related: ["birthday-cards"]
+ ---
+ <section class="work-section">
+   <h2>What I built</h2>
+diff --git a/src/content/work/fox-fodder-flowers.md b/src/content/work/fox-fodder-flowers.md
+index bb2daef..d755c38 100644
+--- a/src/content/work/fox-fodder-flowers.md
++++ b/src/content/work/fox-fodder-flowers.md
+@@ -19,6 +19,7 @@ logo: "/images/work/fox-fodder-flowers.svg"
+ backgroundImage: "/images/work/foxfodderflowers.jpg"
+ seoTitle: "Fox Fodder Flowers: SEO and Google Ads"
+ metaDescription: "Delivered reporting, SEO fixes, and Google Ads growth with positive ROI. A full SEO audit, the technical issues resolved, and Google Ads launched from scratch."
++related: ["bartaco"]
+ ---
+ <section class="work-section">
+   <h2>What I delivered</h2>
+diff --git a/src/content/work/gotham-goods.md b/src/content/work/gotham-goods.md
+index 9efe094..d9be8ba 100644
+--- a/src/content/work/gotham-goods.md
++++ b/src/content/work/gotham-goods.md
+@@ -15,12 +15,13 @@ order: 5
+ duration: "12 months"
+ url: "https://www.gothamgoods.nyc/"
+ logo: "/images/work/gotham-goods.svg"
+-backgroundImage: "/images/work/gothamgoods.jpg"
++backgroundImage: "/images/work/gothamgoods.avif"
+ testimonial: "GLF was part of our team. The work they did was an integral part of getting us to where we are today."
+ testimonialAuthor: "Joanne Wilson, Founder @ Gotham NYC"
+ outcome: "A custom site, full tracking, and an email program from day one."
+ seoTitle: "Gotham Goods: a custom ecommerce launch"
+ metaDescription: "Launched a custom ecommerce site with tracking and lifecycle marketing from day one. The agency build, tagging and analytics, and Klaviyo email programs."
++related: ["bartaco"]
+ ---
+ <section class="work-section">
+   <h2>What I delivered</h2>
+diff --git a/src/content/work/ucan.md b/src/content/work/ucan.md
+index b8569c3..8735ee2 100644
+--- a/src/content/work/ucan.md
++++ b/src/content/work/ucan.md
+@@ -15,13 +15,14 @@ outcome: "One data stack and eighteen months of strategy across channels."
+ order: 6
+ duration: "18 months"
+ url: "https://ucan.co/"
+-backgroundImage: "/images/work/ucan.jpg"
++backgroundImage: "/images/work/ucan.webp"
+ backgroundImageTablet: "/images/work/ucan-tablet.jpg"
+ backgroundImageMobile: "/images/work/ucan-mobile.jpg"
+ testimonial: "GLF built automated performance reports used across our business to inform daily decisions. Their reporting enabled smarter investment in paid partnerships and helped us grow multiple channels in ways we previously couldn’t."
+ testimonialAuthor: "Varun Sriram, Director of Partnerships @ UCAN"
+ seoTitle: "UCAN: the data stack and digital strategy"
+ metaDescription: "Built the data stack, then used it to run digital strategy across channels. BigQuery with Looker Studio and Sheets, then paid social, influencer and sampling."
++related: ["unilever", "design-your-data-warehouse"]
+ ---
+ <section class="work-section">
+   <h2>What I delivered</h2>
+diff --git a/src/content/work/unilever.md b/src/content/work/unilever.md
+index 88a33b6..b937c00 100644
+--- a/src/content/work/unilever.md
++++ b/src/content/work/unilever.md
+@@ -18,6 +18,7 @@ backgroundImage: "/images/work/unilever.jpg"
+ outcome: "One warehouse the brand teams report from."
+ seoTitle: "Unilever: a BigQuery source of truth"
+ metaDescription: "Built a BigQuery source of truth for Beauty & Wellbeing DTC brands. The warehouse, the sources and the SQL, so the brand teams trust one set of numbers."
++related: ["ucan", "design-your-data-warehouse"]
+ ---
+ <section class="work-section">
+   <h2>What I delivered</h2>
+diff --git a/src/data/contact.ts b/src/data/contact.ts
+index e852755..2f46a18 100644
+--- a/src/data/contact.ts
++++ b/src/data/contact.ts
+@@ -24,7 +24,8 @@ export const meta = {
+   slug: "contact",
+   eyebrow: "Contact",
+   title: "Start a conversation",
+-  description: "Tell Gabriel Freeman what you are working on. Every message gets a reply, or pick a time on the calendar.",
++  // S37 (10/1/26): "Every message gets a reply" came out (his S34 call: no reply promise anywhere); the four service words went in.
++  description: "Tell Gabriel Freeman what you are working on: marketing, database work, AI tooling or web development. Or pick a time on the calendar.",
+   lede: "Tell me what you are working on and what you want out of it. I read every message and get back as soon as I can. If a call is easier, the calendar link is below the form."
+ };
+ 
+@@ -33,6 +34,7 @@ export const form = {
+   name: "Name",
+   email: "Email",
+   company: "Company (optional)",
++  found: "How did you find me (optional)",
+   message: "What you are working on and what you want to get out of it",
+   send: "Send",
+   sending: "Sending",
+@@ -80,12 +82,13 @@ export const mail = {
+     return lines.join("\n");
+   },
+   notifySubject: (intent: string, name: string) => `Site contact (${intent}): ${name}`,
+-  notify(i: { name: string; email: string; company: string; intent: string; message: string; page: string; source: string }): string {
++  notify(i: { name: string; email: string; company: string; found: string; intent: string; message: string; page: string; source: string }): string {
+     return [
+       `Name: ${i.name}`,
+       `Email: ${i.email}`,
+       `Company: ${i.company || "none"}`,
+       `About: ${i.intent}`,
++      `Found me: ${i.found || "not said"}`,
+       `Page: ${i.page || "none"}`,
+       `Source: ${i.source || "none"}`,
+       "",
+diff --git a/src/data/everything.ts b/src/data/everything.ts
+index 9efc6de..b78f7ea 100644
+--- a/src/data/everything.ts
++++ b/src/data/everything.ts
+@@ -28,6 +28,19 @@ export const intro = {
+     "The work Gabriel Freeman has done since 2017: data warehouses and reporting, forecasting, growth marketing, and AI tools built with Claude Code."
+ };
+ 
++/** S37 (10/1/26): the projects that have a case study on this site. The run's
++    heading row links it, so the long list feeds the case studies. A key that
++    matches no project throws at build. */
++export const caseStudies: Record<string, string> = {
++  Unilever: "/unilever",
++  UCAN: "/ucan",
++  "Gotham Goods": "/gotham-goods",
++  "Fox Fodder Flowers": "/fox-fodder-flowers",
++  bartaco: "/bartaco",
++  "A construction management firm in LA": "/construction-ai-integration",
++  "birthday-cards.ai": "/birthday-cards"
++};
++
+ export const bullets: Bullet[] = [
+   {
+     project: "Mindshare",
+diff --git a/src/data/lastmod.json b/src/data/lastmod.json
+index e2b3cf6..2a816bc 100644
+--- a/src/data/lastmod.json
++++ b/src/data/lastmod.json
+@@ -1,15 +1,15 @@
+ {
+-  "/": "2026-09-30",
+-  "/work": "2026-09-30",
+-  "/everything": "2026-09-30",
+-  "/contact": "2026-09-28",
+-  "/design-your-data-warehouse": "2026-09-30",
+-  "/using-data-to-build-with-ai": "2026-09-30",
+-  "/bartaco": "2026-09-30",
+-  "/birthday-cards": "2026-09-30",
+-  "/construction-ai-integration": "2026-09-30",
+-  "/fox-fodder-flowers": "2026-09-30",
+-  "/gotham-goods": "2026-09-30",
+-  "/ucan": "2026-09-30",
+-  "/unilever": "2026-09-30"
++  "/": "2026-10-01",
++  "/work": "2026-10-01",
++  "/everything": "2026-10-01",
++  "/contact": "2026-10-01",
++  "/design-your-data-warehouse": "2026-10-01",
++  "/using-data-to-build-with-ai": "2026-10-01",
++  "/bartaco": "2026-10-01",
++  "/birthday-cards": "2026-10-01",
++  "/construction-ai-integration": "2026-10-01",
++  "/fox-fodder-flowers": "2026-10-01",
++  "/gotham-goods": "2026-10-01",
++  "/ucan": "2026-10-01",
++  "/unilever": "2026-10-01"
+ }
+diff --git a/src/integrations/seoCheck.ts b/src/integrations/seoCheck.ts
+index a562857..3095c3f 100644
+--- a/src/integrations/seoCheck.ts
++++ b/src/integrations/seoCheck.ts
+@@ -13,6 +13,15 @@
+      50 to 160 characters.
+   4. No internal link ends in a slash (the site is trailingSlash "never";
+      /x/ answers with a 308 to /x).
++
++  S37 (10/1/26), the second pass:
++  5. No two pages share a title or a description.
++  6. Every page's share image is a file in the build, a PNG of 1200 by 630.
++  7. Every internal link lands on a built page or file.
++  8. Every image a page names exists, and its bytes match its extension (two
++     case-study backgrounds shipped as .jpg while being AVIF and WebP).
++  9. Every Article and BlogPosting carries datePublished and dateModified.
++  10. The homepage shows each ProfessionalService serviceType as a card title.
+ */
+ import type { AstroIntegration } from "astro";
+ import { existsSync, readFileSync, readdirSync } from "node:fs";
+@@ -32,6 +41,31 @@ const attr = (html: string, re: RegExp) => {
+   return m ? decode(m[1]) : undefined;
+ };
+ 
++/** Does the file's first bytes match what its extension says? svg and ico are not checked. */
++const typeMatches = (file: string): boolean => {
++  const ext = file.split(".").pop()?.toLowerCase() ?? "";
++  const b = readFileSync(file).subarray(0, 12);
++  const text = (from: number, to: number) => b.subarray(from, to).toString("latin1");
++  if (ext === "png") return b[0] === 0x89 && text(1, 4) === "PNG";
++  if (ext === "jpg" || ext === "jpeg") return b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
++  if (ext === "webp") return text(0, 4) === "RIFF" && text(8, 12) === "WEBP";
++  if (ext === "avif") return text(4, 8) === "ftyp" && /^avi[fs]$/.test(text(8, 12));
++  return true;
++};
++
++const pngSize = (file: string) => {
++  const b = readFileSync(file).subarray(0, 24);
++  return { width: b.readUInt32BE(16), height: b.readUInt32BE(20) };
++};
++
++/** Every JSON-LD node on a page, with @graph and arrays flattened. */
++const ldNodes = (value: unknown): Record<string, unknown>[] => {
++  if (Array.isArray(value)) return value.flatMap(ldNodes);
++  if (!value || typeof value !== "object") return [];
++  const node = value as Record<string, unknown>;
++  return [node, ...ldNodes(node["@graph"])];
++};
++
+ export default function seoCheck(site: string): AstroIntegration {
+   return {
+     name: "glf-seo-check",
+@@ -67,6 +101,14 @@ export default function seoCheck(site: string): AstroIntegration {
+           for (const p of diff(a, b)) fail(`${p} is in ${name} but not in ${bName}`);
+         }
+ 
++        // A root-relative path is in the build when it is a page folder or a file.
++        const built = (p: string) => {
++          const clean = decodeURI(p).replace(/^\//, "");
++          return clean === "" || existsSync(join(out, clean, "index.html")) || (existsSync(join(out, clean)) && !clean.endsWith("/"));
++        };
++        const titles = new Map<string, string>();
++        const descriptions = new Map<string, string>();
++
+         // 2 and 3. Every page in the sitemap.
+         for (const { loc, lastmod } of entries) {
+           const path = toPath(loc);
+@@ -90,20 +132,69 @@ export default function seoCheck(site: string): AstroIntegration {
+           if (title.length > TITLE_MAX) fail(`${path}: title is ${title.length} characters (max ${TITLE_MAX}): "${title}"`);
+           if (title.includes(",")) fail(`${path}: comma in the title: "${title}"`);
+           if (desc.length < DESC_MIN || desc.length > DESC_MAX) fail(`${path}: description is ${desc.length} characters (${DESC_MIN} to ${DESC_MAX})`);
++          const nodes: Record<string, unknown>[] = [];
+           for (const m of html.matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)) {
+             try {
+-              JSON.parse(m[1]);
++              nodes.push(...ldNodes(JSON.parse(m[1])));
+             } catch {
+               fail(`${path}: JSON-LD does not parse`);
+             }
+           }
+           // 4. Internal links without the trailing slash.
+           for (const m of html.matchAll(/href="(\/[^"?#]+\/)(?:[?#][^"]*)?"/g)) fail(`${path}: internal link ends in a slash: ${m[1]}`);
++
++          // 5. One title and one description per page.
++          for (const [kind, seen, value] of [["title", titles, title], ["description", descriptions, desc]] as const) {
++            const other = seen.get(value);
++            if (other) fail(`${path}: same ${kind} as ${other}`);
++            else seen.set(value, path);
++          }
++
++          // 6. The share image.
++          const og = attr(html, /<meta property="og:image" content="([^"]*)"/) ?? "";
++          const ogFile = join(out, og.replace(site, "").replace(/^\//, ""));
++          if (!og.startsWith(`${site}/`) || !existsSync(ogFile)) fail(`${path}: og:image ${og} is not a file in the build`);
++          else if (!og.endsWith(".png") || !typeMatches(ogFile)) fail(`${path}: og:image ${og} is not a PNG`);
++          else {
++            const { width, height } = pngSize(ogFile);
++            if (width !== 1200 || height !== 630) fail(`${path}: og:image ${og} is ${width}x${height}, not 1200x630`);
++          }
++
++          // 7. Internal links land on something built (API routes are functions, not files).
++          for (const m of html.matchAll(/href="(\/[^"?#]*)(?:[?#][^"]*)?"/g)) {
++            if (m[1].startsWith("/api/") || m[1].startsWith("/_")) continue;
++            if (!built(m[1])) fail(`${path}: link to ${m[1]}, which is not in the build`);
++          }
++
++          // 8. Images the page names: present, and the bytes match the extension.
++          const images = new Set([...html.matchAll(/(?:["'(=]|&#39;|&quot;)(?:https:\/\/glfanalytics\.com)?(\/images\/[^"'()\s&?#]+\.(?:png|jpe?g|webp|avif|svg))/g)].map((m) => m[1]));
++          for (const img of images) {
++            const file = join(out, decodeURI(img).replace(/^\//, ""));
++            if (!existsSync(file)) fail(`${path}: image ${img} is not in the build`);
++            else if (!typeMatches(file)) fail(`${path}: image ${img} is not the type its extension says`);
++          }
++
++          // 9. Dated articles.
++          for (const n of nodes) {
++            if (n["@type"] !== "Article" && n["@type"] !== "BlogPosting") continue;
++            for (const key of ["datePublished", "dateModified"]) {
++              if (!/^\d{4}-\d{2}-\d{2}/.test(String(n[key] ?? ""))) fail(`${path}: ${n["@type"]} has no ${key}`);
++            }
++          }
++
++          // 10. The service names in the schema are the card titles on the homepage.
++          if (path === "/") {
++            const cards = new Set([...html.matchAll(/<h3[^>]*>\s*([^<]+?)\s*<\/h3>/g)].map((m) => decode(m[1])));
++            const service = nodes.find((n) => n["@type"] === "ProfessionalService");
++            for (const s of (service?.serviceType as string[] | undefined) ?? []) {
++              if (!cards.has(s)) fail(`/: serviceType "${s}" is not a card title on the homepage`);
++            }
++          }
+         }
+ 
+         if (errors.length) throw new Error(`[seo] ${errors.length} problem(s):\n  ${errors.join("\n  ")}`);
+         console.log(
+-          `[seo] ${entries.length} pages: sitemap = llms.txt = page-sources, canonicals, titles, descriptions, lastmod ok`
++          `[seo] ${entries.length} pages: sitemap = llms.txt = page-sources, canonicals, titles, descriptions, lastmod, share images, links, images, dates ok`
+         );
+       }
+     }
+diff --git a/src/layouts/BaseLayout.astro b/src/layouts/BaseLayout.astro
+index 712d8a5..0171758 100644
+--- a/src/layouts/BaseLayout.astro
++++ b/src/layouts/BaseLayout.astro
+@@ -6,7 +6,7 @@ import Nav from "../components/Nav.astro";
+ import Footer from "../components/Footer.astro";
+ import { siteUrl } from "../config/site";
+ 
+-const { title, description, canonical, ogImage, ogType, noindex, crumb, parent } = Astro.props;
++const { title, description, canonical, ogImage, ogImageAlt, ogType, noindex, crumb, parent } = Astro.props;
+ 
+ // S36 (9/30/26): one canonical per page, no trailing slash (the sitemap lists
+ // the same string; src/integrations/seoCheck.ts fails the build if they differ).
+@@ -52,6 +52,7 @@ const breadcrumb =
+       description={description}
+       canonical={canonicalUrl}
+       ogImage={ogImage}
++      ogImageAlt={ogImageAlt}
+       ogType={ogType}
+       noindex={noindex}
+     />
+@@ -61,6 +62,31 @@ const breadcrumb =
+         until Vercel serves the script (Analytics enabled on the project) and in dev, where it 404s. */}
+     {import.meta.env.PROD && <script is:inline>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>}
+     {import.meta.env.PROD && <script is:inline defer src="/_vercel/insights/script.js"></script>}
++    {/* Vercel Speed Insights (S37, 10/1/26): the same shape, real load numbers per page. */}
++    {import.meta.env.PROD && <script is:inline>window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };</script>}
++    {import.meta.env.PROD && <script is:inline defer src="/_vercel/speed-insights/script.js"></script>}
++    {/* First-touch source (S37, 10/1/26): where this tab's visit came from, kept in
++        sessionStorage["glf-src"] so the contact form and the planner can send it with a
++        lead even after the visitor has moved to another page. utm_* or ref when the
++        landing URL has them, else the referring host. The site's own host never counts,
++        and the first value written is the one that stays. */}
++    <script is:inline>
++      (function () {
++        try {
++          if (sessionStorage.getItem("glf-src")) return;
++          var q = new URLSearchParams(location.search);
++          var src = ["utm_source", "utm_medium", "utm_campaign", "ref"]
++            .filter(function (k) { return q.get(k); })
++            .map(function (k) { return k + "=" + q.get(k); })
++            .join("&");
++          if (!src && document.referrer) {
++            var host = new URL(document.referrer).host;
++            if (host && host.replace(/^www\./, "") !== location.host.replace(/^www\./, "")) src = "referrer=" + host;
++          }
++          if (src) sessionStorage.setItem("glf-src", src.slice(0, 100));
++        } catch (e) {}
++      })();
++    </script>
+   </head>
+   <body class="antialiased">
+     <!-- Grain Texture Overlay -->
+@@ -97,5 +123,33 @@ const breadcrumb =
+         }
+       }
+     </script>
++    {/* Click events (S37, 10/1/26): one listener for every page, Vercel custom events
++        through the window.va queue (a no-op in dev). Two properties at most per event.
++        outbound_click = any link off the site; contact_click = a link to /contact
++        (from = nav, footer or page); email_click = a mailto; planner_click = a link
++        to the planner. The forms and the planner keep their own events. */}
++    <script is:inline>
++      document.addEventListener("click", function (e) {
++        var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
++        if (!a || !window.va) return;
++        var page = location.pathname;
++        var href = a.getAttribute("href") || "";
++        var name, data;
++        if (href.indexOf("mailto:") === 0) {
++          name = "email_click";
++          data = { page: page };
++        } else if (a.host && a.host !== location.host) {
++          name = "outbound_click";
++          data = { host: a.host.replace(/^www\./, ""), page: page };
++        } else if (a.pathname === "/contact" && page !== "/contact") {
++          name = "contact_click";
++          data = { page: page, from: a.closest("nav.nav-glass") ? "nav" : a.closest("footer") ? "footer" : "page" };
++        } else if (a.pathname === "/design-your-data-warehouse" && page !== a.pathname) {
++          name = "planner_click";
++          data = { page: page };
++        }
++        if (name) window.va("event", { name: name, data: data });
++      });
++    </script>
+   </body>
+ </html>
+diff --git a/src/lib/pageDates.ts b/src/lib/pageDates.ts
+index d48ed5d..0d79cc5 100644
+--- a/src/lib/pageDates.ts
++++ b/src/lib/pageDates.ts
+@@ -10,6 +10,10 @@
+   rewrites src/data/lastmod.json when they changed (commit it with the page
+   edit). Vercel clones shallow, where git dates are wrong, so there the build
+   reads the committed json as is. No git at all = the json too.
++
++  S37 (10/1/26): the same run also writes src/data/published.json, one date per
++  case study = the day its markdown first entered git (the Article's
++  datePublished). A new, uncommitted case study counts as today.
+ */
+ import { execFileSync } from "node:child_process";
+ import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+@@ -17,6 +21,7 @@ import { join } from "node:path";
+ import { staticPages, WORK_DIR, WORK_TEMPLATE } from "../data/page-sources";
+ 
+ const SNAPSHOT = "src/data/lastmod.json";
++const PUBLISHED = "src/data/published.json";
+ 
+ export type PageSource = { path: string; sources: string[] };
+ 
+@@ -45,6 +50,21 @@ function readSnapshot(root: string): Record<string, string> {
+   return existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {};
+ }
+ 
++/** Case study path -> the date its markdown first entered git. Full history only. */
++function writePublished(root: string): void {
++  const dates: Record<string, string> = {};
++  for (const f of readdirSync(join(root, WORK_DIR)).filter((f) => f.endsWith(".md")).sort()) {
++    const first = git(root, ["log", "--diff-filter=A", "--follow", "--format=%cs", "--", `${WORK_DIR}/${f}`]).split("\n").pop() ?? "";
++    dates[`/${f.replace(/\.md$/, "")}`] = /^\d{4}-\d{2}-\d{2}$/.test(first) ? first : todayLA();
++  }
++  const next = JSON.stringify(dates, null, 2) + "\n";
++  const file = join(root, PUBLISHED);
++  if (!existsSync(file) || readFileSync(file, "utf8") !== next) {
++    writeFileSync(file, next);
++    console.log(`[lastmod] ${PUBLISHED} updated (commit it)`);
++  }
++}
++
+ /** Route path -> YYYY-MM-DD. Logs where the dates came from. */
+ export function pageDates(root = process.cwd()): Record<string, string> {
+   const pages = allPageSources(root);
+@@ -70,6 +90,7 @@ export function pageDates(root = process.cwd()): Record<string, string> {
+   const file = join(root, SNAPSHOT);
+   const changed = !existsSync(file) || readFileSync(file, "utf8") !== next;
+   if (changed) writeFileSync(file, next);
++  writePublished(root);
+   console.log(`[lastmod] ${pages.length} routes from git, newest ${Object.values(dates).sort().at(-1)}${changed ? `, ${SNAPSHOT} updated (commit it)` : ""}`);
+   return dates;
+ }
+diff --git a/src/pages/[slug].astro b/src/pages/[slug].astro
+index 3a2ac9c..4a3f589 100644
+--- a/src/pages/[slug].astro
++++ b/src/pages/[slug].astro
+@@ -1,8 +1,10 @@
+ ---
+ import BaseLayout from "../layouts/BaseLayout.astro";
+ import { getCollection } from "astro:content";
+-import { siteUrl } from "../config/site";
++import { outboundRel, siteUrl } from "../config/site";
+ import lastmod from "../data/lastmod.json";
++import published from "../data/published.json";
++import { meta as plannerMeta } from "../data/warehouse-survey";
+ 
+ export async function getStaticPaths() {
+   const entries = await getCollection("work");
+@@ -26,10 +28,28 @@ const backgroundStyle = desktopBg
+ // S36 (9/30/26): the search title and description (fall back to the h1 and the
+ // summary), and an Article node tied to the site-wide Person and Organization.
+ // dateModified = the sitemap's lastmod for this page (src/lib/pageDates.ts).
++// S37 (10/1/26): datePublished = the day the markdown first entered git
++// (src/data/published.json, same helper), and the page's own share image
++// (public/images/og/<slug>.png, drawn by scripts/og-cards.mjs).
+ const pageUrl = `${siteUrl}/${entry.slug}`;
+ const metaTitle = entry.data.seoTitle ?? entry.data.title;
+ const metaDescription = entry.data.metaDescription ?? entry.data.summary;
+ const modified = (lastmod as Record<string, string>)[`/${entry.slug}`];
++const firstPublished = (published as Record<string, string>)[`/${entry.slug}`];
++const ogImage = `${siteUrl}/images/og/${entry.slug}.png`;
++
++// S37: the "Related work" row. Keys are case-study slugs or one of these pages;
++// labels are the titles those pages already carry, so no new copy lives here.
++const RELATED_PAGES: Record<string, { href: string; label: string }> = {
++  [plannerMeta.slug]: { href: `/${plannerMeta.slug}`, label: plannerMeta.title }
++};
++const allWork = await getCollection("work");
++const related = (entry.data.related ?? []).map((key) => {
++  if (RELATED_PAGES[key]) return RELATED_PAGES[key];
++  const other = allWork.find((w) => w.slug === key);
++  if (!other || other.slug === entry.slug) throw new Error(`[work] ${entry.slug}: related "${key}" is not another case study or a known page`);
++  return { href: `/${other.slug}`, label: other.data.seoTitle ?? other.data.title };
++});
+ const articleLd = {
+   "@context": "https://schema.org",
+   "@type": "Article",
+@@ -38,11 +58,16 @@ const articleLd = {
+   description: metaDescription,
+   url: pageUrl,
+   mainEntityOfPage: pageUrl,
+-  image: desktopBg && !desktopBg.endsWith(".svg") ? `${siteUrl}${desktopBg}` : `${siteUrl}/images/og-default.png`,
++  image: desktopBg && !desktopBg.endsWith(".svg") ? `${siteUrl}${desktopBg}` : ogImage,
+   author: { "@id": `${siteUrl}/#person` },
+   publisher: { "@id": `${siteUrl}/#organization` },
+   isPartOf: { "@id": `${siteUrl}/#website` },
++  ...(firstPublished ? { datePublished: firstPublished } : {}),
+   ...(modified ? { dateModified: modified } : {}),
++  // S37: his own product is tied to him as its creator (the client studies name no outside entity here).
++  ...(entry.data.clientType === "My own product" && entry.data.url
++    ? { about: { "@type": "WebApplication", name: entry.data.title, url: entry.data.url, creator: { "@id": `${siteUrl}/#person` } } }
++    : {}),
+   keywords: entry.data.tags.join(", "),
+   inLanguage: "en"
+ };
+@@ -51,6 +76,8 @@ const articleLd = {
+   title={metaTitle}
+   description={metaDescription}
+   ogType="article"
++  ogImage={ogImage}
++  ogImageAlt={`${metaTitle}, a GLF Analytics case study`}
+   crumb={entry.data.title}
+   parent={{ name: "All work", path: "/work" }}
+ >
+@@ -153,7 +180,7 @@ const articleLd = {
+             <a
+               href={entry.data.url}
+               target="_blank"
+-              rel="noreferrer"
++              rel={outboundRel(entry.data.url)}
+               class="btn-secondary inline-flex"
+             >
+               <span>Open the site</span>
+@@ -174,6 +201,23 @@ const articleLd = {
+             </a>
+           </div>
+         )}
++
++        <!-- Related work (S37, 10/1/26): the other case studies of the same kind, and the planner on the data studies -->
++        {related.length > 0 && (
++          <nav aria-label="Related work" class="mt-12 pt-8 border-t border-white/[0.06] reveal" data-reveal>
++            <span class="label block mb-3">Related work</span>
++            <ul>
++              {related.map((r) => (
++                <li>
++                  <a href={r.href} class="group inline-flex items-center gap-2 py-2.5 text-surface-300 hover:text-gold-500 transition-colors">
++                    <span>{r.label}</span>
++                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
++                  </a>
++                </li>
++              ))}
++            </ul>
++          </nav>
++        )}
+       </div>
+     </div>
+ 
+diff --git a/src/pages/api/lead.ts b/src/pages/api/lead.ts
+index 1acaacf..b419c9e 100644
+--- a/src/pages/api/lead.ts
++++ b/src/pages/api/lead.ts
+@@ -1,7 +1,7 @@
+ /*
+   POST /api/lead (S33, 9/28/26): the contact form behind /contact.
+ 
+-  Body: { name, email, company?, intent, message, website (honeypot), source?, page? }
++  Body: { name, email, company?, found?, intent, message, website (honeypot), source?, page? }
+ 
+   Gates, in order: size, JSON, honeypot (200 and nothing written), the three
+   required fields, the email, the intent allowlist (unknown = "other"), the
+@@ -36,7 +36,7 @@ const REF_MAX = 100;
+ const INTENTS = new Set<string>(intents.map((i) => i.value));
+ const limiter = createLimiter(RATE_LIMIT);
+ 
+-type Body = { name?: unknown; email?: unknown; company?: unknown; intent?: unknown; message?: unknown; website?: unknown; source?: unknown; page?: unknown };
++type Body = { name?: unknown; email?: unknown; company?: unknown; found?: unknown; intent?: unknown; message?: unknown; website?: unknown; source?: unknown; page?: unknown };
+ 
+ const line = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
+ const block = (v: unknown, max: number) =>
+@@ -62,6 +62,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
+   const name = line(b.name, NAME_MAX);
+   const email = typeof b.email === "string" ? b.email.trim().slice(0, 254) : "";
+   const company = line(b.company, COMPANY_MAX);
++  const found = line(b.found, COMPANY_MAX);
+   const message = block(b.message, MESSAGE_MAX);
+   const intent: Intent = typeof b.intent === "string" && INTENTS.has(b.intent) ? (b.intent as Intent) : DEFAULT_INTENT;
+   const source = line(b.source, REF_MAX);
+@@ -77,9 +78,9 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
+   const dryRun = DEV && env("LEAD_DRY_RUN") === "true";
+   const booking = env("BOOKING_URL") || undefined;
+ 
+-  // Company, page and source ride at the bottom of the message: the table has five fields on purpose (9/28/26).
+-  const stored = [message, "", company ? `Company: ${company}` : "", page ? `From: ${page}` : "", source ? `Source: ${source}` : ""].filter((l, i) => i < 2 || l).join("\n").trim();
+-  const notifyText = mail.notify({ name, email, company, intent, message, page, source });
++  // Company, how they found the site (S37, 10/1/26), page and source ride at the bottom of the message: the table has five fields on purpose (9/28/26).
++  const stored = [message, "", company ? `Company: ${company}` : "", found ? `Found me: ${found}` : "", page ? `From: ${page}` : "", source ? `Source: ${source}` : ""].filter((l, i) => i < 2 || l).join("\n").trim();
++  const notifyText = mail.notify({ name, email, company, found, intent, message, page, source });
+   const confirmText = mail.confirm({ name, booking, postal: postal() });
+ 
+   if (dryRun) {
+diff --git a/src/pages/design-your-data-warehouse.astro b/src/pages/design-your-data-warehouse.astro
+index 3873d94..a7d7be0 100644
+--- a/src/pages/design-your-data-warehouse.astro
++++ b/src/pages/design-your-data-warehouse.astro
+@@ -398,14 +398,10 @@ const jsonLd = {
+     const today = () => new Date().toISOString().slice(0, 10);
+     let current = 0;
+ 
+-    // First-touch attribution, read before the submit rewrites the query string.
+-    const SRC_KEY = "wh-src";
+-    try {
+-      const q = new URLSearchParams(location.search);
+-      const parts = ["utm_source", "utm_medium", "utm_campaign", "ref"].map((k) => q.get(k)).filter(Boolean) as string[];
+-      const src = parts.length ? parts.join("/") : document.referrer ? new URL(document.referrer).hostname : "";
+-      if (src && !sessionStorage.getItem(SRC_KEY)) sessionStorage.setItem(SRC_KEY, src.slice(0, 100));
+-    } catch {}
++    // First-touch attribution. S37 (10/1/26): BaseLayout writes it on the landing page
++    // for the whole site (one key, one format, the site's own host never counts; this
++    // page used to record glfanalytics.com when a visitor came in from the footer).
++    const SRC_KEY = "glf-src";
+     const ref = () => {
+       try {
+         return sessionStorage.getItem(SRC_KEY) ?? "";
+diff --git a/src/pages/everything.astro b/src/pages/everything.astro
+index 9c5f450..1d0426a 100644
+--- a/src/pages/everything.astro
++++ b/src/pages/everything.astro
+@@ -12,7 +12,7 @@
+   the worst case for the reveal observer, so everything renders plainly.
+ */
+ import BaseLayout from "../layouts/BaseLayout.astro";
+-import { intro, bullets, cloudTerms } from "../data/everything";
++import { intro, bullets, caseStudies, cloudTerms } from "../data/everything";
+ 
+ if (bullets.length < 15 || bullets.length > 60) {
+   throw new Error(`/everything expects 15 to 60 bullets, found ${bullets.length}`);
+@@ -87,6 +87,9 @@ for (let i = 1; i < cloud.length; i++) {
+   if (j > -1) [cloud[i], cloud[j]] = [cloud[j], cloud[i]];
+ }
+ 
++for (const project of Object.keys(caseStudies)) {
++  if (!runs.some((r) => r.project === project)) throw new Error(`/everything: caseStudies names "${project}", which is no project in the list`);
++}
+ console.log(`[everything] ${bullets.length} bullets, ${runs.length} groups: ` + runs.map((r) => `${r.project} ${r.items.length}`).join(", "));
+ console.log(
+   "[everything] cloud weights: " +
+@@ -122,7 +125,16 @@ console.log("[everything] cloud order: " + cloud.map((t) => `${t.label}(${t.weig
+       <div class="max-w-2xl">
+         {runs.map((run, i) => (
+           <section id={run.id} class={i === 0 ? "" : "mt-10 pt-8 border-t border-white/[0.06]"} aria-labelledby={`${run.id}-heading`}>
+-            <h2 id={`${run.id}-heading`} class="font-mono text-[11px] tracking-[0.15em] text-gold-500 mb-5">{run.project}</h2>
++            <div class="mb-5 flex items-baseline justify-between gap-4">
++              <h2 id={`${run.id}-heading`} class="font-mono text-[11px] tracking-[0.15em] text-gold-500">{run.project}</h2>
++              {caseStudies[run.project] && (
++                <a
++                  href={caseStudies[run.project]}
++                  aria-label={`${run.project} case study`}
++                  class="-my-3 py-3 font-mono text-[11px] tracking-[0.05em] text-surface-400 hover:text-gold-500 transition-colors whitespace-nowrap"
++                >Case study</a>
++              )}
++            </div>
+             <ul class="space-y-6">
+               {run.items.map((b) => (
+                 <li class="flex items-start gap-4">
+diff --git a/src/pages/llms.txt.ts b/src/pages/llms.txt.ts
+index e3da95a..9d6093b 100644
+--- a/src/pages/llms.txt.ts
++++ b/src/pages/llms.txt.ts
+@@ -9,7 +9,7 @@
+ */
+ import type { APIRoute } from "astro";
+ import { getCollection } from "astro:content";
+-import { defaultDescription, orgInfo, siteName, siteUrl } from "../config/site";
++import { defaultDescription, defaultTitle, orgInfo, siteName, siteUrl } from "../config/site";
+ import { staticPages, type LlmsSection } from "../data/page-sources";
+ import { meta as contactMeta } from "../data/contact";
+ import { intro as everythingIntro } from "../data/everything";
+@@ -23,7 +23,8 @@ export const GET: APIRoute = async () => {
+   const work = (await getCollection("work")).sort((a, b) => a.data.order - b.data.order);
+ 
+   const pageMeta: Record<string, { title: string; description: string }> = {
+-    "/": { title: "Homepage", description: "The four service areas, every case study, and live numbers from birthday-cards.ai" },
++    // S37 (10/1/26): the homepage's own title (was the word "Homepage").
++    "/": { title: defaultTitle.split(" | ")[1], description: "The four service areas, every case study, and live numbers from birthday-cards.ai" },
+     "/work": workMeta(work.length),
+     "/everything": { title: everythingIntro.title, description: everythingIntro.description },
+     "/contact": contactMeta,
+@@ -53,7 +54,7 @@ export const GET: APIRoute = async () => {
+   const text = [
+     `# ${siteName}`,
+     `> ${defaultDescription}`,
+-    `GLF Analytics is Gabriel Freeman's practice in Los Angeles, independent since 2021. He works with brands, restaurant groups, startups, construction management firms and marketing agencies. Email: ${orgInfo.email}.`,
++    `${orgInfo.description} He works with brands, restaurant groups, startups, construction management firms and marketing agencies. Email: ${orgInfo.email}.`,
+     ...body,
+     `## Case studies\n\n${caseStudies.join("\n")}`
+   ].join("\n\n");
+diff --git a/src/pages/using-data-to-build-with-ai.astro b/src/pages/using-data-to-build-with-ai.astro
+index 3cf80bc..681e075 100644
+--- a/src/pages/using-data-to-build-with-ai.astro
++++ b/src/pages/using-data-to-build-with-ai.astro
+@@ -27,6 +27,7 @@ import SearchGrowth from "../components/SearchGrowth.astro";
+ import { meta, sources, post, captions, tools, faq, namedTokens, video, type Paragraph, type Block, type Figure } from "../data/how-data";
+ import LoopVideo from "../components/LoopVideo.astro";
+ import SystemMap from "../components/SystemMap.astro";
++import lastmod from "../data/lastmod.json";
+ 
+ const s = await getBcStats();
+ const fmt = (n: number) => n.toLocaleString("en-US");
+@@ -95,7 +96,8 @@ const ld = [
+     url,
+     mainEntityOfPage: url,
+     datePublished: meta.published,
+-    dateModified: meta.modified,
++    // S37 (10/1/26): the same git date the sitemap prints for this page (the two disagreed); meta.modified is the fallback.
++    dateModified: (lastmod as Record<string, string>)["/using-data-to-build-with-ai"] ?? meta.modified,
+     inLanguage: "en",
+     wordCount,
+     author: { "@id": `${siteUrl}/#person` },
+@@ -212,7 +214,7 @@ const ld = [
+           <span>Tell me about it</span>
+           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
+         </a>
+-        <a href={bcStatsSource.productUrl} target="_blank" rel="noreferrer" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Open birthday-cards.ai</a>
++        <a href={bcStatsSource.productUrl} target="_blank" rel="noopener" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Open birthday-cards.ai</a>
+         <a href="/" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Back to the homepage</a>
+       </div>
+     </div>
+diff --git a/src/pages/work.astro b/src/pages/work.astro
+index aec5f0a..aad5087 100644
+--- a/src/pages/work.astro
++++ b/src/pages/work.astro
+@@ -7,7 +7,7 @@
+ import BaseLayout from "../layouts/BaseLayout.astro";
+ import { getCollection } from "astro:content";
+ import { getBcStats } from "../lib/bcStats";
+-import { bcStatsSource } from "../config/site";
++import { bcStatsSource, outboundRel } from "../config/site";
+ import { workMeta } from "../data/work-page";
+ 
+ const bc = await getBcStats();
+@@ -73,7 +73,7 @@ const hostOf = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(
+               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
+             </a>
+             {item.data.url && (
+-              <a class="group inline-flex items-center gap-2 text-sm text-surface-300 hover:text-gold-500 transition-colors" href={item.data.url} target="_blank" rel="noreferrer">
++              <a class="group inline-flex items-center gap-2 text-sm text-surface-300 hover:text-gold-500 transition-colors" href={item.data.url} target="_blank" rel={outboundRel(item.data.url)}>
+                 <span>{hostOf(item.data.url)}</span>
+                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6m-11 5L21 3m-3 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>
+               </a>

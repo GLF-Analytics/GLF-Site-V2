@@ -1,7 +1,7 @@
 /*
   POST /api/lead (S33, 9/28/26): the contact form behind /contact.
 
-  Body: { name, email, company?, intent, message, website (honeypot), source?, page? }
+  Body: { name, email, company?, found?, intent, message, website (honeypot), source?, page? }
 
   Gates, in order: size, JSON, honeypot (200 and nothing written), the three
   required fields, the email, the intent allowlist (unknown = "other"), the
@@ -36,7 +36,7 @@ const REF_MAX = 100;
 const INTENTS = new Set<string>(intents.map((i) => i.value));
 const limiter = createLimiter(RATE_LIMIT);
 
-type Body = { name?: unknown; email?: unknown; company?: unknown; intent?: unknown; message?: unknown; website?: unknown; source?: unknown; page?: unknown };
+type Body = { name?: unknown; email?: unknown; company?: unknown; found?: unknown; intent?: unknown; message?: unknown; website?: unknown; source?: unknown; page?: unknown };
 
 const line = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
 const block = (v: unknown, max: number) =>
@@ -62,6 +62,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const name = line(b.name, NAME_MAX);
   const email = typeof b.email === "string" ? b.email.trim().slice(0, 254) : "";
   const company = line(b.company, COMPANY_MAX);
+  const found = line(b.found, COMPANY_MAX);
   const message = block(b.message, MESSAGE_MAX);
   const intent: Intent = typeof b.intent === "string" && INTENTS.has(b.intent) ? (b.intent as Intent) : DEFAULT_INTENT;
   const source = line(b.source, REF_MAX);
@@ -77,9 +78,9 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const dryRun = DEV && env("LEAD_DRY_RUN") === "true";
   const booking = env("BOOKING_URL") || undefined;
 
-  // Company, page and source ride at the bottom of the message: the table has five fields on purpose (9/28/26).
-  const stored = [message, "", company ? `Company: ${company}` : "", page ? `From: ${page}` : "", source ? `Source: ${source}` : ""].filter((l, i) => i < 2 || l).join("\n").trim();
-  const notifyText = mail.notify({ name, email, company, intent, message, page, source });
+  // Company, how they found the site (S37, 10/1/26), page and source ride at the bottom of the message: the table has five fields on purpose (9/28/26).
+  const stored = [message, "", company ? `Company: ${company}` : "", found ? `Found me: ${found}` : "", page ? `From: ${page}` : "", source ? `Source: ${source}` : ""].filter((l, i) => i < 2 || l).join("\n").trim();
+  const notifyText = mail.notify({ name, email, company, found, intent, message, page, source });
   const confirmText = mail.confirm({ name, booking, postal: postal() });
 
   if (dryRun) {

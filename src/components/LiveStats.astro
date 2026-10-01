@@ -45,11 +45,12 @@ const built = [
       <CountryMap />
 
       <div class="mt-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6" data-reveal>
-        <a href="/using-data-to-build-with-ai" target="_blank" rel="noopener" class="group inline-flex items-center gap-2 text-sm text-white hover:text-gold-500 transition-colors">
+        {/* rel="opener" (S37, 10/1/26): the new tab of this same site inherits sessionStorage, so the visit's first-touch source travels with it. */}
+        <a href="/using-data-to-build-with-ai" target="_blank" rel="opener" class="group inline-flex items-center gap-2 text-sm text-white hover:text-gold-500 transition-colors">
           <span>How I built it</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
         </a>
-        <a href={bcStatsSource.productUrl} target="_blank" rel="noreferrer" class="group inline-flex items-center gap-2 text-sm text-surface-300 hover:text-gold-500 transition-colors">
+        <a href={bcStatsSource.productUrl} target="_blank" rel="noopener" class="group inline-flex items-center gap-2 text-sm text-surface-300 hover:text-gold-500 transition-colors">
           <span>Open birthday-cards.ai</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6m-11 5L21 3m-3 10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg>
         </a>

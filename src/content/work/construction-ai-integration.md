@@ -20,6 +20,7 @@ url: "https://glf-ai.com"
 tools: ["Power Automate", "Claude API", "Azure Document Intelligence", "Microsoft 365", "Copilot", "Claude Code"]
 functions: ["workflow design", "prompt engineering", "document templates", "training"]
 metaDescription: "My AI practice for construction teams. Report generators on Power Automate and the Claude API, a bid comparison tool, and training for a whole firm."
+related: ["birthday-cards"]
 ---
 <section class="work-section">
   <h2>What I built</h2>

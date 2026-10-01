@@ -18,6 +18,7 @@ backgroundImage: "/images/work/unilever.jpg"
 outcome: "One warehouse the brand teams report from."
 seoTitle: "Unilever: a BigQuery source of truth"
 metaDescription: "Built a BigQuery source of truth for Beauty & Wellbeing DTC brands. The warehouse, the sources and the SQL, so the brand teams trust one set of numbers."
+related: ["ucan", "design-your-data-warehouse"]
 ---
 <section class="work-section">
   <h2>What I delivered</h2>

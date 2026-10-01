@@ -1,8 +1,10 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
-import { siteUrl } from "../config/site";
+import { outboundRel, siteUrl } from "../config/site";
 import lastmod from "../data/lastmod.json";
+import published from "../data/published.json";
+import { meta as plannerMeta } from "../data/warehouse-survey";
 
 export async function getStaticPaths() {
   const entries = await getCollection("work");
@@ -26,10 +28,28 @@ const backgroundStyle = desktopBg
 // S36 (9/30/26): the search title and description (fall back to the h1 and the
 // summary), and an Article node tied to the site-wide Person and Organization.
 // dateModified = the sitemap's lastmod for this page (src/lib/pageDates.ts).
+// S37 (10/1/26): datePublished = the day the markdown first entered git
+// (src/data/published.json, same helper), and the page's own share image
+// (public/images/og/<slug>.png, drawn by scripts/og-cards.mjs).
 const pageUrl = `${siteUrl}/${entry.slug}`;
 const metaTitle = entry.data.seoTitle ?? entry.data.title;
 const metaDescription = entry.data.metaDescription ?? entry.data.summary;
 const modified = (lastmod as Record<string, string>)[`/${entry.slug}`];
+const firstPublished = (published as Record<string, string>)[`/${entry.slug}`];
+const ogImage = `${siteUrl}/images/og/${entry.slug}.png`;
+
+// S37: the "Related work" row. Keys are case-study slugs or one of these pages;
+// labels are the titles those pages already carry, so no new copy lives here.
+const RELATED_PAGES: Record<string, { href: string; label: string }> = {
+  [plannerMeta.slug]: { href: `/${plannerMeta.slug}`, label: plannerMeta.title }
+};
+const allWork = await getCollection("work");
+const related = (entry.data.related ?? []).map((key) => {
+  if (RELATED_PAGES[key]) return RELATED_PAGES[key];
+  const other = allWork.find((w) => w.slug === key);
+  if (!other || other.slug === entry.slug) throw new Error(`[work] ${entry.slug}: related "${key}" is not another case study or a known page`);
+  return { href: `/${other.slug}`, label: other.data.seoTitle ?? other.data.title };
+});
 const articleLd = {
   "@context": "https://schema.org",
   "@type": "Article",
@@ -38,11 +58,16 @@ const articleLd = {
   description: metaDescription,
   url: pageUrl,
   mainEntityOfPage: pageUrl,
-  image: desktopBg && !desktopBg.endsWith(".svg") ? `${siteUrl}${desktopBg}` : `${siteUrl}/images/og-default.png`,
+  image: desktopBg && !desktopBg.endsWith(".svg") ? `${siteUrl}${desktopBg}` : ogImage,
   author: { "@id": `${siteUrl}/#person` },
   publisher: { "@id": `${siteUrl}/#organization` },
   isPartOf: { "@id": `${siteUrl}/#website` },
+  ...(firstPublished ? { datePublished: firstPublished } : {}),
   ...(modified ? { dateModified: modified } : {}),
+  // S37: his own product is tied to him as its creator (the client studies name no outside entity here).
+  ...(entry.data.clientType === "My own product" && entry.data.url
+    ? { about: { "@type": "WebApplication", name: entry.data.title, url: entry.data.url, creator: { "@id": `${siteUrl}/#person` } } }
+    : {}),
   keywords: entry.data.tags.join(", "),
   inLanguage: "en"
 };
@@ -51,6 +76,8 @@ const articleLd = {
   title={metaTitle}
   description={metaDescription}
   ogType="article"
+  ogImage={ogImage}
+  ogImageAlt={`${metaTitle}, a GLF Analytics case study`}
   crumb={entry.data.title}
   parent={{ name: "All work", path: "/work" }}
 >
@@ -153,7 +180,7 @@ const articleLd = {
             <a
               href={entry.data.url}
               target="_blank"
-              rel="noreferrer"
+              rel={outboundRel(entry.data.url)}
               class="btn-secondary inline-flex"
             >
               <span>Open the site</span>
@@ -173,6 +200,23 @@ const articleLd = {
               </svg>
             </a>
           </div>
+        )}
+
+        <!-- Related work (S37, 10/1/26): the other case studies of the same kind, and the planner on the data studies -->
+        {related.length > 0 && (
+          <nav aria-label="Related work" class="mt-12 pt-8 border-t border-white/[0.06] reveal" data-reveal>
+            <span class="label block mb-3">Related work</span>
+            <ul>
+              {related.map((r) => (
+                <li>
+                  <a href={r.href} class="group inline-flex items-center gap-2 py-2.5 text-surface-300 hover:text-gold-500 transition-colors">
+                    <span>{r.label}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
         )}
       </div>
     </div>

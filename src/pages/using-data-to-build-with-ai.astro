@@ -27,6 +27,7 @@ import SearchGrowth from "../components/SearchGrowth.astro";
 import { meta, sources, post, captions, tools, faq, namedTokens, video, type Paragraph, type Block, type Figure } from "../data/how-data";
 import LoopVideo from "../components/LoopVideo.astro";
 import SystemMap from "../components/SystemMap.astro";
+import lastmod from "../data/lastmod.json";
 
 const s = await getBcStats();
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -95,7 +96,8 @@ const ld = [
     url,
     mainEntityOfPage: url,
     datePublished: meta.published,
-    dateModified: meta.modified,
+    // S37 (10/1/26): the same git date the sitemap prints for this page (the two disagreed); meta.modified is the fallback.
+    dateModified: (lastmod as Record<string, string>)["/using-data-to-build-with-ai"] ?? meta.modified,
     inLanguage: "en",
     wordCount,
     author: { "@id": `${siteUrl}/#person` },
@@ -212,7 +214,7 @@ const ld = [
           <span>Tell me about it</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true"><path d="M5 12h14m-7-7l7 7-7 7" /></svg>
         </a>
-        <a href={bcStatsSource.productUrl} target="_blank" rel="noreferrer" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Open birthday-cards.ai</a>
+        <a href={bcStatsSource.productUrl} target="_blank" rel="noopener" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Open birthday-cards.ai</a>
         <a href="/" class="text-sm text-surface-300 hover:text-gold-500 transition-colors">Back to the homepage</a>
       </div>
     </div>

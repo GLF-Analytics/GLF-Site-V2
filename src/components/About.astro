@@ -58,7 +58,7 @@ const groups: { label: string; rows: Row[] }[] = [
                   <a
                     href={r.href}
                     target={r.external || r.newTab ? "_blank" : undefined}
-                    rel={r.external ? "noreferrer" : r.newTab ? "noopener" : undefined}
+                    rel={r.external ? "noreferrer" : r.newTab ? "opener" /* S37: a new tab of this site keeps the session, so the first-touch source travels */ : undefined}
                     class={`group inline-flex items-center gap-2 py-2.5 text-base transition-colors hover:text-gold-500 ${r.primary ? "text-white" : "text-surface-300"}`}
                   >
                     <span>{r.label}</span>

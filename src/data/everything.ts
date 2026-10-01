@@ -28,6 +28,19 @@ export const intro = {
     "The work Gabriel Freeman has done since 2017: data warehouses and reporting, forecasting, growth marketing, and AI tools built with Claude Code."
 };
 
+/** S37 (10/1/26): the projects that have a case study on this site. The run's
+    heading row links it, so the long list feeds the case studies. A key that
+    matches no project throws at build. */
+export const caseStudies: Record<string, string> = {
+  Unilever: "/unilever",
+  UCAN: "/ucan",
+  "Gotham Goods": "/gotham-goods",
+  "Fox Fodder Flowers": "/fox-fodder-flowers",
+  bartaco: "/bartaco",
+  "A construction management firm in LA": "/construction-ai-integration",
+  "birthday-cards.ai": "/birthday-cards"
+};
+
 export const bullets: Bullet[] = [
   {
     project: "Mindshare",

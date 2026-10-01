@@ -19,6 +19,7 @@ tools: ["Claude Code", "Next.js", "Vercel", "OpenAI", "Gemini", "Airtable", "Res
 functions: ["design", "development", "database", "email", "SEO", "analytics"]
 showLiveStats: true
 seoTitle: "birthday-cards.ai: an AI card generator"
+related: ["construction-ai-integration"]
 ---
 <section class="work-section">
   <h2>What I built</h2>
