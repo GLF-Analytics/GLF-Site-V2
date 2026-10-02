@@ -3,10 +3,10 @@
   trade on the planner page (an address for a report), and the lead row behind it.
 
   Body: { email, answers, picks, reasons?, summary?, mentioned?, source?, swapped?,
-          notes?: boolean, hp_field_7 (the trap), elapsed (ms since the page loaded), ref?, page? }
+          notes?: boolean, website (honeypot), ref?, page? }
   Or:   { action: "purpose", id, purpose }   (the optional one-tap after a send)
 
-  Gates, in order: size, JSON, email,
+  Gates, in order: size, JSON, honeypot (200 and nothing written), email,
   answers, picks (sanitized, then priced HERE: a posted total is never trusted),
   the kill switch, the per-instance limiter, the dedupe. Then: the visitor's
   email through Resend (awaited), then the Airtable row, the audience add, and
@@ -21,13 +21,6 @@
   Never logs an address, a note, or a key: only status codes and error types.
   S33 (9/28/26): the Resend, Airtable, limiter and env helpers moved to
   src/lib/leadCapture.ts, shared with /api/lead. Behaviour unchanged.
-  S38 (10/2/26): the spam screen (src/lib/screen.ts) replaced the silent
-  honeypot. A screened request sends NO report to the posted address (that
-  would let a bot mail strangers from this domain) and writes no row; Gabriel
-  gets a "[possible spam]" note with the address and the digest, and the page
-  shows the mailto fallback so a real visitor still gets the stack. Every ok
-  response names its outcome (sent, duplicate, suspect + reason); the page
-  fires report_sent for sent only. One log line per outcome.
 */
 import type { APIRoute } from "astro";
 import { createHash } from "node:crypto";
@@ -37,8 +30,6 @@ import { siteUrl } from "../../config/site";
 import { parseAnswers, priceStack, sanitizePicks, toQuery, type Answers } from "../../lib/warehouseCalc";
 import { buildReport, type Mentioned } from "../../lib/warehouseReport";
 import { byteLength, clean, EMAIL_RE } from "../../lib/text";
-import { mail } from "../../data/contact";
-import { screen } from "../../lib/screen";
 import { addContact, airtable, clientIp, createLimiter, DEV, env, gabriel, json, postal, sendMail, today, writeLead } from "../../lib/leadCapture";
 
 export const prerender = false;
@@ -65,6 +56,7 @@ type Body = {
   source?: unknown;
   swapped?: unknown;
   notes?: unknown;
+  website?: unknown;
   ref?: unknown;
   page?: unknown;
 };
@@ -133,7 +125,8 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     }
   }
 
-  const flagged = screen(b as Record<string, unknown>);
+  // A filled honeypot answers success and writes nothing.
+  if (typeof b.website === "string" && b.website.trim() !== "") return json({ ok: true, sent: true });
 
   const email = typeof b.email === "string" ? b.email.trim().slice(0, 254) : "";
   if (!EMAIL_RE.test(email)) return json({ ok: false, reason: "email" }, 400);
@@ -156,33 +149,14 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     } catch (err) {
       console.warn("[warehouse-report] dry run write failed:", err instanceof Error ? err.name : "unknown");
     }
-    console.info(`[warehouse-report] outcome=${flagged ? `suspect reason=${flagged}` : "sent"} dryRun`);
-    if (flagged) return json({ ok: true, outcome: "suspect", reason: flagged, dryRun: true });
-    return json({ ok: true, outcome: "sent", sent: true, dryRun: true, id: "recDRYRUN000000000", subject: report.subject, stack });
+    return json({ ok: true, sent: true, dryRun: true, id: "recDRYRUN000000000", subject: report.subject, stack });
   }
 
   if (!on) return json({ ok: false, reason: "off" }, 503);
   if (limiter.overLimit(ip, now)) return json({ ok: false, reason: "rate" }, 429);
 
   const key = createHash("sha256").update(`${email.toLowerCase()}|${toQuery(answers)}`).digest("hex");
-  if (limiter.seenRecently(key, now)) {
-    console.info("[warehouse-report] outcome=duplicate");
-    return json({ ok: true, outcome: "duplicate", sent: true, duplicate: true });
-  }
-
-  if (flagged) {
-    const n = await sendMail(
-      { to: gabriel(), subject: mail.suspectSubject(flagged, `Stack report lead: ${email}`), text: [mail.suspectNote(flagged), "", `Email: ${email}`, `Ref: ${ref || "none"}`, `Page: ${page}`, "", ...report.digest].join("\n"), idempotencyKey: `${key}-suspect` },
-      "warehouse_report_suspect"
-    ).catch(() => ({ ok: false, status: 0 }));
-    if (!n.ok) {
-      limiter.forget(key);
-      console.error(`[warehouse-report] outcome=failed reason=${flagged} status=${n.status}`);
-      return json({ ok: false, reason: "send" }, 502);
-    }
-    console.info(`[warehouse-report] outcome=suspect reason=${flagged}`);
-    return json({ ok: true, outcome: "suspect", reason: flagged });
-  }
+  if (limiter.seenRecently(key, now)) return json({ ok: true, sent: true, duplicate: true });
 
   let delivered: { ok: boolean; status: number };
   try {
@@ -218,8 +192,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   ]);
   for (const r of after) if (r.status === "rejected") console.warn("[warehouse-report] after-send step failed:", r.reason instanceof Error ? r.reason.name : "unknown");
 
-  console.info("[warehouse-report] outcome=sent");
-  return json({ ok: true, outcome: "sent", sent: true, id, stack });
+  return json({ ok: true, sent: true, id, stack });
 };
 
 // Dev only: render the email for a catalog scenario so it can be screenshot without keys.

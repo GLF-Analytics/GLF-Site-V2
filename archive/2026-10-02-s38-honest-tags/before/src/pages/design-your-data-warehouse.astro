@@ -38,7 +38,6 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { catalog, LAYERS, scenarios, type Layer } from "../data/warehouse-catalog";
 import { meta, questions, ui, result, layerCopy, sequence, offer, learn, who, faq } from "../data/warehouse-survey";
-import { TRAP_FIELD } from "../lib/screen";
 import { NOTES_MAX, priceStack, recommendByRules } from "../lib/warehouseCalc";
 import { buildReport } from "../lib/warehouseReport";
 import { orgInfo, siteUrl } from "../config/site";
@@ -263,7 +262,7 @@ const jsonLd = {
             <div class="wh-offer__row">
               <label class="sr-only" for="wh-offer-email">{offer.emailLabel}</label>
               <input id="wh-offer-email" class="wh-offer__input" type="email" name="email" inputmode="email" autocomplete="email" placeholder={offer.placeholder} required />
-              <input class="wh-offer__hp" type="text" name={TRAP_FIELD} tabindex="-1" autocomplete="new-password" aria-hidden="true" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other" />
+              <input class="wh-offer__hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
               <button type="submit" class="btn-primary" data-offer-send><span>{offer.send}</span></button>
             </div>
             <label class="wh-offer__opt"><input type="checkbox" name="notes" /><span>{offer.optIn}</span></label>
@@ -346,7 +345,6 @@ const jsonLd = {
   import { LAYERS, type Layer } from "../data/warehouse-catalog";
   import { questions, ui, result, layerCopy, sequence, offer } from "../data/warehouse-survey";
   import { stackCardSvg } from "../lib/warehouseCard";
-  import { TRAP_FIELD } from "../lib/screen";
   type Mentioned = { name: string; id: string | null };
   import {
     alternatives,
@@ -366,10 +364,10 @@ const jsonLd = {
     type Picks
   } from "../lib/warehouseCalc";
 
-  // Vercel Web Analytics custom events through the one choke point, window.glfTrack (BaseLayout, S38).
+  // Vercel Web Analytics custom events: a no-op until the script is served (see BaseLayout).
   const track = (name: string, data?: Record<string, string | number | boolean>) => {
     try {
-      (window as unknown as { glfTrack?: (n: string, d?: unknown) => void }).glfTrack?.(name, data);
+      (window as unknown as { va?: (k: string, p: unknown) => void }).va?.("event", { name, data });
     } catch {}
   };
 
@@ -454,8 +452,7 @@ const jsonLd = {
 
     let startedOnce = false;
     function show(i: number, focus = true) {
-      // focus = false is a restored draft, a shared link or the dev harness: no click, so no planner_start (S38).
-      if (i > 0 && !startedOnce && focus) {
+      if (i > 0 && !startedOnce) {
         startedOnce = true;
         track("planner_start");
       }
@@ -997,8 +994,7 @@ const jsonLd = {
         source: view.source,
         swapped: view.swapped.length,
         notes: offerForm.querySelector<HTMLInputElement>('input[name="notes"]')!.checked,
-        [TRAP_FIELD]: offerForm.querySelector<HTMLInputElement>(`input[name="${TRAP_FIELD}"]`)!.value,
-        elapsed: Math.round(performance.now()),
+        website: offerForm.querySelector<HTMLInputElement>('input[name="website"]')!.value,
         ref: ref(),
         page: location.pathname
       };
@@ -1006,19 +1002,14 @@ const jsonLd = {
       offerSend.querySelector("span")!.textContent = offer.sending;
       offerStatus.hidden = true;
       track("offer_submit");
-      let outcome: "sent" | "duplicate" | "suspect" | "off" | "rate" | "failed" | "email" = "failed";
-      let reason = "";
+      let outcome: "sent" | "duplicate" | "off" | "rate" | "failed" | "email" = "failed";
       try {
         const ctrl = new AbortController();
         const timer = window.setTimeout(() => ctrl.abort(), 15_000);
         const res = await fetch("/api/warehouse-report", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
         window.clearTimeout(timer);
-        const data = (await res.json().catch(() => null)) as { ok?: boolean; outcome?: string; reason?: string; duplicate?: boolean; id?: string | null } | null;
-        if (res.ok && data?.ok && data.outcome === "suspect") {
-          // S38: screened. No report went out, so the page must not say "sent": the mailto fallback carries the stack.
-          outcome = "suspect";
-          reason = data.reason || "unknown";
-        } else if (res.ok && data?.ok) {
+        const data = (await res.json().catch(() => null)) as { ok?: boolean; reason?: string; duplicate?: boolean; id?: string | null } | null;
+        if (res.ok && data?.ok) {
           outcome = data.duplicate ? "duplicate" : "sent";
           leadId = typeof data.id === "string" ? data.id : null;
         } else if (res.status === 503) outcome = "off";
@@ -1048,15 +1039,13 @@ const jsonLd = {
         fallback.hidden = true;
         purpose.hidden = false;
         remember("sent");
-        // A repeat was already counted on its first send.
-        if (outcome === "sent") track("report_sent", { optIn: body.notes });
+        track("report_sent", { optIn: body.notes });
       } else {
         // The route is off (no keys yet) or the send failed: the visitor's mail app carries the stack instead.
         doneText.textContent = offer.failed;
         fallback.hidden = false;
         purpose.hidden = true;
-        if (outcome === "suspect") track("report_suspect", { reason });
-        else track("report_fallback", { outcome });
+        track("report_fallback", { outcome });
       }
     }
 

@@ -2,8 +2,7 @@
 /*
   The contact form (S33, 9/28/26): five service chips in Gabriel's words, name,
   email, company (optional), how they found the site (optional, S37 10/1/26),
-  message, the spam-screen trap (S38: renamed from "website", which autofill
-  could fill; see src/lib/screen.ts), one gold button. Posts JSON to
+  message, a honeypot, one gold button. Posts JSON to
   /api/lead. Honest states: sending, sent (then the booking link if BOOKING_URL
   is set; no consent or inbox line since S34, his call), a rate message, and for "off" or a failure a mailto link that carries
   the message so nothing typed is lost. Copy lives in src/data/contact.ts.
@@ -13,7 +12,6 @@
 import { DEFAULT_INTENT, form, intents } from "../data/contact";
 import { orgInfo } from "../config/site";
 import { env } from "../lib/leadCapture";
-import { TRAP_FIELD } from "../lib/screen";
 
 interface Props {
   intent?: string;
@@ -63,7 +61,7 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
       <textarea class="cf__input cf__textarea" name="message" rows="5" required maxlength="2000"></textarea>
     </label>
 
-    <input class="cf__hp" type="text" name={TRAP_FIELD} tabindex="-1" autocomplete="new-password" aria-hidden="true" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other" />
+    <input class="cf__hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
     <div class="cf__row">
       <button type="submit" class="btn-primary"><span data-send-label>{form.send}</span></button>
@@ -82,13 +80,13 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
   </div>
 </div>
 
-<script is:inline define:vars={{ strings: form, dev: import.meta.env.DEV, trap: TRAP_FIELD }}>
+<script is:inline define:vars={{ strings: form, dev: import.meta.env.DEV }}>
   (function () {
     var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     // Dev only: ?_state=sent|error paints a state for a screenshot without a send. `dev` is false in production.
     var harness = dev ? new URLSearchParams(location.search).get("_state") : null;
     function track(name, data) {
-      if (window.glfTrack) window.glfTrack(name, data);
+      if (window.va) window.va("event", { name: name, data: data });
     }
     document.querySelectorAll("[data-contact]").forEach(function (wrap) {
       var f = wrap.querySelector("[data-contact-form]");
@@ -153,8 +151,7 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
           found: String(fd.get("found") || "").trim(),
           intent: String(fd.get("intent") || "other"),
           message: String(fd.get("message") || "").trim(),
-          [trap]: String(fd.get(trap) || ""),
-          elapsed: Math.round(performance.now()),
+          website: String(fd.get("website") || ""),
           source: source,
           page: page
         };
@@ -178,11 +175,7 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
               f.hidden = true;
               done.hidden = false;
               done.scrollIntoView({ block: "nearest" });
-              // S38: contact_submit = a lead landed (a row or Gabriel's email). A screened
-              // submit still reaches him, flagged, and counts as contact_suspect; a repeat counts once.
-              var outcome = out.body && out.body.outcome;
-              if (outcome === "stored" || outcome === "notified") track("contact_submit", { intent: d.intent, page: page });
-              else if (outcome === "suspect") track("contact_suspect", { reason: out.body.reason || "unknown", page: page });
+              track("contact_submit", { intent: d.intent, page: page });
               return;
             }
             if (res && res.status === 429) return show(strings.rate, true);

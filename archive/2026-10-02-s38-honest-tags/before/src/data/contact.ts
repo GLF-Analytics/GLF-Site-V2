@@ -82,12 +82,6 @@ export const mail = {
     return lines.join("\n");
   },
   notifySubject: (intent: string, name: string) => `Site contact (${intent}): ${name}`,
-  /** S38 (10/2/26): a screened submit still reaches Gabriel, flagged. Internal only, never shown to a visitor. */
-  suspectSubject: (reason: string, subject: string) => `[possible spam: ${reason}] ${subject}`,
-  suspectNote: (reason: string) =>
-    `Flagged by the spam screen (${reason}): ${
-      reason === "trap" ? "the hidden field was filled" : reason === "fast" ? "sent under 3 seconds after the page loaded" : "not sent from the page's own script"
-    }. No Airtable row was written and the visitor got no email. If this is a real person, reply to them directly.`,
   notify(i: { name: string; email: string; company: string; found: string; intent: string; message: string; page: string; source: string }): string {
     return [
       `Name: ${i.name}`,

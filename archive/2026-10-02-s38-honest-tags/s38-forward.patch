@@ -1,0 +1,572 @@
+diff --git a/src/components/ContactForm.astro b/src/components/ContactForm.astro
+index 5f144ac..839c18b 100644
+--- a/src/components/ContactForm.astro
++++ b/src/components/ContactForm.astro
+@@ -2,7 +2,8 @@
+ /*
+   The contact form (S33, 9/28/26): five service chips in Gabriel's words, name,
+   email, company (optional), how they found the site (optional, S37 10/1/26),
+-  message, a honeypot, one gold button. Posts JSON to
++  message, the spam-screen trap (S38: renamed from "website", which autofill
++  could fill; see src/lib/screen.ts), one gold button. Posts JSON to
+   /api/lead. Honest states: sending, sent (then the booking link if BOOKING_URL
+   is set; no consent or inbox line since S34, his call), a rate message, and for "off" or a failure a mailto link that carries
+   the message so nothing typed is lost. Copy lives in src/data/contact.ts.
+@@ -12,6 +13,7 @@
+ import { DEFAULT_INTENT, form, intents } from "../data/contact";
+ import { orgInfo } from "../config/site";
+ import { env } from "../lib/leadCapture";
++import { TRAP_FIELD } from "../lib/screen";
+ 
+ interface Props {
+   intent?: string;
+@@ -61,7 +63,7 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
+       <textarea class="cf__input cf__textarea" name="message" rows="5" required maxlength="2000"></textarea>
+     </label>
+ 
+-    <input class="cf__hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
++    <input class="cf__hp" type="text" name={TRAP_FIELD} tabindex="-1" autocomplete="new-password" aria-hidden="true" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other" />
+ 
+     <div class="cf__row">
+       <button type="submit" class="btn-primary"><span data-send-label>{form.send}</span></button>
+@@ -80,13 +82,13 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
+   </div>
+ </div>
+ 
+-<script is:inline define:vars={{ strings: form, dev: import.meta.env.DEV }}>
++<script is:inline define:vars={{ strings: form, dev: import.meta.env.DEV, trap: TRAP_FIELD }}>
+   (function () {
+     var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+     // Dev only: ?_state=sent|error paints a state for a screenshot without a send. `dev` is false in production.
+     var harness = dev ? new URLSearchParams(location.search).get("_state") : null;
+     function track(name, data) {
+-      if (window.va) window.va("event", { name: name, data: data });
++      if (window.glfTrack) window.glfTrack(name, data);
+     }
+     document.querySelectorAll("[data-contact]").forEach(function (wrap) {
+       var f = wrap.querySelector("[data-contact-form]");
+@@ -151,7 +153,8 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
+           found: String(fd.get("found") || "").trim(),
+           intent: String(fd.get("intent") || "other"),
+           message: String(fd.get("message") || "").trim(),
+-          website: String(fd.get("website") || ""),
++          [trap]: String(fd.get(trap) || ""),
++          elapsed: Math.round(performance.now()),
+           source: source,
+           page: page
+         };
+@@ -175,7 +178,11 @@ const selected = intents.some((i) => i.value === preset) ? preset : DEFAULT_INTE
+               f.hidden = true;
+               done.hidden = false;
+               done.scrollIntoView({ block: "nearest" });
+-              track("contact_submit", { intent: d.intent, page: page });
++              // S38: contact_submit = a lead landed (a row or Gabriel's email). A screened
++              // submit still reaches him, flagged, and counts as contact_suspect; a repeat counts once.
++              var outcome = out.body && out.body.outcome;
++              if (outcome === "stored" || outcome === "notified") track("contact_submit", { intent: d.intent, page: page });
++              else if (outcome === "suspect") track("contact_suspect", { reason: out.body.reason || "unknown", page: page });
+               return;
+             }
+             if (res && res.status === 429) return show(strings.rate, true);
+diff --git a/src/components/LoopVideo.astro b/src/components/LoopVideo.astro
+index b4aca2b..403064a 100644
+--- a/src/components/LoopVideo.astro
++++ b/src/components/LoopVideo.astro
+@@ -3,9 +3,11 @@
+  * The one minute silent clip (60 s since 9/23 PM; the first cut was 44 s) on /using-data-to-build-with-ai (S32, 9/23/26).
+  * Muted autoplay that loops, the birthday-cards.ai demo pattern. Captions are
+  * burned into the frames, so there is no audio track and nothing to unmute.
+- * The one event: `video_play` fires once per page view on the first play
+- * (window.va is the Vercel Web Analytics queue stub from BaseLayout; a no-op
+- * when analytics is off). Source and every on-screen number: the beat sheet
++ * The one event (S38, 10/2/26): `video_seen` fires once per page view when the
++ * clip is playing AND at least half of it is on screen. It replaced `video_play`,
++ * which fired on the muted autoplay of every page view, seen or not (10/1 to
++ * 10/2 data is that). There are no controls, so there is no click to count.
++ * Sent through window.glfTrack (BaseLayout). Source and every on-screen number: the beat sheet
+  * named in how-data.ts `video`. Under md the video is cropped to a square
+  * by CSS (the frames keep every element inside the center column, so the
+  * square is the LinkedIn framing from the same file, no second encode).
+@@ -34,11 +36,24 @@ import { video } from "../data/how-data";
+     var v = document.querySelector("video[data-loop-video]");
+     if (!v) return;
+     v.muted = true;
++    if (!("IntersectionObserver" in window)) return;
+     var fired = false;
+-    v.addEventListener("play", function () {
++    var io = new IntersectionObserver(
++      function (entries) {
++        var e = entries[0];
++        if (fired || !e || !e.isIntersecting || v.paused) return;
++        fired = true;
++        io.disconnect();
++        if (window.glfTrack) window.glfTrack("video_seen", { page: location.pathname });
++      },
++      { threshold: 0.5 }
++    );
++    io.observe(v);
++    // A clip already in view when it starts playing is caught here; the observer only fires on change.
++    v.addEventListener("playing", function () {
+       if (fired) return;
+-      fired = true;
+-      if (window.va) window.va("event", { name: "video_play", data: { page: location.pathname } });
++      io.unobserve(v);
++      io.observe(v);
+     });
+   })();
+ </script>
+diff --git a/src/data/contact.ts b/src/data/contact.ts
+index 2f46a18..64ff60c 100644
+--- a/src/data/contact.ts
++++ b/src/data/contact.ts
+@@ -82,6 +82,12 @@ export const mail = {
+     return lines.join("\n");
+   },
+   notifySubject: (intent: string, name: string) => `Site contact (${intent}): ${name}`,
++  /** S38 (10/2/26): a screened submit still reaches Gabriel, flagged. Internal only, never shown to a visitor. */
++  suspectSubject: (reason: string, subject: string) => `[possible spam: ${reason}] ${subject}`,
++  suspectNote: (reason: string) =>
++    `Flagged by the spam screen (${reason}): ${
++      reason === "trap" ? "the hidden field was filled" : reason === "fast" ? "sent under 3 seconds after the page loaded" : "not sent from the page's own script"
++    }. No Airtable row was written and the visitor got no email. If this is a real person, reply to them directly.`,
+   notify(i: { name: string; email: string; company: string; found: string; intent: string; message: string; page: string; source: string }): string {
+     return [
+       `Name: ${i.name}`,
+diff --git a/src/layouts/BaseLayout.astro b/src/layouts/BaseLayout.astro
+index 0171758..88947a2 100644
+--- a/src/layouts/BaseLayout.astro
++++ b/src/layouts/BaseLayout.astro
+@@ -62,6 +62,19 @@ const breadcrumb =
+         until Vercel serves the script (Analytics enabled on the project) and in dev, where it 404s. */}
+     {import.meta.env.PROD && <script is:inline>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>}
+     {import.meta.env.PROD && <script is:inline defer src="/_vercel/insights/script.js"></script>}
++    {/* The one way an event is sent (S38, 10/2/26): every tag on the site calls window.glfTrack.
++        It drops events from automated browsers (navigator.webdriver), never throws, and in dev
++        prints each event to the console, since window.va does not exist there. */}
++    <script is:inline define:vars={{ devLog: import.meta.env.DEV }}>
++      window.glfTrack = function (name, data) {
++        try {
++          var bot = navigator.webdriver === true;
++          if (devLog) console.info("[glfTrack]", name, data || {}, bot ? "(dropped: webdriver)" : "");
++          if (bot || !window.va) return;
++          window.va("event", data ? { name: name, data: data } : { name: name });
++        } catch (e) {}
++      };
++    </script>
+     {/* Vercel Speed Insights (S37, 10/1/26): the same shape, real load numbers per page. */}
+     {import.meta.env.PROD && <script is:inline>window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };</script>}
+     {import.meta.env.PROD && <script is:inline defer src="/_vercel/speed-insights/script.js"></script>}
+@@ -127,11 +140,12 @@ const breadcrumb =
+         through the window.va queue (a no-op in dev). Two properties at most per event.
+         outbound_click = any link off the site; contact_click = a link to /contact
+         (from = nav, footer or page); email_click = a mailto; planner_click = a link
+-        to the planner. The forms and the planner keep their own events. */}
++        to the planner. The forms and the planner keep their own events. All go through
++        window.glfTrack (S38). */}
+     <script is:inline>
+       document.addEventListener("click", function (e) {
+         var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+-        if (!a || !window.va) return;
++        if (!a || !window.glfTrack) return;
+         var page = location.pathname;
+         var href = a.getAttribute("href") || "";
+         var name, data;
+@@ -148,7 +162,7 @@ const breadcrumb =
+           name = "planner_click";
+           data = { page: page };
+         }
+-        if (name) window.va("event", { name: name, data: data });
++        if (name) window.glfTrack(name, data);
+       });
+     </script>
+   </body>
+diff --git a/src/pages/api/lead.ts b/src/pages/api/lead.ts
+index b419c9e..eea1e59 100644
+--- a/src/pages/api/lead.ts
++++ b/src/pages/api/lead.ts
+@@ -1,16 +1,23 @@
+ /*
+   POST /api/lead (S33, 9/28/26): the contact form behind /contact.
+ 
+-  Body: { name, email, company?, found?, intent, message, website (honeypot), source?, page? }
+-
+-  Gates, in order: size, JSON, honeypot (200 and nothing written), the three
+-  required fields, the email, the intent allowlist (unknown = "other"), the
+-  kill switch, the per-instance limiter, the dedupe. Then, awaited together
+-  with timeouts (Vercel freezes a function after it answers): the Airtable row,
+-  the notification to Gabriel, the confirmation to the visitor. The response is
+-  ok when the row OR the notification landed (the lead exists in one place at
+-  least); 502 when both failed, so the page shows the mailto fallback with the
+-  message already in it.
++  Body: { name, email, company?, found?, intent, message, hp_field_7 (the trap), elapsed (ms since the page loaded), source?, page? }
++
++  Gates, in order: size, JSON, the three required fields, the email, the
++  intent allowlist (unknown = "other"), the kill switch, the per-instance
++  limiter, the dedupe. Then one of two paths:
++  - Screened (S38, 10/2/26; src/lib/screen.ts: trap, fast, noclock): Gabriel
++    gets the notification with a "[possible spam]" subject; no Airtable row, no
++    confirmation to the visitor. Never dropped: before S38 a filled trap
++    answered OK and kept nothing, so a real visitor caught by autofill was lost.
++  - Clean: awaited together with timeouts (Vercel freezes a function after it
++    answers): the Airtable row, the notification to Gabriel, the confirmation
++    to the visitor.
++  Every ok response names its outcome: stored (the row landed), notified (only
++  the email did), suspect (+ reason), duplicate. The page fires contact_submit
++  for stored or notified only. 502 when nothing landed, so the page shows the
++  mailto fallback with the message already in it. One log line per outcome:
++  `[lead] outcome=... reason=...` (no address, no message).
+ 
+   Off (LEAD_CAPTURE_ENABLED != "true" or no RESEND_API_KEY): 503 { reason: "off" }.
+   Dev only: LEAD_DRY_RUN=true skips every network call and writes .dry-run/lead.txt.
+@@ -23,6 +30,7 @@ import type { APIRoute } from "astro";
+ import { createHash } from "node:crypto";
+ import { DEFAULT_INTENT, intents, mail, type Intent } from "../../data/contact";
+ import { byteLength, EMAIL_RE } from "../../lib/text";
++import { screen } from "../../lib/screen";
+ import { airtable, airtableUrl, clientIp, createLimiter, DEV, env, gabriel, json, postal, sendMail, writeLead } from "../../lib/leadCapture";
+ 
+ export const prerender = false;
+@@ -36,7 +44,7 @@ const REF_MAX = 100;
+ const INTENTS = new Set<string>(intents.map((i) => i.value));
+ const limiter = createLimiter(RATE_LIMIT);
+ 
+-type Body = { name?: unknown; email?: unknown; company?: unknown; found?: unknown; intent?: unknown; message?: unknown; website?: unknown; source?: unknown; page?: unknown };
++type Body = Record<string, unknown> & { name?: unknown; email?: unknown; company?: unknown; found?: unknown; intent?: unknown; message?: unknown; source?: unknown; page?: unknown };
+ 
+ const line = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
+ const block = (v: unknown, max: number) =>
+@@ -56,8 +64,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
+     return json({ ok: false, reason: "json" }, 400);
+   }
+ 
+-  // A filled honeypot answers success and writes nothing.
+-  if (typeof b.website === "string" && b.website.trim() !== "") return json({ ok: true, stored: true, notified: true });
++  const flagged = screen(b);
+ 
+   const name = line(b.name, NAME_MAX);
+   const email = typeof b.email === "string" ? b.email.trim().slice(0, 254) : "";
+@@ -80,7 +87,8 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
+ 
+   // Company, how they found the site (S37, 10/1/26), page and source ride at the bottom of the message: the table has five fields on purpose (9/28/26).
+   const stored = [message, "", company ? `Company: ${company}` : "", found ? `Found me: ${found}` : "", page ? `From: ${page}` : "", source ? `Source: ${source}` : ""].filter((l, i) => i < 2 || l).join("\n").trim();
+-  const notifyText = mail.notify({ name, email, company, found, intent, message, page, source });
++  const notifyText = (flagged ? mail.suspectNote(flagged) + "\n\n" : "") + mail.notify({ name, email, company, found, intent, message, page, source });
++  const notifySubject = flagged ? mail.suspectSubject(flagged, mail.notifySubject(intent, name)) : mail.notifySubject(intent, name);
+   const confirmText = mail.confirm({ name, booking, postal: postal() });
+ 
+   if (dryRun) {
+@@ -89,24 +97,42 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
+       await fs.mkdir(".dry-run", { recursive: true });
+       await fs.writeFile(
+         ".dry-run/lead.txt",
+-        [`AIRTABLE ROW`, JSON.stringify({ email, name, intent, message: stored }, null, 2), "", `NOTIFY ${gabriel()}: ${mail.notifySubject(intent, name)}`, notifyText, "", `CONFIRM ${email}: ${mail.confirmSubject}`, confirmText].join("\n")
++        (flagged
++          ? [`SCREENED (${flagged}): no row, no confirmation`, "", `NOTIFY ${gabriel()}: ${notifySubject}`, notifyText]
++          : [`AIRTABLE ROW`, JSON.stringify({ email, name, intent, message: stored }, null, 2), "", `NOTIFY ${gabriel()}: ${notifySubject}`, notifyText, "", `CONFIRM ${email}: ${mail.confirmSubject}`, confirmText]
++        ).join("\n")
+       );
+     } catch (err) {
+       console.warn("[lead] dry run write failed:", err instanceof Error ? err.name : "unknown");
+     }
+-    return json({ ok: true, stored: true, notified: true, dryRun: true, id: "recDRYRUN000000000" });
++    console.info(`[lead] outcome=${flagged ? `suspect reason=${flagged}` : "stored"} dryRun`);
++    return json(flagged ? { ok: true, outcome: "suspect", reason: flagged, dryRun: true } : { ok: true, outcome: "stored", dryRun: true, id: "recDRYRUN000000000" });
+   }
+ 
+   if (!on) return json({ ok: false, reason: "off" }, 503);
+   if (limiter.overLimit(ip, now)) return json({ ok: false, reason: "rate" }, 429);
+ 
+   const key = createHash("sha256").update(`${email.toLowerCase()}|${message}`).digest("hex");
+-  if (limiter.seenRecently(key, now)) return json({ ok: true, stored: true, notified: true, duplicate: true });
++  if (limiter.seenRecently(key, now)) {
++    console.info("[lead] outcome=duplicate");
++    return json({ ok: true, outcome: "duplicate" });
++  }
++
++  if (flagged) {
++    const n = await sendMail({ to: gabriel(), subject: notifySubject, text: notifyText, replyTo: email, idempotencyKey: `${key}-notify` }, "site_contact_suspect").catch(() => ({ ok: false, status: 0 }));
++    if (!n.ok) {
++      limiter.forget(key);
++      console.error(`[lead] outcome=failed reason=${flagged} status=${n.status}`);
++      return json({ ok: false, reason: "send" }, 502);
++    }
++    console.info(`[lead] outcome=suspect reason=${flagged}`);
++    return json({ ok: true, outcome: "suspect", reason: flagged });
++  }
+ 
+   let id: string | null = null;
+   const [row, notify, confirm] = await Promise.allSettled([
+     writeLead({ email, name, intent, message: stored }, "lead").then((r) => (id = r)),
+-    sendMail({ to: gabriel(), subject: mail.notifySubject(intent, name), text: notifyText, replyTo: email, idempotencyKey: `${key}-notify` }, "site_contact"),
++    sendMail({ to: gabriel(), subject: notifySubject, text: notifyText, replyTo: email, idempotencyKey: `${key}-notify` }, "site_contact"),
+     sendMail({ to: email, subject: mail.confirmSubject, text: confirmText, idempotencyKey: `${key}-confirm` }, "site_contact_confirm")
+   ]);
+   for (const r of [row, notify, confirm]) if (r.status === "rejected") console.warn("[lead] step failed:", r.reason instanceof Error ? r.reason.name : "unknown");
+@@ -115,10 +141,12 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
+   const notifiedOk = notify.status === "fulfilled" && notify.value.ok;
+   if (!storedOk && !notifiedOk) {
+     limiter.forget(key);
+-    console.error("[lead] nothing landed:", notify.status === "fulfilled" ? notify.value.status : "threw");
++    console.error("[lead] outcome=failed status=" + (notify.status === "fulfilled" ? notify.value.status : "threw"));
+     return json({ ok: false, reason: "send" }, 502);
+   }
+-  return json({ ok: true, id, stored: storedOk, notified: notifiedOk, confirmed: confirm.status === "fulfilled" && confirm.value.ok });
++  const outcome = storedOk ? "stored" : "notified";
++  console.info(`[lead] outcome=${outcome}`);
++  return json({ ok: true, outcome, id, stored: storedOk, notified: notifiedOk, confirmed: confirm.status === "fulfilled" && confirm.value.ok });
+ };
+ 
+ /*
+diff --git a/src/pages/api/warehouse-report.ts b/src/pages/api/warehouse-report.ts
+index 9088d6a..f5107cf 100644
+--- a/src/pages/api/warehouse-report.ts
++++ b/src/pages/api/warehouse-report.ts
+@@ -3,10 +3,10 @@
+   trade on the planner page (an address for a report), and the lead row behind it.
+ 
+   Body: { email, answers, picks, reasons?, summary?, mentioned?, source?, swapped?,
+-          notes?: boolean, website (honeypot), ref?, page? }
++          notes?: boolean, hp_field_7 (the trap), elapsed (ms since the page loaded), ref?, page? }
+   Or:   { action: "purpose", id, purpose }   (the optional one-tap after a send)
+ 
+-  Gates, in order: size, JSON, honeypot (200 and nothing written), email,
++  Gates, in order: size, JSON, email,
+   answers, picks (sanitized, then priced HERE: a posted total is never trusted),
+   the kill switch, the per-instance limiter, the dedupe. Then: the visitor's
+   email through Resend (awaited), then the Airtable row, the audience add, and
+@@ -21,6 +21,13 @@
+   Never logs an address, a note, or a key: only status codes and error types.
+   S33 (9/28/26): the Resend, Airtable, limiter and env helpers moved to
+   src/lib/leadCapture.ts, shared with /api/lead. Behaviour unchanged.
++  S38 (10/2/26): the spam screen (src/lib/screen.ts) replaced the silent
++  honeypot. A screened request sends NO report to the posted address (that
++  would let a bot mail strangers from this domain) and writes no row; Gabriel
++  gets a "[possible spam]" note with the address and the digest, and the page
++  shows the mailto fallback so a real visitor still gets the stack. Every ok
++  response names its outcome (sent, duplicate, suspect + reason); the page
++  fires report_sent for sent only. One log line per outcome.
+ */
+ import type { APIRoute } from "astro";
+ import { createHash } from "node:crypto";
+@@ -30,6 +37,8 @@ import { siteUrl } from "../../config/site";
+ import { parseAnswers, priceStack, sanitizePicks, toQuery, type Answers } from "../../lib/warehouseCalc";
+ import { buildReport, type Mentioned } from "../../lib/warehouseReport";
+ import { byteLength, clean, EMAIL_RE } from "../../lib/text";
++import { mail } from "../../data/contact";
++import { screen } from "../../lib/screen";
+ import { addContact, airtable, clientIp, createLimiter, DEV, env, gabriel, json, postal, sendMail, today, writeLead } from "../../lib/leadCapture";
+ 
+ export const prerender = false;
+@@ -56,7 +65,6 @@ type Body = {
+   source?: unknown;
+   swapped?: unknown;
+   notes?: unknown;
+-  website?: unknown;
+   ref?: unknown;
+   page?: unknown;
+ };
+@@ -125,8 +133,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
+     }
+   }
+ 
+-  // A filled honeypot answers success and writes nothing.
+-  if (typeof b.website === "string" && b.website.trim() !== "") return json({ ok: true, sent: true });
++  const flagged = screen(b as Record<string, unknown>);
+ 
+   const email = typeof b.email === "string" ? b.email.trim().slice(0, 254) : "";
+   if (!EMAIL_RE.test(email)) return json({ ok: false, reason: "email" }, 400);
+@@ -149,14 +156,33 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
+     } catch (err) {
+       console.warn("[warehouse-report] dry run write failed:", err instanceof Error ? err.name : "unknown");
+     }
+-    return json({ ok: true, sent: true, dryRun: true, id: "recDRYRUN000000000", subject: report.subject, stack });
++    console.info(`[warehouse-report] outcome=${flagged ? `suspect reason=${flagged}` : "sent"} dryRun`);
++    if (flagged) return json({ ok: true, outcome: "suspect", reason: flagged, dryRun: true });
++    return json({ ok: true, outcome: "sent", sent: true, dryRun: true, id: "recDRYRUN000000000", subject: report.subject, stack });
+   }
+ 
+   if (!on) return json({ ok: false, reason: "off" }, 503);
+   if (limiter.overLimit(ip, now)) return json({ ok: false, reason: "rate" }, 429);
+ 
+   const key = createHash("sha256").update(`${email.toLowerCase()}|${toQuery(answers)}`).digest("hex");
+-  if (limiter.seenRecently(key, now)) return json({ ok: true, sent: true, duplicate: true });
++  if (limiter.seenRecently(key, now)) {
++    console.info("[warehouse-report] outcome=duplicate");
++    return json({ ok: true, outcome: "duplicate", sent: true, duplicate: true });
++  }
++
++  if (flagged) {
++    const n = await sendMail(
++      { to: gabriel(), subject: mail.suspectSubject(flagged, `Stack report lead: ${email}`), text: [mail.suspectNote(flagged), "", `Email: ${email}`, `Ref: ${ref || "none"}`, `Page: ${page}`, "", ...report.digest].join("\n"), idempotencyKey: `${key}-suspect` },
++      "warehouse_report_suspect"
++    ).catch(() => ({ ok: false, status: 0 }));
++    if (!n.ok) {
++      limiter.forget(key);
++      console.error(`[warehouse-report] outcome=failed reason=${flagged} status=${n.status}`);
++      return json({ ok: false, reason: "send" }, 502);
++    }
++    console.info(`[warehouse-report] outcome=suspect reason=${flagged}`);
++    return json({ ok: true, outcome: "suspect", reason: flagged });
++  }
+ 
+   let delivered: { ok: boolean; status: number };
+   try {
+@@ -192,7 +218,8 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
+   ]);
+   for (const r of after) if (r.status === "rejected") console.warn("[warehouse-report] after-send step failed:", r.reason instanceof Error ? r.reason.name : "unknown");
+ 
+-  return json({ ok: true, sent: true, id, stack });
++  console.info("[warehouse-report] outcome=sent");
++  return json({ ok: true, outcome: "sent", sent: true, id, stack });
+ };
+ 
+ // Dev only: render the email for a catalog scenario so it can be screenshot without keys.
+diff --git a/src/pages/contact.astro b/src/pages/contact.astro
+index aa51dae..c7ecb23 100644
+--- a/src/pages/contact.astro
++++ b/src/pages/contact.astro
+@@ -96,7 +96,7 @@ const arrow = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" vi
+   <script is:inline>
+     document.querySelectorAll("[data-book-direct]").forEach(function (a) {
+       a.addEventListener("click", function () {
+-        if (window.va) window.va("event", { name: "booking_click", data: { page: "/contact", from: "direct" } });
++        if (window.glfTrack) window.glfTrack("booking_click", { page: "/contact", from: "direct" });
+       });
+     });
+   </script>
+diff --git a/src/pages/design-your-data-warehouse.astro b/src/pages/design-your-data-warehouse.astro
+index a7d7be0..c9ca306 100644
+--- a/src/pages/design-your-data-warehouse.astro
++++ b/src/pages/design-your-data-warehouse.astro
+@@ -38,6 +38,7 @@
+ import BaseLayout from "../layouts/BaseLayout.astro";
+ import { catalog, LAYERS, scenarios, type Layer } from "../data/warehouse-catalog";
+ import { meta, questions, ui, result, layerCopy, sequence, offer, learn, who, faq } from "../data/warehouse-survey";
++import { TRAP_FIELD } from "../lib/screen";
+ import { NOTES_MAX, priceStack, recommendByRules } from "../lib/warehouseCalc";
+ import { buildReport } from "../lib/warehouseReport";
+ import { orgInfo, siteUrl } from "../config/site";
+@@ -262,7 +263,7 @@ const jsonLd = {
+             <div class="wh-offer__row">
+               <label class="sr-only" for="wh-offer-email">{offer.emailLabel}</label>
+               <input id="wh-offer-email" class="wh-offer__input" type="email" name="email" inputmode="email" autocomplete="email" placeholder={offer.placeholder} required />
+-              <input class="wh-offer__hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
++              <input class="wh-offer__hp" type="text" name={TRAP_FIELD} tabindex="-1" autocomplete="new-password" aria-hidden="true" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other" />
+               <button type="submit" class="btn-primary" data-offer-send><span>{offer.send}</span></button>
+             </div>
+             <label class="wh-offer__opt"><input type="checkbox" name="notes" /><span>{offer.optIn}</span></label>
+@@ -345,6 +346,7 @@ const jsonLd = {
+   import { LAYERS, type Layer } from "../data/warehouse-catalog";
+   import { questions, ui, result, layerCopy, sequence, offer } from "../data/warehouse-survey";
+   import { stackCardSvg } from "../lib/warehouseCard";
++  import { TRAP_FIELD } from "../lib/screen";
+   type Mentioned = { name: string; id: string | null };
+   import {
+     alternatives,
+@@ -364,10 +366,10 @@ const jsonLd = {
+     type Picks
+   } from "../lib/warehouseCalc";
+ 
+-  // Vercel Web Analytics custom events: a no-op until the script is served (see BaseLayout).
++  // Vercel Web Analytics custom events through the one choke point, window.glfTrack (BaseLayout, S38).
+   const track = (name: string, data?: Record<string, string | number | boolean>) => {
+     try {
+-      (window as unknown as { va?: (k: string, p: unknown) => void }).va?.("event", { name, data });
++      (window as unknown as { glfTrack?: (n: string, d?: unknown) => void }).glfTrack?.(name, data);
+     } catch {}
+   };
+ 
+@@ -452,7 +454,8 @@ const jsonLd = {
+ 
+     let startedOnce = false;
+     function show(i: number, focus = true) {
+-      if (i > 0 && !startedOnce) {
++      // focus = false is a restored draft, a shared link or the dev harness: no click, so no planner_start (S38).
++      if (i > 0 && !startedOnce && focus) {
+         startedOnce = true;
+         track("planner_start");
+       }
+@@ -994,7 +997,8 @@ const jsonLd = {
+         source: view.source,
+         swapped: view.swapped.length,
+         notes: offerForm.querySelector<HTMLInputElement>('input[name="notes"]')!.checked,
+-        website: offerForm.querySelector<HTMLInputElement>('input[name="website"]')!.value,
++        [TRAP_FIELD]: offerForm.querySelector<HTMLInputElement>(`input[name="${TRAP_FIELD}"]`)!.value,
++        elapsed: Math.round(performance.now()),
+         ref: ref(),
+         page: location.pathname
+       };
+@@ -1002,14 +1006,19 @@ const jsonLd = {
+       offerSend.querySelector("span")!.textContent = offer.sending;
+       offerStatus.hidden = true;
+       track("offer_submit");
+-      let outcome: "sent" | "duplicate" | "off" | "rate" | "failed" | "email" = "failed";
++      let outcome: "sent" | "duplicate" | "suspect" | "off" | "rate" | "failed" | "email" = "failed";
++      let reason = "";
+       try {
+         const ctrl = new AbortController();
+         const timer = window.setTimeout(() => ctrl.abort(), 15_000);
+         const res = await fetch("/api/warehouse-report", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: ctrl.signal });
+         window.clearTimeout(timer);
+-        const data = (await res.json().catch(() => null)) as { ok?: boolean; reason?: string; duplicate?: boolean; id?: string | null } | null;
+-        if (res.ok && data?.ok) {
++        const data = (await res.json().catch(() => null)) as { ok?: boolean; outcome?: string; reason?: string; duplicate?: boolean; id?: string | null } | null;
++        if (res.ok && data?.ok && data.outcome === "suspect") {
++          // S38: screened. No report went out, so the page must not say "sent": the mailto fallback carries the stack.
++          outcome = "suspect";
++          reason = data.reason || "unknown";
++        } else if (res.ok && data?.ok) {
+           outcome = data.duplicate ? "duplicate" : "sent";
+           leadId = typeof data.id === "string" ? data.id : null;
+         } else if (res.status === 503) outcome = "off";
+@@ -1039,13 +1048,15 @@ const jsonLd = {
+         fallback.hidden = true;
+         purpose.hidden = false;
+         remember("sent");
+-        track("report_sent", { optIn: body.notes });
++        // A repeat was already counted on its first send.
++        if (outcome === "sent") track("report_sent", { optIn: body.notes });
+       } else {
+         // The route is off (no keys yet) or the send failed: the visitor's mail app carries the stack instead.
+         doneText.textContent = offer.failed;
+         fallback.hidden = false;
+         purpose.hidden = true;
+-        track("report_fallback", { outcome });
++        if (outcome === "suspect") track("report_suspect", { reason });
++        else track("report_fallback", { outcome });
+       }
+     }
+ 
+--- /dev/null
++++ b/src/lib/screen.ts
+@@ -0,0 +1,30 @@
++/*
++  The spam screen for both lead forms (S38, 10/2/26). Client-safe: the forms
++  import the field name, the routes import screen().
++
++  A screen never blocks. A flagged submit still reaches Gabriel as a
++  "[possible spam]" email (no Airtable row, nothing sent to the visitor), so a
++  real person caught by mistake is never lost. Before S38 the trap answered OK
++  and kept nothing, and the field was named "website", which Chrome autofill
++  and password managers can fill on a real visitor's behalf.
++
++  Reasons:
++    trap     the hidden field has a value (TRAP_FIELD, or the pre-S38 "website")
++    fast     sent under MIN_SUBMIT_MS after the page loaded
++    noclock  no load time sent: the post did not come from the page's script
++*/
++
++/** A name no autofill or password manager maps to a profile field. Never "website", "url", "company", "email". */
++export const TRAP_FIELD = "hp_field_7";
++export const MIN_SUBMIT_MS = 3_000;
++
++export type ScreenReason = "trap" | "fast" | "noclock";
++
++export function screen(body: Record<string, unknown>): ScreenReason | null {
++  const filled = (v: unknown) => typeof v === "string" && v.trim() !== "";
++  if (filled(body[TRAP_FIELD]) || filled(body.website)) return "trap";
++  const elapsed = body.elapsed;
++  if (typeof elapsed !== "number" || !Number.isFinite(elapsed)) return "noclock";
++  if (elapsed < MIN_SUBMIT_MS) return "fast";
++  return null;
++}

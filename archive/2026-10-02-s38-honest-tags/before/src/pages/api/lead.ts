@@ -1,23 +1,16 @@
 /*
   POST /api/lead (S33, 9/28/26): the contact form behind /contact.
 
-  Body: { name, email, company?, found?, intent, message, hp_field_7 (the trap), elapsed (ms since the page loaded), source?, page? }
+  Body: { name, email, company?, found?, intent, message, website (honeypot), source?, page? }
 
-  Gates, in order: size, JSON, the three required fields, the email, the
-  intent allowlist (unknown = "other"), the kill switch, the per-instance
-  limiter, the dedupe. Then one of two paths:
-  - Screened (S38, 10/2/26; src/lib/screen.ts: trap, fast, noclock): Gabriel
-    gets the notification with a "[possible spam]" subject; no Airtable row, no
-    confirmation to the visitor. Never dropped: before S38 a filled trap
-    answered OK and kept nothing, so a real visitor caught by autofill was lost.
-  - Clean: awaited together with timeouts (Vercel freezes a function after it
-    answers): the Airtable row, the notification to Gabriel, the confirmation
-    to the visitor.
-  Every ok response names its outcome: stored (the row landed), notified (only
-  the email did), suspect (+ reason), duplicate. The page fires contact_submit
-  for stored or notified only. 502 when nothing landed, so the page shows the
-  mailto fallback with the message already in it. One log line per outcome:
-  `[lead] outcome=... reason=...` (no address, no message).
+  Gates, in order: size, JSON, honeypot (200 and nothing written), the three
+  required fields, the email, the intent allowlist (unknown = "other"), the
+  kill switch, the per-instance limiter, the dedupe. Then, awaited together
+  with timeouts (Vercel freezes a function after it answers): the Airtable row,
+  the notification to Gabriel, the confirmation to the visitor. The response is
+  ok when the row OR the notification landed (the lead exists in one place at
+  least); 502 when both failed, so the page shows the mailto fallback with the
+  message already in it.
 
   Off (LEAD_CAPTURE_ENABLED != "true" or no RESEND_API_KEY): 503 { reason: "off" }.
   Dev only: LEAD_DRY_RUN=true skips every network call and writes .dry-run/lead.txt.
@@ -30,7 +23,6 @@ import type { APIRoute } from "astro";
 import { createHash } from "node:crypto";
 import { DEFAULT_INTENT, intents, mail, type Intent } from "../../data/contact";
 import { byteLength, EMAIL_RE } from "../../lib/text";
-import { screen } from "../../lib/screen";
 import { airtable, airtableUrl, clientIp, createLimiter, DEV, env, gabriel, json, postal, sendMail, writeLead } from "../../lib/leadCapture";
 
 export const prerender = false;
@@ -44,7 +36,7 @@ const REF_MAX = 100;
 const INTENTS = new Set<string>(intents.map((i) => i.value));
 const limiter = createLimiter(RATE_LIMIT);
 
-type Body = Record<string, unknown> & { name?: unknown; email?: unknown; company?: unknown; found?: unknown; intent?: unknown; message?: unknown; source?: unknown; page?: unknown };
+type Body = { name?: unknown; email?: unknown; company?: unknown; found?: unknown; intent?: unknown; message?: unknown; website?: unknown; source?: unknown; page?: unknown };
 
 const line = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
 const block = (v: unknown, max: number) =>
@@ -64,7 +56,8 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     return json({ ok: false, reason: "json" }, 400);
   }
 
-  const flagged = screen(b);
+  // A filled honeypot answers success and writes nothing.
+  if (typeof b.website === "string" && b.website.trim() !== "") return json({ ok: true, stored: true, notified: true });
 
   const name = line(b.name, NAME_MAX);
   const email = typeof b.email === "string" ? b.email.trim().slice(0, 254) : "";
@@ -87,8 +80,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
 
   // Company, how they found the site (S37, 10/1/26), page and source ride at the bottom of the message: the table has five fields on purpose (9/28/26).
   const stored = [message, "", company ? `Company: ${company}` : "", found ? `Found me: ${found}` : "", page ? `From: ${page}` : "", source ? `Source: ${source}` : ""].filter((l, i) => i < 2 || l).join("\n").trim();
-  const notifyText = (flagged ? mail.suspectNote(flagged) + "\n\n" : "") + mail.notify({ name, email, company, found, intent, message, page, source });
-  const notifySubject = flagged ? mail.suspectSubject(flagged, mail.notifySubject(intent, name)) : mail.notifySubject(intent, name);
+  const notifyText = mail.notify({ name, email, company, found, intent, message, page, source });
   const confirmText = mail.confirm({ name, booking, postal: postal() });
 
   if (dryRun) {
@@ -97,42 +89,24 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       await fs.mkdir(".dry-run", { recursive: true });
       await fs.writeFile(
         ".dry-run/lead.txt",
-        (flagged
-          ? [`SCREENED (${flagged}): no row, no confirmation`, "", `NOTIFY ${gabriel()}: ${notifySubject}`, notifyText]
-          : [`AIRTABLE ROW`, JSON.stringify({ email, name, intent, message: stored }, null, 2), "", `NOTIFY ${gabriel()}: ${notifySubject}`, notifyText, "", `CONFIRM ${email}: ${mail.confirmSubject}`, confirmText]
-        ).join("\n")
+        [`AIRTABLE ROW`, JSON.stringify({ email, name, intent, message: stored }, null, 2), "", `NOTIFY ${gabriel()}: ${mail.notifySubject(intent, name)}`, notifyText, "", `CONFIRM ${email}: ${mail.confirmSubject}`, confirmText].join("\n")
       );
     } catch (err) {
       console.warn("[lead] dry run write failed:", err instanceof Error ? err.name : "unknown");
     }
-    console.info(`[lead] outcome=${flagged ? `suspect reason=${flagged}` : "stored"} dryRun`);
-    return json(flagged ? { ok: true, outcome: "suspect", reason: flagged, dryRun: true } : { ok: true, outcome: "stored", dryRun: true, id: "recDRYRUN000000000" });
+    return json({ ok: true, stored: true, notified: true, dryRun: true, id: "recDRYRUN000000000" });
   }
 
   if (!on) return json({ ok: false, reason: "off" }, 503);
   if (limiter.overLimit(ip, now)) return json({ ok: false, reason: "rate" }, 429);
 
   const key = createHash("sha256").update(`${email.toLowerCase()}|${message}`).digest("hex");
-  if (limiter.seenRecently(key, now)) {
-    console.info("[lead] outcome=duplicate");
-    return json({ ok: true, outcome: "duplicate" });
-  }
-
-  if (flagged) {
-    const n = await sendMail({ to: gabriel(), subject: notifySubject, text: notifyText, replyTo: email, idempotencyKey: `${key}-notify` }, "site_contact_suspect").catch(() => ({ ok: false, status: 0 }));
-    if (!n.ok) {
-      limiter.forget(key);
-      console.error(`[lead] outcome=failed reason=${flagged} status=${n.status}`);
-      return json({ ok: false, reason: "send" }, 502);
-    }
-    console.info(`[lead] outcome=suspect reason=${flagged}`);
-    return json({ ok: true, outcome: "suspect", reason: flagged });
-  }
+  if (limiter.seenRecently(key, now)) return json({ ok: true, stored: true, notified: true, duplicate: true });
 
   let id: string | null = null;
   const [row, notify, confirm] = await Promise.allSettled([
     writeLead({ email, name, intent, message: stored }, "lead").then((r) => (id = r)),
-    sendMail({ to: gabriel(), subject: notifySubject, text: notifyText, replyTo: email, idempotencyKey: `${key}-notify` }, "site_contact"),
+    sendMail({ to: gabriel(), subject: mail.notifySubject(intent, name), text: notifyText, replyTo: email, idempotencyKey: `${key}-notify` }, "site_contact"),
     sendMail({ to: email, subject: mail.confirmSubject, text: confirmText, idempotencyKey: `${key}-confirm` }, "site_contact_confirm")
   ]);
   for (const r of [row, notify, confirm]) if (r.status === "rejected") console.warn("[lead] step failed:", r.reason instanceof Error ? r.reason.name : "unknown");
@@ -141,12 +115,10 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const notifiedOk = notify.status === "fulfilled" && notify.value.ok;
   if (!storedOk && !notifiedOk) {
     limiter.forget(key);
-    console.error("[lead] outcome=failed status=" + (notify.status === "fulfilled" ? notify.value.status : "threw"));
+    console.error("[lead] nothing landed:", notify.status === "fulfilled" ? notify.value.status : "threw");
     return json({ ok: false, reason: "send" }, 502);
   }
-  const outcome = storedOk ? "stored" : "notified";
-  console.info(`[lead] outcome=${outcome}`);
-  return json({ ok: true, outcome, id, stored: storedOk, notified: notifiedOk, confirmed: confirm.status === "fulfilled" && confirm.value.ok });
+  return json({ ok: true, id, stored: storedOk, notified: notifiedOk, confirmed: confirm.status === "fulfilled" && confirm.value.ok });
 };
 
 /*

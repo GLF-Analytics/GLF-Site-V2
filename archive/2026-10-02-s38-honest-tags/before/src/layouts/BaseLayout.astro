@@ -62,19 +62,6 @@ const breadcrumb =
         until Vercel serves the script (Analytics enabled on the project) and in dev, where it 404s. */}
     {import.meta.env.PROD && <script is:inline>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>}
     {import.meta.env.PROD && <script is:inline defer src="/_vercel/insights/script.js"></script>}
-    {/* The one way an event is sent (S38, 10/2/26): every tag on the site calls window.glfTrack.
-        It drops events from automated browsers (navigator.webdriver), never throws, and in dev
-        prints each event to the console, since window.va does not exist there. */}
-    <script is:inline define:vars={{ devLog: import.meta.env.DEV }}>
-      window.glfTrack = function (name, data) {
-        try {
-          var bot = navigator.webdriver === true;
-          if (devLog) console.info("[glfTrack]", name, data || {}, bot ? "(dropped: webdriver)" : "");
-          if (bot || !window.va) return;
-          window.va("event", data ? { name: name, data: data } : { name: name });
-        } catch (e) {}
-      };
-    </script>
     {/* Vercel Speed Insights (S37, 10/1/26): the same shape, real load numbers per page. */}
     {import.meta.env.PROD && <script is:inline>window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };</script>}
     {import.meta.env.PROD && <script is:inline defer src="/_vercel/speed-insights/script.js"></script>}
@@ -140,12 +127,11 @@ const breadcrumb =
         through the window.va queue (a no-op in dev). Two properties at most per event.
         outbound_click = any link off the site; contact_click = a link to /contact
         (from = nav, footer or page); email_click = a mailto; planner_click = a link
-        to the planner. The forms and the planner keep their own events. All go through
-        window.glfTrack (S38). */}
+        to the planner. The forms and the planner keep their own events. */}
     <script is:inline>
       document.addEventListener("click", function (e) {
         var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
-        if (!a || !window.glfTrack) return;
+        if (!a || !window.va) return;
         var page = location.pathname;
         var href = a.getAttribute("href") || "";
         var name, data;
@@ -162,7 +148,7 @@ const breadcrumb =
           name = "planner_click";
           data = { page: page };
         }
-        if (name) window.glfTrack(name, data);
+        if (name) window.va("event", { name: name, data: data });
       });
     </script>
   </body>

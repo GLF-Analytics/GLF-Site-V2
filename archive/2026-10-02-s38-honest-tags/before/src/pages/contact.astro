@@ -96,7 +96,7 @@ const arrow = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" vi
   <script is:inline>
     document.querySelectorAll("[data-book-direct]").forEach(function (a) {
       a.addEventListener("click", function () {
-        if (window.glfTrack) window.glfTrack("booking_click", { page: "/contact", from: "direct" });
+        if (window.va) window.va("event", { name: "booking_click", data: { page: "/contact", from: "direct" } });
       });
     });
   </script>

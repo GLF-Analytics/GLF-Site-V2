@@ -3,11 +3,9 @@
  * The one minute silent clip (60 s since 9/23 PM; the first cut was 44 s) on /using-data-to-build-with-ai (S32, 9/23/26).
  * Muted autoplay that loops, the birthday-cards.ai demo pattern. Captions are
  * burned into the frames, so there is no audio track and nothing to unmute.
- * The one event (S38, 10/2/26): `video_seen` fires once per page view when the
- * clip is playing AND at least half of it is on screen. It replaced `video_play`,
- * which fired on the muted autoplay of every page view, seen or not (10/1 to
- * 10/2 data is that). There are no controls, so there is no click to count.
- * Sent through window.glfTrack (BaseLayout). Source and every on-screen number: the beat sheet
+ * The one event: `video_play` fires once per page view on the first play
+ * (window.va is the Vercel Web Analytics queue stub from BaseLayout; a no-op
+ * when analytics is off). Source and every on-screen number: the beat sheet
  * named in how-data.ts `video`. Under md the video is cropped to a square
  * by CSS (the frames keep every element inside the center column, so the
  * square is the LinkedIn framing from the same file, no second encode).
@@ -36,24 +34,11 @@ import { video } from "../data/how-data";
     var v = document.querySelector("video[data-loop-video]");
     if (!v) return;
     v.muted = true;
-    if (!("IntersectionObserver" in window)) return;
     var fired = false;
-    var io = new IntersectionObserver(
-      function (entries) {
-        var e = entries[0];
-        if (fired || !e || !e.isIntersecting || v.paused) return;
-        fired = true;
-        io.disconnect();
-        if (window.glfTrack) window.glfTrack("video_seen", { page: location.pathname });
-      },
-      { threshold: 0.5 }
-    );
-    io.observe(v);
-    // A clip already in view when it starts playing is caught here; the observer only fires on change.
-    v.addEventListener("playing", function () {
+    v.addEventListener("play", function () {
       if (fired) return;
-      io.unobserve(v);
-      io.observe(v);
+      fired = true;
+      if (window.va) window.va("event", { name: "video_play", data: { page: location.pathname } });
     });
   })();
 </script>
