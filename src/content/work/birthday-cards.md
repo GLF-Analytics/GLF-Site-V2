@@ -4,7 +4,7 @@ clientType: "My own product"
 summary: "An AI card generator I designed, built, and run. Built with Claude Code on Next.js and Vercel."
 companyDescription: "Live since March 2026. Built with Claude Code, end to end."
 challenge: "Take a product the whole way: design, development, database, email, search, and analytics."
-solution: "Shipped the generator, then email and gift delivery, then search landing pages. Wrote the tracking, about 60 events, so a finished card is counted apart from a click."
+solution: "Shipped the generator, then email and gift delivery, then search landing pages. Wrote the tracking, about 70 events, so a finished card is counted apart from a click."
 outcomes:
   - "People arrive from Google, Bing, DuckDuckGo, and ChatGPT and make cards. The live counts are on the homepage."
   - "Every page and button is measured, so each week's decision is made on numbers."
@@ -25,7 +25,7 @@ related: ["construction-ai-integration"]
   <h2>What I built</h2>
   <ul>
     <li>The card generator on Next.js and Vercel, with OpenAI and Gemini behind it, plus email and PDF delivery and a gift flow.</li>
-    <li>Fourteen search landing pages and the tracking that tells a delivered card from a click.</li>
+    <li>The search landing pages and the tracking that tells a delivered card from a click.</li>
     <li>Rate limits, spend caps, and alerts, so a traffic spike cannot run up the bill.</li>
     <li>A white-label sibling, custom-cards.ai, from the same code.</li>
   </ul>

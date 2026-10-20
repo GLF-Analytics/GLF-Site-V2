@@ -36,7 +36,7 @@ export const meta = {
     "How birthday-cards.ai grew from a card maker for friends into a product built end to end with AI, run on its own analytics from the command line in Claude Code.",
   published: "2026-09-13",
   // Bumped once per copy change (S30 blog post), never per rebuild.
-  modified: "2026-09-23"
+  modified: "2026-10-20"
 };
 
 // Product names that carry a digit. The page strips these before the numeral
@@ -148,23 +148,23 @@ export const captions = {
   map: "The loop. Five sources feed Claude Code, a person decides, and the next build ships to the site."
 };
 
-/* How search visitors made their cards (9/17/26 analysis). Counts of cards by
+/* How search visitors made their cards (10/20/26 pull; first cut 9/17/26). Counts of cards by
    homepage method; `photo` marks the methods that start from a photo. The
    page computes every share from these counts. No keep rate appears anywhere:
    every per-method group of makers is under twenty people. */
 export type MethodCount = { method: string; cards: number; photo: boolean };
 
 export const methodMix = {
-  date: "2026-09-17",
+  date: "2026-10-20",
   headline: "of cards start with a photo",
-  window: "Search visitors, August 26 to September 17",
+  window: "Search visitors, September 20 to October 19",
   rows: [
-    { method: "Build from scratch", cards: 48, photo: false },
-    { method: "Transform a photo", cards: 41, photo: true },
-    { method: "Funny premade", cards: 12, photo: true },
-    { method: "Surprise me", cards: 10, photo: true }
+    { method: "Build from scratch", cards: 95, photo: false },
+    { method: "Transform a photo", cards: 135, photo: true },
+    { method: "Funny premade", cards: 15, photo: true },
+    { method: "Surprise me", cards: 46, photo: true }
   ] as MethodCount[],
-  source: "Claude Fun/analytics/analyses/2026-09-17-flow-mix/README.md"
+  source: "Claude Fun/analytics/analyses/2026-10-20-flow-mix/README.md"
 };
 
 export const faq: { q: string; a: string }[] = [
