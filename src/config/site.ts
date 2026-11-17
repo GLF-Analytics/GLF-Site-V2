@@ -50,10 +50,10 @@ export const bcStatsSource = {
   label: "Vercel Web Analytics on birthday-cards.ai",
   productUrl: "https://www.birthday-cards.ai",
   launchMonth: "March 2026",
-  // Search landing pages on the product, written as a word. The rule (S40, 10/20/26):
+  // Search landing pages on the product, written as a word. The rule (S40, 10/20/26; S41, 11/17/26):
   // every URL in the live https://www.birthday-cards.ai/sitemap.xml minus the home page
-  // and the seven utility pages (about, contact, faq, gallery, how-to-print, privacy,
-  // stats). Counted 10/20/26 = 28. Recount at each refresh; this is the ONE home of
+  // and the eight utility pages (about, contact, faq, gallery, how-to-print, privacy,
+  // stats, terms; terms joined with credits, 11/3/26). Counted 11/17/26 = 34 (43 URLs; was 28 on 10/20). Recount at each refresh; this is the ONE home of
   // the number (the case study bullet carries no count).
-  seoPages: "Twenty-eight"
+  seoPages: "Thirty-four"
 };

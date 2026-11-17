@@ -1,7 +1,7 @@
 {
-  "fetched_at": "2026-10-20",
+  "fetched_at": "2026-11-17",
   "since": "2026-03-01",
-  "until": "2026-10-20",
+  "until": "2026-11-17",
   "source": "Vercel Web Analytics, birthday-card-app project, card_generated events by country, beta surfaces excluded",
   "countries": [
     {
@@ -11,13 +11,18 @@
     },
     {
       "code": "AR",
-      "visitors": 1,
-      "cards": 1
+      "visitors": 2,
+      "cards": 2
+    },
+    {
+      "code": "AT",
+      "visitors": 5,
+      "cards": 11
     },
     {
       "code": "AU",
-      "visitors": 5,
-      "cards": 9
+      "visitors": 18,
+      "cards": 38
     },
     {
       "code": "AW",
@@ -30,14 +35,24 @@
       "cards": 3
     },
     {
+      "code": "BD",
+      "visitors": 1,
+      "cards": 1
+    },
+    {
       "code": "BE",
-      "visitors": 3,
-      "cards": 4
+      "visitors": 4,
+      "cards": 7
     },
     {
       "code": "BG",
-      "visitors": 2,
-      "cards": 5
+      "visitors": 5,
+      "cards": 9
+    },
+    {
+      "code": "BH",
+      "visitors": 1,
+      "cards": 1
     },
     {
       "code": "BR",
@@ -46,6 +61,11 @@
     },
     {
       "code": "BS",
+      "visitors": 2,
+      "cards": 3
+    },
+    {
+      "code": "BW",
       "visitors": 1,
       "cards": 1
     },
@@ -56,13 +76,33 @@
     },
     {
       "code": "CA",
-      "visitors": 18,
-      "cards": 28
+      "visitors": 38,
+      "cards": 63
     },
     {
       "code": "CH",
-      "visitors": 4,
-      "cards": 5
+      "visitors": 5,
+      "cards": 9
+    },
+    {
+      "code": "CO",
+      "visitors": 1,
+      "cards": 1
+    },
+    {
+      "code": "CR",
+      "visitors": 1,
+      "cards": 2
+    },
+    {
+      "code": "CW",
+      "visitors": 3,
+      "cards": 17
+    },
+    {
+      "code": "CY",
+      "visitors": 1,
+      "cards": 2
     },
     {
       "code": "CZ",
@@ -71,13 +111,13 @@
     },
     {
       "code": "DE",
-      "visitors": 6,
-      "cards": 32
+      "visitors": 13,
+      "cards": 43
     },
     {
       "code": "DK",
-      "visitors": 1,
-      "cards": 1
+      "visitors": 6,
+      "cards": 8
     },
     {
       "code": "EE",
@@ -86,33 +126,38 @@
     },
     {
       "code": "ES",
-      "visitors": 2,
-      "cards": 2
+      "visitors": 6,
+      "cards": 16
     },
     {
       "code": "FI",
-      "visitors": 2,
+      "visitors": 5,
+      "cards": 7
+    },
+    {
+      "code": "FJ",
+      "visitors": 1,
       "cards": 2
     },
     {
       "code": "FR",
-      "visitors": 2,
-      "cards": 3
+      "visitors": 5,
+      "cards": 8
     },
     {
       "code": "GB",
-      "visitors": 38,
-      "cards": 73
+      "visitors": 95,
+      "cards": 190
     },
     {
       "code": "GR",
-      "visitors": 5,
-      "cards": 11
+      "visitors": 7,
+      "cards": 13
     },
     {
       "code": "HR",
-      "visitors": 1,
-      "cards": 1
+      "visitors": 2,
+      "cards": 3
     },
     {
       "code": "HU",
@@ -121,18 +166,23 @@
     },
     {
       "code": "IE",
-      "visitors": 1,
-      "cards": 1
+      "visitors": 2,
+      "cards": 2
     },
     {
       "code": "IL",
-      "visitors": 2,
-      "cards": 3
+      "visitors": 3,
+      "cards": 4
+    },
+    {
+      "code": "IM",
+      "visitors": 4,
+      "cards": 7
     },
     {
       "code": "IN",
-      "visitors": 31,
-      "cards": 54
+      "visitors": 46,
+      "cards": 85
     },
     {
       "code": "IQ",
@@ -141,8 +191,8 @@
     },
     {
       "code": "IT",
-      "visitors": 3,
-      "cards": 11
+      "visitors": 5,
+      "cards": 15
     },
     {
       "code": "JP",
@@ -150,9 +200,19 @@
       "cards": 92
     },
     {
+      "code": "KE",
+      "visitors": 1,
+      "cards": 2
+    },
+    {
       "code": "KZ",
       "visitors": 2,
       "cards": 2
+    },
+    {
+      "code": "LB",
+      "visitors": 2,
+      "cards": 4
     },
     {
       "code": "LC",
@@ -170,14 +230,34 @@
       "cards": 2
     },
     {
+      "code": "LT",
+      "visitors": 1,
+      "cards": 1
+    },
+    {
       "code": "MM",
       "visitors": 1,
       "cards": 1
     },
     {
+      "code": "MN",
+      "visitors": 1,
+      "cards": 2
+    },
+    {
       "code": "MT",
       "visitors": 1,
       "cards": 4
+    },
+    {
+      "code": "MU",
+      "visitors": 1,
+      "cards": 2
+    },
+    {
+      "code": "MW",
+      "visitors": 1,
+      "cards": 1
     },
     {
       "code": "MX",
@@ -191,28 +271,33 @@
     },
     {
       "code": "NA",
-      "visitors": 1,
-      "cards": 1
+      "visitors": 2,
+      "cards": 2
     },
     {
       "code": "NG",
-      "visitors": 3,
-      "cards": 4
+      "visitors": 4,
+      "cards": 6
     },
     {
       "code": "NL",
-      "visitors": 7,
-      "cards": 15
+      "visitors": 10,
+      "cards": 21
     },
     {
       "code": "NO",
+      "visitors": 2,
+      "cards": 3
+    },
+    {
+      "code": "NP",
       "visitors": 1,
       "cards": 2
     },
     {
       "code": "NZ",
-      "visitors": 2,
-      "cards": 49
+      "visitors": 4,
+      "cards": 51
     },
     {
       "code": "PG",
@@ -220,19 +305,24 @@
       "cards": 2
     },
     {
-      "code": "PK",
+      "code": "PH",
       "visitors": 2,
-      "cards": 3
+      "cards": 4
+    },
+    {
+      "code": "PK",
+      "visitors": 6,
+      "cards": 7
     },
     {
       "code": "PL",
-      "visitors": 2,
-      "cards": 25
+      "visitors": 5,
+      "cards": 31
     },
     {
       "code": "PT",
-      "visitors": 1,
-      "cards": 2
+      "visitors": 2,
+      "cards": 4
     },
     {
       "code": "QA",
@@ -245,19 +335,24 @@
       "cards": 1
     },
     {
+      "code": "RU",
+      "visitors": 1,
+      "cards": 1
+    },
+    {
       "code": "RW",
       "visitors": 1,
       "cards": 1
     },
     {
       "code": "SA",
-      "visitors": 2,
-      "cards": 5
+      "visitors": 4,
+      "cards": 7
     },
     {
       "code": "SC",
-      "visitors": 1,
-      "cards": 1
+      "visitors": 2,
+      "cards": 2
     },
     {
       "code": "SE",
@@ -266,8 +361,13 @@
     },
     {
       "code": "SG",
-      "visitors": 3,
-      "cards": 3
+      "visitors": 5,
+      "cards": 5
+    },
+    {
+      "code": "SI",
+      "visitors": 4,
+      "cards": 6
     },
     {
       "code": "TR",
@@ -276,33 +376,48 @@
     },
     {
       "code": "TT",
-      "visitors": 4,
-      "cards": 28
+      "visitors": 5,
+      "cards": 32
     },
     {
       "code": "UA",
-      "visitors": 5,
-      "cards": 10
+      "visitors": 7,
+      "cards": 13
+    },
+    {
+      "code": "UG",
+      "visitors": 1,
+      "cards": 4
     },
     {
       "code": "US",
-      "visitors": 449,
-      "cards": 1470
+      "visitors": 590,
+      "cards": 1762
     },
     {
       "code": "UZ",
+      "visitors": 2,
+      "cards": 3
+    },
+    {
+      "code": "VI",
+      "visitors": 1,
+      "cards": 1
+    },
+    {
+      "code": "VN",
       "visitors": 1,
       "cards": 1
     },
     {
       "code": "ZA",
-      "visitors": 7,
-      "cards": 11
+      "visitors": 14,
+      "cards": 24
     },
     {
       "code": "ZW",
-      "visitors": 1,
-      "cards": 1
+      "visitors": 2,
+      "cards": 2
     }
   ]
 }
