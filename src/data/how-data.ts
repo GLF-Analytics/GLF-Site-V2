@@ -36,7 +36,7 @@ export const meta = {
     "How birthday-cards.ai grew from a card maker for friends into a product built end to end with AI, run on its own analytics from the command line in Claude Code.",
   published: "2026-09-13",
   // Bumped once per copy change (S30 blog post), never per rebuild.
-  modified: "2026-11-17"
+  modified: "2026-11-25"
 };
 
 // Product names that carry a digit. The page strips these before the numeral
@@ -155,16 +155,16 @@ export const captions = {
 export type MethodCount = { method: string; cards: number; photo: boolean };
 
 export const methodMix = {
-  date: "2026-11-17",
+  date: "2026-11-25",
   headline: "of cards start with a photo",
-  window: "Search visitors, October 18 to November 16",
+  window: "Search visitors, October 26 to November 24",
   rows: [
-    { method: "Build from scratch", cards: 69, photo: false },
-    { method: "Transform a photo", cards: 103, photo: true },
-    { method: "Funny premade", cards: 41, photo: true },
-    { method: "Surprise me", cards: 83, photo: true }
+    { method: "Build from scratch", cards: 81, photo: false },
+    { method: "Transform a photo", cards: 108, photo: true },
+    { method: "Funny premade", cards: 31, photo: true },
+    { method: "Surprise me", cards: 99, photo: true }
   ] as MethodCount[],
-  source: "Claude Fun/analytics/analyses/2026-11-17-flow-mix/README.md"
+  source: "Claude Fun/analytics/analyses/2026-11-25-flow-mix/README.md"
 };
 
 export const faq: { q: string; a: string }[] = [

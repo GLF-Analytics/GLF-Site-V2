@@ -1,7 +1,7 @@
 {
-  "fetched_at": "2026-11-17",
+  "fetched_at": "2026-11-25",
   "since": "2026-03-01",
-  "until": "2026-11-17",
+  "until": "2026-11-25",
   "source": "Vercel Web Analytics, birthday-card-app project, card_generated events by month (cards, visitors = makers) and visits by month from the search hosts in bcStats.ts SEARCH_HOSTS (search_visitors), beta surfaces excluded",
   "months": [
     {
@@ -54,9 +54,9 @@
     },
     {
       "month": "2026-11",
-      "cards": 439,
-      "visitors": 230,
-      "search_visitors": 401
+      "cards": 626,
+      "visitors": 340,
+      "search_visitors": 625
     }
   ]
 }

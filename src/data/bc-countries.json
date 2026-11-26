@@ -1,7 +1,7 @@
 {
-  "fetched_at": "2026-11-17",
+  "fetched_at": "2026-11-25",
   "since": "2026-03-01",
-  "until": "2026-11-17",
+  "until": "2026-11-25",
   "source": "Vercel Web Analytics, birthday-card-app project, card_generated events by country, beta surfaces excluded",
   "countries": [
     {
@@ -21,8 +21,8 @@
     },
     {
       "code": "AU",
-      "visitors": 18,
-      "cards": 38
+      "visitors": 23,
+      "cards": 45
     },
     {
       "code": "AW",
@@ -76,8 +76,8 @@
     },
     {
       "code": "CA",
-      "visitors": 38,
-      "cards": 63
+      "visitors": 43,
+      "cards": 73
     },
     {
       "code": "CH",
@@ -96,8 +96,8 @@
     },
     {
       "code": "CW",
-      "visitors": 3,
-      "cards": 17
+      "visitors": 4,
+      "cards": 18
     },
     {
       "code": "CY",
@@ -111,8 +111,8 @@
     },
     {
       "code": "DE",
-      "visitors": 13,
-      "cards": 43
+      "visitors": 14,
+      "cards": 45
     },
     {
       "code": "DK",
@@ -146,13 +146,18 @@
     },
     {
       "code": "GB",
-      "visitors": 95,
-      "cards": 190
+      "visitors": 105,
+      "cards": 206
     },
     {
       "code": "GR",
       "visitors": 7,
       "cards": 13
+    },
+    {
+      "code": "HK",
+      "visitors": 2,
+      "cards": 3
     },
     {
       "code": "HR",
@@ -166,23 +171,23 @@
     },
     {
       "code": "IE",
-      "visitors": 2,
-      "cards": 2
+      "visitors": 3,
+      "cards": 3
     },
     {
       "code": "IL",
-      "visitors": 3,
-      "cards": 4
-    },
-    {
-      "code": "IM",
       "visitors": 4,
       "cards": 7
     },
     {
+      "code": "IM",
+      "visitors": 5,
+      "cards": 8
+    },
+    {
       "code": "IN",
-      "visitors": 46,
-      "cards": 85
+      "visitors": 53,
+      "cards": 97
     },
     {
       "code": "IQ",
@@ -191,18 +196,23 @@
     },
     {
       "code": "IT",
-      "visitors": 5,
-      "cards": 15
+      "visitors": 8,
+      "cards": 20
     },
     {
       "code": "JP",
-      "visitors": 9,
-      "cards": 92
+      "visitors": 11,
+      "cards": 96
     },
     {
       "code": "KE",
       "visitors": 1,
       "cards": 2
+    },
+    {
+      "code": "KR",
+      "visitors": 1,
+      "cards": 1
     },
     {
       "code": "KZ",
@@ -221,8 +231,8 @@
     },
     {
       "code": "LK",
-      "visitors": 4,
-      "cards": 6
+      "visitors": 6,
+      "cards": 9
     },
     {
       "code": "LR",
@@ -256,8 +266,8 @@
     },
     {
       "code": "MW",
-      "visitors": 1,
-      "cards": 1
+      "visitors": 2,
+      "cards": 3
     },
     {
       "code": "MX",
@@ -266,8 +276,8 @@
     },
     {
       "code": "MY",
-      "visitors": 1,
-      "cards": 1
+      "visitors": 2,
+      "cards": 3
     },
     {
       "code": "NA",
@@ -281,23 +291,23 @@
     },
     {
       "code": "NL",
-      "visitors": 10,
-      "cards": 21
+      "visitors": 11,
+      "cards": 22
     },
     {
       "code": "NO",
-      "visitors": 2,
-      "cards": 3
+      "visitors": 3,
+      "cards": 4
     },
     {
       "code": "NP",
-      "visitors": 1,
-      "cards": 2
+      "visitors": 2,
+      "cards": 4
     },
     {
       "code": "NZ",
-      "visitors": 4,
-      "cards": 51
+      "visitors": 5,
+      "cards": 54
     },
     {
       "code": "PG",
@@ -311,8 +321,8 @@
     },
     {
       "code": "PK",
-      "visitors": 6,
-      "cards": 7
+      "visitors": 8,
+      "cards": 9
     },
     {
       "code": "PL",
@@ -346,8 +356,8 @@
     },
     {
       "code": "SA",
-      "visitors": 4,
-      "cards": 7
+      "visitors": 5,
+      "cards": 8
     },
     {
       "code": "SC",
@@ -370,29 +380,34 @@
       "cards": 6
     },
     {
-      "code": "TR",
-      "visitors": 4,
-      "cards": 25
-    },
-    {
-      "code": "TT",
-      "visitors": 5,
-      "cards": 32
-    },
-    {
-      "code": "UA",
-      "visitors": 7,
-      "cards": 13
-    },
-    {
-      "code": "UG",
-      "visitors": 1,
+      "code": "TH",
+      "visitors": 3,
       "cards": 4
     },
     {
+      "code": "TR",
+      "visitors": 6,
+      "cards": 31
+    },
+    {
+      "code": "TT",
+      "visitors": 7,
+      "cards": 35
+    },
+    {
+      "code": "UA",
+      "visitors": 8,
+      "cards": 14
+    },
+    {
+      "code": "UG",
+      "visitors": 2,
+      "cards": 6
+    },
+    {
       "code": "US",
-      "visitors": 590,
-      "cards": 1762
+      "visitors": 638,
+      "cards": 1847
     },
     {
       "code": "UZ",
@@ -411,8 +426,8 @@
     },
     {
       "code": "ZA",
-      "visitors": 14,
-      "cards": 24
+      "visitors": 16,
+      "cards": 27
     },
     {
       "code": "ZW",
